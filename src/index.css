@@ -1,0 +1,94 @@
+  body {
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  @font-face {
+    font-family: 'Lato';
+    src: local('Lato'), url('./assets/fonts/Lato-Regular.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Lato, sans-serif, Montserrat, PingFang SC, -apple-system;
+  }
+  
+  .monospace {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, Courier New, monospace;
+  }
+  
+  *[role]:focus {
+    outline: none;
+  }
+  
+  .container {
+    width: auto;
+  }
+  
+  a {
+    text-decoration: none;
+    font-size: inherit;
+    font-weight: 500;
+    color: inherit;
+  }
+  
+ul, ol { list-style: none; margin: 0}
+li { list-style: none;}
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+sup { vertical-align: text-top; } /* 重置, 减少对行高的影响 */
+sub { vertical-align: text-bottom; }
+/** 重置表单元素 **/
+legend { color: #000; } /* for ie6 */
+fieldset, img { border: 0; } /* img 搭车：让链接里的 img 无边框 */
+button, input, select, textarea { font-size: 100%; } /* 使得表单元素在 ie 下能继承字体大小 */
+/* 注：optgroup 无法扶正 */
+/** 重置表格元素 **/
+table { border-collapse: collapse; border-spacing: 0; }
+/* 重置 HTML5 元素 */
+article, aside, details, figcaption, figure, footer,header, hgroup, menu, nav, section,
+summary, time, mark, audio, video {
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+mark { background: #ff0; }
+/* 设置placeholder的默认样式 */
+:-moz-placeholder {
+    color: #ddd;
+    opacity: 1;
+}
+::-moz-placeholder {
+    color: #ddd;
+    opacity: 1;
+}
+input:-ms-input-placeholder {
+    color: #ddd;
+    opacity: 1;
+}
+input::-webkit-input-placeholder {
+    color: #ddd;
+    opacity: 1;
+}
+.pull-right {
+  float: right;
+}
+
+/**  reset antd-design */
+
+/* popver */
+.no-arrorPoint .ant-popover-arrow {
+  display: none;
+}
+
+.no-arrorPoint .ant-popover-inner-content {
+  padding: 0;
+}

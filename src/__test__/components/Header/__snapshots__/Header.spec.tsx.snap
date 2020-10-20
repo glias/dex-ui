@@ -1,0 +1,219 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Header Component render component popver 1`] = `null`;
+
+exports[`Header Component render shallow popver 1`] = `<_default />`;
+
+exports[`Header Component render shallow renders 1`] = `
+<div
+  className="sc-gtssRu hkxRgT header-box"
+>
+  <div
+    className="sc-dlnjPT dVsSdZ"
+  >
+    <div
+      className="sc-hKFyIo cYudxI"
+    >
+      <a
+        href="#/"
+        onClick={[Function]}
+        style={
+          Object {
+            "color": "#fff",
+            "textDecoration": "none",
+          }
+        }
+      >
+        CKB  DEX
+      </a>
+    </div>
+    <ul
+      className="sc-jSFkmK hPheEh"
+    >
+      <li
+        className="sc-gKAblj IlhsD"
+      >
+        <a
+          href="#/trade"
+          onClick={[Function]}
+        >
+          Trade
+        </a>
+      </li>
+      <li
+        className="sc-gKAblj IlhsD"
+      >
+        <a
+          href="#/pool"
+          onClick={[Function]}
+        >
+          Pool
+        </a>
+      </li>
+      <li
+        className="sc-gKAblj IlhsD"
+      >
+        <a
+          href="#/match"
+          onClick={[Function]}
+        >
+          Match
+        </a>
+      </li>
+    </ul>
+    <li
+      className="sc-iCoHVE hmzDrX"
+    >
+      <span>
+        En/
+        <i>
+          中文
+        </i>
+      </span>
+      <button
+        className="ant-btn ant-btn-text"
+        onClick={[Function]}
+        onMouseDown={[Function]}
+        onTouchStart={[Function]}
+        style={
+          Object {
+            "color": "#fff",
+          }
+        }
+        type="button"
+      >
+        <span>
+          Connect Wallet
+        </span>
+        <span
+          aria-label="down"
+          className="anticon anticon-down"
+          role="img"
+        >
+          <svg
+            aria-hidden="true"
+            className=""
+            data-icon="down"
+            fill="currentColor"
+            focusable="false"
+            height="1em"
+            viewBox="64 64 896 896"
+            width="1em"
+          >
+            <path
+              d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"
+            />
+          </svg>
+        </span>
+      </button>
+    </li>
+  </div>
+</div>
+`;
+
+exports[`Header Component shallow renders 1`] = `
+<div
+  className="sc-gtssRu hkxRgT header-box"
+>
+  <div
+    className="sc-dlnjPT dVsSdZ"
+  >
+    <div
+      className="sc-hKFyIo cYudxI"
+    >
+      <a
+        href="#/"
+        onClick={[Function]}
+        style={
+          Object {
+            "color": "#fff",
+            "textDecoration": "none",
+          }
+        }
+      >
+        CKB  DEX
+      </a>
+    </div>
+    <ul
+      className="sc-jSFkmK hPheEh"
+    >
+      <li
+        className="sc-gKAblj IlhsD"
+      >
+        <a
+          href="#/trade"
+          onClick={[Function]}
+        >
+          Trade
+        </a>
+      </li>
+      <li
+        className="sc-gKAblj IlhsD"
+      >
+        <a
+          href="#/pool"
+          onClick={[Function]}
+        >
+          Pool
+        </a>
+      </li>
+      <li
+        className="sc-gKAblj IlhsD"
+      >
+        <a
+          href="#/match"
+          onClick={[Function]}
+        >
+          Match
+        </a>
+      </li>
+    </ul>
+    <li
+      className="sc-iCoHVE hmzDrX"
+    >
+      <span>
+        En/
+        <i>
+          中文
+        </i>
+      </span>
+      <button
+        className="ant-btn ant-btn-text"
+        onClick={[Function]}
+        onMouseDown={[Function]}
+        onTouchStart={[Function]}
+        style={
+          Object {
+            "color": "#fff",
+          }
+        }
+        type="button"
+      >
+        <span>
+          Connect Wallet
+        </span>
+        <span
+          aria-label="down"
+          className="anticon anticon-down"
+          role="img"
+        >
+          <svg
+            aria-hidden="true"
+            className=""
+            data-icon="down"
+            fill="currentColor"
+            focusable="false"
+            height="1em"
+            viewBox="64 64 896 896"
+            width="1em"
+          >
+            <path
+              d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"
+            />
+          </svg>
+        </span>
+      </button>
+    </li>
+  </div>
+</div>
+`;

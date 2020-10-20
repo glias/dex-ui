@@ -1,0 +1,14 @@
+{
+  "translation": {
+    "header": {
+      "Trade": "兑换",
+      "Pool": "提供流动性",
+      "Match": "撮合挖矿",
+      "wallet": "钱包"
+    },
+    "trade": {
+      "pair": "Pair"
+    },
+    "pool": {}
+  }
+}
