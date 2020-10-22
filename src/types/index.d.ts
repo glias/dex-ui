@@ -1,21 +1,21 @@
 declare namespace CustomRouter {
-	interface Route {
-		name: string,
-		path: string,
-		exact?: boolean,
-		params?: string
-		showHeader: boolean,
-		component: React.FunctionComponent<any>
-	}
+  interface Route {
+    name: string
+    path: string
+    exact?: boolean
+    params?: string
+    showHeader: boolean
+    component: React.FunctionComponent<any>
+  }
 }
 
 declare namespace State {
   export interface App {
     loading: boolean
-    language: 'en' | 'zh',
+    language: 'en' | 'zh'
     appWidth: number
-    appHeight: number,
-    isConnectWallet: boolean,
+    appHeight: number
+    isConnectWallet: boolean
     address: string
   }
 
@@ -29,14 +29,14 @@ declare namespace State {
   export type FetchStatus = keyof FetchStatusValue
 
   export interface PageState extends App {
-    counterState: CounterState,
+    counterState: CounterState
     traceState: TraceState
   }
 
   interface TraceState {
     pair: string
   }
-  
+
   interface CounterState {
     walletList: string[]
   }
@@ -54,14 +54,14 @@ declare namespace State {
     message: string[]
   }
 
-	interface NotFound404 {
-		name: string
-	}
-	interface CoinExchange {
-		buyDaiNum: number,
-		shellDaiNum: number,
-		spendNum: number,
-		reciverNum: number,
-		buyPrice: number
+  interface NotFound404 {
+    name: string
+  }
+  interface CoinExchange {
+    buyDaiNum: number
+    shellDaiNum: number
+    spendNum: number
+    reciverNum: number
+    buyPrice: number
   }
 }
