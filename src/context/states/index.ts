@@ -7,7 +7,7 @@ export type FetchStatus = keyof State.FetchStatus
 const initState: State.AppState = {
   app: initApp,
   counterState: initCountState,
-  traceState: initTrace
+  traceState: initTrace,
 }
 
 export default initState

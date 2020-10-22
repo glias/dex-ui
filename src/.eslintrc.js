@@ -29,6 +29,7 @@ module.exports = {
     'no-use-before-define': ['off'],
     'no-unused-vars': 'off',
     'no-undef': 'off',
+    'react/require-default-props': 'off',
     'implicit-arrow-linebreak': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
@@ -94,7 +95,7 @@ module.exports = {
     'no-console': [
       'error',
       {
-        allow: ['error'],
+        allow: ['info', 'error'],
       },
     ],
     'react-hooks/rules-of-hooks': 'error',

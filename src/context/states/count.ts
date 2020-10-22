@@ -1,5 +1,5 @@
 export const initCountState: State.CounterState = {
-  walletList: []
+  walletList: [],
 }
 
 export default initCountState

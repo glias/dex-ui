@@ -20,7 +20,7 @@ const NotFoundImage = styled.img`
 export default () => {
   return (
     <NotFoundPanel className="404">
-      <NotFoundImage src='' alt="404" />
+      <NotFoundImage src="" alt="404" />
     </NotFoundPanel>
   )
 }

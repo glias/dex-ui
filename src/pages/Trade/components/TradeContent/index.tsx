@@ -1,66 +1,68 @@
 import React from 'react'
 import { Table, Button, Input } from 'antd'
 import { TraceTaTbleFilterList } from '../../../../utils/const'
-import {
-	TradeTableBox,
-	FilterTablePire
-} from './styled'
- 
+import { TradeTableBox, FilterTablePire } from './styled'
+
 export default () => {
-	const ordersList: string[] = [] 
-	const columns = [
-		{
-			title: 'Pay',
-			dataIndex: 'Pay',
-			key: 'Pay'
-		},
-		{
-			title: 'Receive',
-			dataIndex: 'Receive',
-			key: 'Receive'
-		},
-		{
-			title: 'Price',
-			dataIndex: 'Price',
-			key: 'Price'
-		},
-		{
-			title: 'Status',
-			dataIndex: 'Status',
-			key: 'Status'
-		},
-		{
-			title: 'Executed',
-			dataIndex: 'Executed',
-			key: 'Executed'
-		},
-		{
-			title: 'Action',
-			dataIndex: 'Action',
-			key: 'Action'
-		}
-	]
+  const ordersList: string[] = []
+  const columns = [
+    {
+      title: 'Pay',
+      dataIndex: 'Pay',
+      key: 'Pay',
+    },
+    {
+      title: 'Receive',
+      dataIndex: 'Receive',
+      key: 'Receive',
+    },
+    {
+      title: 'Price',
+      dataIndex: 'Price',
+      key: 'Price',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'Status',
+      key: 'Status',
+    },
+    {
+      title: 'Executed',
+      dataIndex: 'Executed',
+      key: 'Executed',
+    },
+    {
+      title: 'Action',
+      dataIndex: 'Action',
+      key: 'Action',
+    },
+  ]
 
-	// fetch tableData
-	// todo
+  // fetch tableData
+  // todo
 
-	return (
-		<TradeTableBox>
-			<div className="tableHederBox">
-				<div className="tableHeaderSearch">
-					<h3>My Orders</h3>
-					<Input placeholder="Filter Token" style={{width: '180px'}} prefix={<i className="ai-search" />} />
-				</div>
-				<FilterTablePire>
-					{
-						TraceTaTbleFilterList.map(val => (
-								<Button type="text" key={val} size="small">{val}</Button>
-							)
-						)
-					}
-				</FilterTablePire>
-			</div>
-			<Table dataSource={ordersList} columns={columns}></Table>
-		</TradeTableBox>
-	)
+  return (
+    <TradeTableBox>
+      <div className="tableHederBox">
+        <div className="tableHeaderSearch">
+          <h3>My Orders</h3>
+          <Input
+            placeholder="Filter Token"
+            style={{
+              width: '180px',
+            }}
+            prefix={<i className="ai-search" />}
+          />
+        </div>
+        <FilterTablePire>
+          {TraceTaTbleFilterList.map(val => (
+            <Button type="text" key={val} size="small">
+              {val}
+            </Button>
+          ))}
+        </FilterTablePire>
+      </div>
+      <Table dataSource={ordersList} columns={columns} />
+    </TradeTableBox>
+  )
 }

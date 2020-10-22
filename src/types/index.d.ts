@@ -28,7 +28,7 @@ declare namespace State {
 
   export type FetchStatus = keyof FetchStatusValue
 
-  export interface PageState extends App {
+  export interface PageState {
     counterState: CounterState
     traceState: TraceState
   }
