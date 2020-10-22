@@ -30,7 +30,7 @@
     "@testing-library/user-event": "7.1.2",
     "@types/enzyme": "3.10.7",
     "@types/enzyme-adapter-react-16": "1.0.6",
-    "@types/eslint": "^7.2.4",
+    "@types/eslint": "^6.6.0",
     "@types/jest": "24.0.0",
     "@types/node": "12.0.0",
     "@types/react": "16.9.0",
@@ -41,7 +41,7 @@
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
     "create-react-app": "^3.4.1",
-    "eslint": "7.2.0",
+    "eslint": "6.6.0",
     "eslint-config-airbnb": "18.2.0",
     "eslint-config-airbnb-typescript": "^12.0.0",
     "eslint-config-prettier": "^6.14.0",
@@ -61,7 +61,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "lint": "eslint src/**/*.{ts,tsx} --fix",
-    "test": "react-scripts test & jest --colors --coverage",
+    "test": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
