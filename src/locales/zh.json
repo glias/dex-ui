@@ -7,7 +7,9 @@
       "wallet": "钱包"
     },
     "trade": {
-      "pair": "Pair"
+      "pair": "Pair",
+      "placeOrder": "撮合交易",
+      "searchPairPlaceHolder": "查询币名或者Type ID"
     },
     "pool": {}
   }

@@ -7,7 +7,8 @@ export const HomeContent = styled.div`
 `
 
 export const HomeBox = styled.div`
-  width: 100%;
   margin: 0 auto;
-  max-width: 1400px;
+  min-width: 1000px;
+  oveflow: scroll;
+  min-height: 600px;
 `

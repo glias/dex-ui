@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const HeaderBox = styled.div`
   width: 100%;
-  height: 60px; 
+  overflow-x: scroll;
   margin: 0 auto;
   overflow: hidden;
   color: rgba(81, 119, 136, 1);
@@ -17,14 +17,19 @@ export const HeaderPanel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1400px;
-  padding: 0 120px;
+  padding: 0 50px;
   box-size: border-box;
-  line-height: 60px;
   font-size: 20px;
-  .ant-menu-horizontal {
-    line-height: 54px;
-    border-bottom: none;
+  .panel-nav {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    h1 {
+      margin: 0 20px 0 0;
+    }
+  }
+  .ant-menu-horizontal 
     color: rgba(0,106,151,0.6);
     .ant-menu-item-selected {
       color: rgba(0, 106, 151, 1);
@@ -32,7 +37,7 @@ export const HeaderPanel = styled.div`
   }
 `
 
-export const HeaderLogoBox = styled.div`
+export const HeaderLogoBox = styled.h1`
   margin-left: 10px;
   font-weight: 900;
   font-size: 26px;
@@ -56,20 +61,17 @@ export const UserMeta = styled.div`
 `
 
 export const HeaderMeta = styled.div`
-  margin-right: 30px;
   .collect-btn {
-    color: #006A97;
+    color: #fff;
+    background-color: #006A97;
     font-weight: 500;
     border-color: #006A97;
     border-radius: 10px;
   }
   .account-btn {
-    border-radius: 10px;
-    width: 28px;
-    height: 28px;
+    width: 15px;
     display: inline-block;
-    color: rgba(0, 106, 151, 1);
-    border-color: rgba(0, 106, 151, 1);
     margin-left: 10px;
+    cursor: pointer;
   }
 `
