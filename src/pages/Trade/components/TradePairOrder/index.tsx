@@ -3,7 +3,7 @@ import { Form, Input, Button, Tooltip } from 'antd'
 import i18n from '../../../../utils/i18n'
 import { PairOrder, PayMeta } from './styled'
 
-export default (props: any) => {
+export default ({ currentPair }: { currentPair: String }) => {
   const [form] = Form.useForm()
 
   return (
@@ -33,7 +33,7 @@ export default (props: any) => {
           </PayMeta>
           <Input
             placeholder="0.0"
-            suffix={`${props.currentPair} per DAI`}
+            suffix={`${currentPair} per DAI`}
             style={{
               color: 'rgba(81, 119, 136, 1)',
             }}

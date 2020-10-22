@@ -7,7 +7,6 @@ export default () => {
   const handleConnect = async () => {
     // connnect wallet...
     // todo...
-
     // if failed
     // store.dispatch({
     //   type: PageAction.ConnectWallet,
@@ -15,7 +14,6 @@ export default () => {
     //     isConnectWallet: false
     //   }
     // })
-
     // if success
     // store.dispatch({
     //   type: PageAction.ConnectWallet,

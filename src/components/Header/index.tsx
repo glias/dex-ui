@@ -11,7 +11,7 @@ import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta
 
 const mapStateToProps = (state: State.AppState) => {
   return {
-    ...state
+    ...state,
   }
 }
 

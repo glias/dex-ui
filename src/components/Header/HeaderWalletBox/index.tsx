@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Tooltip } from 'antd'
 import signOutpng from '../../../assets/img/signOut.png'
 import copy from '../../../assets/img/copy.png'
@@ -10,7 +10,7 @@ export default () => {
     return `${str.slice(0, 10)}...${str.slice(-6)}`
   }
 
-  const [currentTab, setCurrentTab] = useState('balances')
+  // const [currentTab, setCurrentTab] = useState('balances')
   const walletList: string[] = [] // store walletlists
   const tooltip = `A transit address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address.`
 
@@ -19,7 +19,7 @@ export default () => {
       <HeaderWallet>Account</HeaderWallet>
       <div className="walletTitle">
         <span>Wallet</span>
-        <img src={ signOutpng } alt="signOut" />
+        <img src={signOutpng} alt="signOut" />
       </div>
       <WalletList>
         {walletList.map(address => (
@@ -34,11 +34,11 @@ export default () => {
           </div>
         ))}
       </WalletList>
-      {currentTab === 'balances' ? (
+      {/* {currentTab === 'balances' ? (
         <div className="balances" onClick={() => setCurrentTab('balances')} />
       ) : (
         <div className="activites" onClick={() => setCurrentTab('activites')} />
-      )}
+      )} */}
     </HeaderWalletBox>
   )
 }

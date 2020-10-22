@@ -8,3 +8,5 @@ export const FooterBox = styled.div`
   color: rgba(136, 136, 136, 1);
   bordert-top: 1px solid #abd1e1;
 `
+
+export default FooterBox

@@ -1,6 +1,6 @@
 import { SELECTED_TRADE } from './types'
 
-export const signupUser = (selectOrder: string) => async (dispatch: Function) => {
+export const changeOrder = (selectOrder: string) => async (dispatch: Function) => {
   dispatch({
     type: SELECTED_TRADE,
     payload: {
@@ -8,3 +8,5 @@ export const signupUser = (selectOrder: string) => async (dispatch: Function) =>
     },
   })
 }
+
+export default changeOrder

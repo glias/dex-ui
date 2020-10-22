@@ -36,7 +36,7 @@ declare namespace State {
 
   interface WalletState {
     walletConnectStatus: 'unexecuted' | 'padding' | 'success' | 'failed'
-    address: ''
+    addressList: String[]
   }
 
   interface TraceState {
