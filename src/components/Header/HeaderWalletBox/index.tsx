@@ -9,16 +9,16 @@ import {
   WalletList
 } from './styled'
 import {
-  Tooltip 
+  Tooltip
 } from 'antd'
 
-export default () => { 
+export default () => {
   const truncatureStr = (str: string): string => {
     return str.slice(0, 10) + '...' + str.slice(-6)
   }
 
   const [currentTab, setCurrentTab] = useState('balances')
-  const {
+  const { 
     counterState: { walletList }
   } = useAppState()
   const tooltip = `A transit address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address.`

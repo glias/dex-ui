@@ -3,7 +3,6 @@ import styled from 'styled-components'
 
 const NotFoundPanel = styled.div`
   margin-top: 120px;
-  margin-bottom: 140px;
 `
 
 const NotFoundImage = styled.img`
