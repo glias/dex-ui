@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Table, Button, Input } from 'antd'
 import { TraceTaTbleFilterList } from '../../../../utils/const'
 import {
@@ -7,7 +7,7 @@ import {
 } from './styled'
  
 export default () => {
-	const [orders, setOrders] = useState([])
+	const ordersList: string[] = [] 
 	const columns = [
 		{
 			title: 'Pay',
@@ -42,6 +42,7 @@ export default () => {
 	]
 
 	// fetch tableData
+	// todo
 
 	return (
 		<TradeTableBox>
@@ -59,7 +60,7 @@ export default () => {
 					}
 				</FilterTablePire>
 			</div>
-			<Table dataSource={orders} columns={columns}></Table>
+			<Table dataSource={ordersList} columns={columns}></Table>
 		</TradeTableBox>
 	)
 }

@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { Input, Layout, Popover, Row, Col } from 'antd'
 import i18n from '../../utils/i18n'
-import { PageActions } from '../../contexts/actions'
-import { useDispatch } from '../../contexts/providers'
 import PairContent, { PairTraceLine } from './components/pairBox'
 import { PairLists, PairTrace } from '../../utils/const'
 import TradePairOrder from './components/TradePairOrder'
@@ -21,7 +19,7 @@ const { Content } = Layout
 const mapStateToProps = (dispatch, ownProps) => {
   return {
 
-  }
+  } 
 }
 
 export default connect(mapStateToProps)(
@@ -29,16 +27,10 @@ export default connect(mapStateToProps)(
     const [currentPair, setCurrentPair] = useState("DAI")
     const FormLayout = () => {
       const [visiblePopver, setVisiblePopver] = useState(false)
-      const dispatch = useDispatch()
 
       const transferPair = (visible: boolean, pair: string) => {
         setVisiblePopver(visible)
-        dispatch({
-          type: PageActions.UpdateTradePair,
-          payload: {
-            traceState: pair
-          }
-        })
+        // todo...
         setCurrentPair(pair)
       }
 

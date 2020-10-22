@@ -3,12 +3,10 @@ import { Button } from 'antd'
 import { PageAction } from '../../../context/actions'
 import { PopoverBox } from './styled'
 import store from '../../../context/store'
-import { 
-  ConnectLists
-} from '../../../utils/const'
+import { ConnectLists } from '../../../utils/const'
 
 export default () => { 
-  const handleConnect = () => {
+  const handleConnect = async () => {
     // connnect wallet...
     // todo...
     
@@ -24,11 +22,14 @@ export default () => {
     store.dispatch({
       type: PageAction.ConnectWallet, 
       payload: {
-        isConnectWallet: true,
-        address: '0x7e8a2y5yasdas8098asdas8908asd898asd54ssr290e1'
+        isConnectWallet: true
       }
     })
   }
+
+  store.subscribe(() =>
+    console.log(store.getState())
+  )
 
   return ( 
     <PopoverBox>
