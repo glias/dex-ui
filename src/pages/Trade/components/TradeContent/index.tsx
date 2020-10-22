@@ -1,45 +1,35 @@
 import React from 'react'
 import { Table, Button, Input } from 'antd'
-import { TraceTaTbleFilterList } from '../../../../utils/const'
+import { connect } from 'react-redux'
+import { TraceTableList } from '../../../../utils/const'
+
 import { TradeTableBox, FilterTablePire } from './styled'
 
-export default () => {
-  const ordersList: string[] = []
-  const columns = [
-    {
-      title: 'Pay',
-      dataIndex: 'Pay',
-      key: 'Pay',
-    },
-    {
-      title: 'Receive',
-      dataIndex: 'Receive',
-      key: 'Receive',
-    },
-    {
-      title: 'Price',
-      dataIndex: 'Price',
-      key: 'Price',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'Status',
-      key: 'Status',
-    },
-    {
-      title: 'Executed',
-      dataIndex: 'Executed',
-      key: 'Executed',
-    },
-    {
-      title: 'Action',
-      dataIndex: 'Action',
-      key: 'Action',
-    },
-  ]
+const mapStateToProps = ({ trace }: { trace: State.TraceState }) => {
+  return {
+    ordersList: trace.ordersList,
+    tableHeaderColumn: trace.tableHeaderColumn,
+  }
+}
+
+const tradeContent = ({
+  ordersList,
+  tableHeaderColumn,
+}: {
+  ordersList: Array<object>
+  tableHeaderColumn: Array<object>
+}) => {
+  // console.info(ordersList, tableHeaderColumn)
 
   // fetch tableData
-  // todo
+  // todo...
+
+  const filterOrderList = (selectVal: string) => {
+    // fetch filterTabeList
+    // todo...
+    // console.info(selectVal)
+    return selectVal
+  }
 
   return (
     <TradeTableBox>
@@ -55,14 +45,16 @@ export default () => {
           />
         </div>
         <FilterTablePire>
-          {TraceTaTbleFilterList.map(val => (
-            <Button type="text" key={val} size="small">
+          {TraceTableList.map(val => (
+            <Button type="text" key={val} size="small" onClick={() => filterOrderList(val)}>
               {val}
             </Button>
           ))}
         </FilterTablePire>
       </div>
-      <Table dataSource={ordersList} columns={columns} />
+      <Table dataSource={ordersList} columns={tableHeaderColumn} />
     </TradeTableBox>
   )
 }
+
+export default connect(mapStateToProps)(tradeContent)

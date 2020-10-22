@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Input, Layout, Popover, Row, Col } from 'antd'
 import { connect } from 'react-redux'
 import i18n from '../../utils/i18n'
-import PairContent, { PairTraceLine } from './components/pairBox'
+import PairContent, { PairTraceLine } from './components/PairBox'
 import { PairLists, PairTrace } from '../../utils/const'
 import TradePairOrder from './components/TradePairOrder'
 import TradeTableBox from './components/TradeContent'
@@ -10,11 +10,14 @@ import { TradePage, TradeContent, TradeForm, PopverContent, TracePairLine } from
 
 const { Content } = Layout
 
-const mapStateToProps = (dispatch, ownProps) => {
-  return {}
+const mapStateToProps = ({ trace }: { trace: State.TraceState }) => {
+  return {
+    ordersList: trace.ordersList,
+    tableHeaderColumn: trace.tableHeaderColumn,
+  }
 }
 
-export default connect(mapStateToProps)(() => {
+const Trade = () => {
   const [currentPair, setCurrentPair] = useState('DAI')
   const FormLayout = () => {
     const [visiblePopver, setVisiblePopver] = useState(false)
@@ -99,22 +102,8 @@ export default connect(mapStateToProps)(() => {
           </Content>
         </Col>
       </Row>
-      {/* <Layout>
-          <Sider width={'25%'} theme="light">
-            <TradeContent>
-              <TradeForm>
-                <FormLayout></FormLayout>
-              </TradeForm>
-              <TracePairLine>
-                <span>{currentPair}</span>
-                <span><i className="ai-right-circle" style={{'color': 'rgba(0, 106, 151, 1)'}} /></span>
-                <span>CKB</span>
-              </TracePairLine>
-              <TradePairOrder currentPair={currentPair}></TradePairOrder>
-            </TradeContent>
-          </Sider>
-          
-        </Layout> */}
     </TradePage>
   )
-})
+}
+
+export default connect(mapStateToProps)(Trade)

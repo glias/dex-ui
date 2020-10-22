@@ -34,7 +34,6 @@ export const WalletList = styled.li`
       width: 14px;
     }
   }
-
 `
 export const HeaderWallet = styled.div`
   box-sizing: border-box;

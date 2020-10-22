@@ -9,16 +9,15 @@ import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
 
-const mapStateToProps = (state: any) => {
+const mapStateToProps = (state: State.AppState) => {
   return {
-    isConnectWallet: state.isConnectWallet,
-    address: state.address,
+    ...state
   }
 }
 
-export default connect(mapStateToProps)((props: any) => {
-  const isConnectWallet = props.isConnectWallet || false
-  const address = props.isConnectWallet || false
+export default connect(mapStateToProps)((props: State.AppState) => {
+  const { isConnectWallet } = props
+  const { address } = props
 
   const history = useHistory()
 

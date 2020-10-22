@@ -1,0 +1,1 @@
+export const SELECTED_TRADE = 'SELECTED_TRADE'

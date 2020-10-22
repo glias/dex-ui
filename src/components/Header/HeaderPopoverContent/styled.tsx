@@ -26,5 +26,5 @@ export const PopoverBox = styled.div`
   }
 `
 export const ConnectList = styled.span`
-  
+  display: inline;
 `

@@ -28,13 +28,21 @@ declare namespace State {
 
   export type FetchStatus = keyof FetchStatusValue
 
-  export interface PageState {
+  export interface PageState extends App {
     counterState: CounterState
     traceState: TraceState
+    walletState: WalletState
+  }
+
+  interface WalletState {
+    walletConnectStatus: 'unexecuted' | 'padding' | 'success' | 'failed'
+    address: ''
   }
 
   interface TraceState {
     pair: string
+    ordersList: Array<object>
+    tableHeaderColumn: Array<object>
   }
 
   interface CounterState {

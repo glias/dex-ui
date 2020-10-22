@@ -6,7 +6,7 @@ export const HeaderBox = styled.div`
   margin: 0 auto;
   overflow: hidden;
   color: rgba(81, 119, 136, 1);
-  border-bottom: 1px solid #ABD1E1;
+  border-bottom: 1px solid #abd1e1;
 `
 export const MenuLiText = styled.span`
   font-weight: bolder;
@@ -63,9 +63,9 @@ export const UserMeta = styled.div`
 export const HeaderMeta = styled.div`
   .collect-btn {
     color: #fff;
-    background-color: #006A97;
+    background-color: #006a97;
     font-weight: 500;
-    border-color: #006A97;
+    border-color: #006a97;
     border-radius: 10px;
   }
   .account-btn {

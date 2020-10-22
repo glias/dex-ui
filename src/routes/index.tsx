@@ -5,6 +5,7 @@ const NotFound = lazy(() => import('../pages/404'))
 const Home = lazy(() => import('../pages/Home'))
 const Trade = lazy(() => import('../pages/Trade'))
 const Header = lazy(() => import('../components/Header'))
+const Footer = lazy(() => import('../components/Footer'))
 
 const Containers: CustomRouter.Route[] = [
   {
@@ -41,6 +42,7 @@ export default () => {
           })}
           <Redirect from="*" to="/404" />
         </Switch>
+        <Footer />
       </Suspense>
     </Router>
   )

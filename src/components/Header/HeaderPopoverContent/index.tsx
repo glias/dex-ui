@@ -1,8 +1,6 @@
 import React from 'react'
 import { Button } from 'antd'
-import { PageAction } from '../../../context/actions'
 import { PopoverBox } from './styled'
-import store from '../../../context/store'
 import { ConnectLists } from '../../../utils/const'
 
 export default () => {
@@ -19,15 +17,15 @@ export default () => {
     // })
 
     // if success
-    store.dispatch({
-      type: PageAction.ConnectWallet,
-      payload: {
-        isConnectWallet: true,
-      },
-    })
+    // store.dispatch({
+    //   type: PageAction.ConnectWallet,
+    //   payload: {
+    //     isConnectWallet: true
+    //   }
+    // })
   }
 
-  store.subscribe(() => console.info(store.getState()))
+  // store.subscribe(() => console.info(store.getState()))
 
   return (
     <PopoverBox>

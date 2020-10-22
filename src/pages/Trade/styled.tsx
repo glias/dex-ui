@@ -1,8 +1,8 @@
 import styled from 'styled-components'
 
 export const TradePage = styled.div`
-  background-color: #ECF2F4;
-  min-height: calc(100% - 50px);
+  background-color: #ecf2f4;
+  min-height: calc(100% - 100px);
   padding: 10px 50px 0;
   box-sizing: border-box;
   .asider {
@@ -28,7 +28,7 @@ export const TracePairLine = styled.div`
 
 export const TradeContent = styled.div`
   box-size: border-box;
-  background-color: #ECF2F4;
+  background-color: #ecf2f4;
 `
 
 export const PopverContent = styled.div`
