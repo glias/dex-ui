@@ -7,41 +7,49 @@ import ckb from '../assets/img/token/ckb.png'
 
 export const HeaderNavgationLists = [
   {
-    name: "Trade",
-    path: "/trade"
+    name: 'Trade',
+    path: '/trade',
   },
   {
-    name: "Pool",
-    path: "/pool"
+    name: 'Pool',
+    path: '/pool',
   },
   {
-    name: "Match",
-    path: "/match"
-  }
+    name: 'Match',
+    path: '/match',
+  },
 ]
-export const TraceTaTbleFilterList = [
-  'All',
-  'Pedding',
-  'Opening',
-  'Complete',
-  'Claimed',
-  'Aborted'
-]
+export const TraceTaTbleFilterList = ['All', 'Pedding', 'Opening', 'Complete', 'Claimed', 'Aborted']
 
 export const ConnectLists = [
   {
     name: 'MetaMask',
-    logo: metaMask
-  }
+    logo: metaMask,
+  },
 ]
 
 export const PairTrace = [
-  { name: 'CKB', logo: ckb }
+  {
+    name: 'CKB',
+    logo: ckb,
+  },
 ]
 
 export const PairLists = [
-  { name: 'DAI', logo: dai },
-  { name: 'USDT', logo: usdt },
-  { name: 'ETH', logo: eth },
-  { name: 'USDT(REC20)', logo: bitcoin }
+  {
+    name: 'DAI',
+    logo: dai,
+  },
+  {
+    name: 'USDT',
+    logo: usdt,
+  },
+  {
+    name: 'ETH',
+    logo: eth,
+  },
+  {
+    name: 'USDT(REC20)',
+    logo: bitcoin,
+  },
 ]

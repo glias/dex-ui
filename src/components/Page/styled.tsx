@@ -5,3 +5,5 @@ export const PageBox = styled.div`
   height: 60wh;
   overflow: hidden;
 `
+
+export default PageBox
