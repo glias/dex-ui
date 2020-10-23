@@ -14,7 +14,6 @@ export default () => {
     //   new EthProvider(), // a built-in Provider for Ethereum env.
     //   new PwCollector('https://cellapitest.ckb.pw') // a custom Collector to retrive cells from cache server.
     // )
-
     // if failed
     // store.dispatch({
     //   type: PageAction.ConnectWallet,
@@ -22,8 +21,6 @@ export default () => {
     //     walletConnectStatus: 'failed'
     //   }
     // })
-
-
     // if connecting...
     // store.dispatch({
     //   type: PageAction.ConnectWallet,
@@ -31,9 +28,6 @@ export default () => {
     //     walletConnectStatus: 'pedding'
     //   }
     // })
-
-
-
     // if success
     // store.dispatch({
     //   type: PageAction.ConnectWallet,
@@ -48,10 +42,11 @@ export default () => {
   return (
     <PopoverBox>
       {ConnectLists.map(way => {
-        return (<Button onClick={() => handleConnect()} key={way.logo}>
-          <img src={way.logo} alt="connect logo" />
-          {way.name}
-        </Button>
+        return (
+          <Button onClick={() => handleConnect()} key={way.logo}>
+            <img src={way.logo} alt="connect logo" />
+            {way.name}
+          </Button>
         )
       })}
     </PopoverBox>

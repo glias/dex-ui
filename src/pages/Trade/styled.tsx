@@ -16,9 +16,7 @@ export const TradeContent = styled.div`
   background-color: #ecf2f4;
 `
 
-export const TradeForm = styled.div`
-  
-`
+export const TradeForm = styled.div``
 
 export const ConectIconBox = styled.div`
   text-align: center;

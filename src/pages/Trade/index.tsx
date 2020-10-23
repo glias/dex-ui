@@ -3,27 +3,18 @@ import { Layout, Row, Col } from 'antd'
 import { connect } from 'react-redux'
 import TradePairOrder from './components/TradePairOrder'
 import TradeTableBox from './components/TradeContent'
-import {
-  TradePage,
-  TradeContent
-} from './styled'
+import { TradePage, TradeContent } from './styled'
 
 const { Content } = Layout
 
-const mapStateToProps = ({ trace, wallet }: { trace: State.TraceState, wallet: State.WalletState }) => {
+const mapStateToProps = ({ trace, wallet }: { trace: State.TraceState; wallet: State.WalletState }) => {
   return {
     ...trace,
-    ...wallet
+    ...wallet,
   }
 }
 
-const Trade = ({
-  currentPair
-}: {
-  currentPair: String,
-  addressList: Array<object>,
-  walletConnectStatus: String
-}) => {
+const Trade = ({ currentPair }: { currentPair: String }) => {
   return (
     <TradePage>
       <Row>

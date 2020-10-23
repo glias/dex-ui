@@ -14,3 +14,5 @@ export const TracePairLine = styled.div`
     font-size: 16px;
   }
 `
+
+export default TracePairLine
