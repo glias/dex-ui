@@ -1,21 +1,47 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
+import { Button, Menu } from 'antd'
 import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { Button, Popover, Menu, Badge } from 'antd'
-import popoverContent from './HeaderPopoverContent'
-import walletBox from './HeaderWalletBox'
+import Web3 from 'web3'
+import Web3Modal from 'web3modal'
+import WalletConnectProvider from '@walletconnect/web3-provider'
+
+import { CONNECT_WALLET } from '../../context/actions/types'
 import i18n from '../../utils/i18n'
-import MetaMaskpng from '../../assets/img/wallet/metamask.png'
-import outlined from '../../assets/img/outlined.png'
-import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
+import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta } from './styled'
 
 const HeaderContainer = () => {
-  const walletConnectStatus = useSelector(state => state.wallet.walletConnectStatus)
-  const currentSelectedAddress = useSelector(state => state.wallet.currentSelectedAddress)
+  const dispatch = useDispatch()
   const history = useHistory()
 
-  const truncatureStr = (str: string): string => {
-    return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
+  const handleConnect = async () => {
+    // connnect wallet...
+    const web3Modal = new Web3Modal({
+      network: 'mainnet', // optional
+      cacheProvider: true, // optional
+      providerOptions: {
+        walletconnect: {
+          package: WalletConnectProvider, // required
+          options: {
+            infuraId: 'INFURA_ID', // required
+          },
+        },
+      },
+    })
+
+    const provider = await web3Modal.connect()
+
+    // todoing...
+    const web3 = new Web3(provider)
+
+    console.log(web3)
+
+    dispatch({
+      type: CONNECT_WALLET,
+      payload: {
+        walletConnectStatus: 'pedding',
+      },
+    })
   }
 
   return (
@@ -36,31 +62,9 @@ const HeaderContainer = () => {
           </Menu>
         </div>
         <HeaderMeta id="headerMeta">
-          {walletConnectStatus !== 'unstart' ? (
-            <>
-              <UserMeta>
-                <Button className="collect-btn">{i18n.t('header.wallet')}</Button>
-                <img src={MetaMaskpng} alt="metaMask" />
-                {truncatureStr(currentSelectedAddress)}
-              </UserMeta>
-              <Popover
-                placement="bottomRight"
-                title=""
-                overlayClassName="no-arrorPoint"
-                trigger="click"
-                content={walletBox}
-              >
-                <Badge count="">
-                  <img src={outlined} alt="account" className="account-btn" />
-                  {/* <Button className="account-btn" icon={ <AlignCenterOutlined /> }></Button> */}
-                </Badge>
-              </Popover>
-            </>
-          ) : (
-            <Popover placement="bottomRight" trigger="click" content={popoverContent}>
-              <Button className="collect-btn">{i18n.t('header.wallet')}</Button>
-            </Popover>
-          )}
+          <Button className="collect-btn" onClick={() => handleConnect()}>
+            {i18n.t('header.wallet')}
+          </Button>
         </HeaderMeta>
       </HeaderPanel>
     </HeaderBox>
