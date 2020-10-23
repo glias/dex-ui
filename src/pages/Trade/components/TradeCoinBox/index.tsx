@@ -18,5 +18,3 @@ export const TradeCoinBox = ({ pair }: { pair: String }) => {
   )
 }
 export default TradeCoinBox
-
-
