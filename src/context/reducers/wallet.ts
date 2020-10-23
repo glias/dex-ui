@@ -7,8 +7,6 @@ export const initWallet = {
 }
 
 const tradeReducer = (state = initWallet, action: { type: string; payload: any }) => {
-  // eslint-disable-line
-  console.log(action, state)
   switch (action.type) {
     case SELECTED_TRADE:
       return action.payload

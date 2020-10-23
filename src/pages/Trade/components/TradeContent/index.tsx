@@ -19,8 +19,6 @@ const tradeContent = ({
   ordersList: Array<object>
   tableHeaderColumn: Array<object>
 }) => {
-  // console.info(ordersList, tableHeaderColumn)
-
   // fetch tableData
   // todo...
 

@@ -9,7 +9,9 @@
     "trade": {
       "pair": "Pair",
       "placeOrder": "撮合交易",
-      "searchPairPlaceHolder": "查询币名或者Type ID"
+      "searchPairPlaceHolder": "查询币名或者Type ID",
+      "TradeSuccess": "新建交易",
+      "TradeFailed": "移除"
     },
     "pool": {}
   }

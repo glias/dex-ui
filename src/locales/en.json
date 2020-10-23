@@ -9,7 +9,9 @@
     "trade": {
       "pair": "Pair",
       "placeOrder": "Place Order",
-      "searchPairPlaceHolder": "Search name or Type ID"
+      "searchPairPlaceHolder": "Search name or Type ID",
+      "TradeSuccess": "New Trade",
+      "TradeFailed": "Dismiss"
     },
     "pool": {}
   }

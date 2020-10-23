@@ -27,6 +27,10 @@ export const PairOrderFormBox = styled.div`
   }
   .price-box {
     margin: 0;
+    padding: 0;
+    .ant-form-item {
+      padding: 0;
+    }
   }
   .dividing-line {
     width: 100%;

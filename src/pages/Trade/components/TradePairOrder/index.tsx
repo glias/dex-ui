@@ -1,29 +1,89 @@
 import React, { useState } from 'react'
 import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
+import { useDispatch, useSelector } from 'react-redux'
+import { FormInstance } from 'antd/lib/form'
 import { PairList } from '../../../../utils/const'
+import { SELECTED_TRADE, TRACEORDER_STEP } from '../../../../context/actions/types'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
 
-export default ({ currentPair }: { currentPair: String }) => {
+const TradePairOrder = () => {
   const [form] = Form.useForm()
   const { Option } = Select
-  const [pair, setPair] = useState(currentPair)
-  const changePair = (value: String) => setPair(value)
+  const currentPair = useSelector(state => state.trace.currentPair)
+  const maximumPayable = useSelector(state => state.trace.maximumPayable)
+  const dispatch = useDispatch()
+  const formRef = React.createRef<FormInstance>()
+  const [disabled, setDisabled] = useState(false)
+
+  const changePair = (value: any) => {
+    dispatch({
+      type: SELECTED_TRADE,
+      payload: {
+        currentPair: value,
+      },
+    })
+  }
 
   const onFinish = () => {
-    form.setFieldsValue({
-      pay: 'Hello world!',
-      price: 'male',
+    // todo....
+    dispatch({
+      type: TRACEORDER_STEP,
+      payload: {
+        orderStep: 2,
+      },
     })
+  }
+
+  // eslint-disable-next-line consistent-return
+  const checkPay = (rule, value = 0) => {
+    if (value <= 0) {
+      setDisabled(true)
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('Pay must be greater than zero!')
+    }
+    if (value <= 0.01) {
+      setDisabled(true)
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('Order too small')
+    }
+    if (value > maximumPayable) {
+      setDisabled(true)
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('unsuffcient balance')
+    }
+    setDisabled(false)
+    return Promise.resolve()
+  }
+
+  // eslint-disable-next-line consistent-return
+  const checkPrice = (rule, value = 0) => {
+    if (value <= 0) {
+      setDisabled(true)
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('Price must be greater than zero!')
+    }
+    if (value <= 0.01) {
+      setDisabled(true)
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('Order too small')
+    }
+    if (value > maximumPayable) {
+      setDisabled(true)
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('unsuffcient balance')
+    }
+    setDisabled(false)
+    return Promise.resolve()
   }
 
   return (
     <PairOrderFormBox>
       <div className="trace-form-select" id="trace-form-select">
         <Select
-          defaultValue="DAI"
+          defaultValue={currentPair}
           style={{
             width: '100%',
           }}
@@ -70,35 +130,31 @@ export default ({ currentPair }: { currentPair: String }) => {
           )).slice(1)}
         </Select>
       </div>
-      <TracePairCoin currentPair={pair} />
-      <Form
-        form={form}
-        name="traceForm"
-        layout="vertical"
-        onFinish={onFinish}
-        initialValues={{
-          remember: true,
-        }}
-      >
-        <Form.Item
-          label="Pay"
-          rules={[
-            {
-              required: true,
-              min: 0,
-            },
-          ]}
-        >
+      <TracePairCoin />
+      <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
+        <Form.Item label="Pay">
           <PayMeta>
-            <span className="max-num">MAX: 1,234,567.0000</span>
+            <span className="max-num">
+              MAX:
+              {maximumPayable}
+            </span>
             <Tooltip title="todo">
               <i className="ai-question-circle-o" />
             </Tooltip>
           </PayMeta>
-          <Form.Item name="pay" noStyle>
+          <Form.Item
+            name="pay"
+            noStyle
+            rules={[
+              {
+                validator: checkPay,
+              },
+            ]}
+          >
             <Input
               placeholder="0.0"
               suffix="DAI"
+              type="number"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
                 width: '100%',
@@ -117,14 +173,14 @@ export default ({ currentPair }: { currentPair: String }) => {
             name="price"
             rules={[
               {
-                required: true,
-                min: 0,
+                validator: checkPrice,
               },
             ]}
           >
             <Input
               placeholder="0.0"
-              suffix={`${pair} per DAI`}
+              type="number"
+              suffix={`${currentPair} per CKB`}
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
@@ -148,7 +204,7 @@ export default ({ currentPair }: { currentPair: String }) => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button htmlType="submit" className="submitBtn" size="large" type="text">
+          <Button htmlType="submit" className="submitBtn" disabled={disabled} size="large" type="text">
             {i18n.t(`trade.placeOrder`)}
           </Button>
         </Form.Item>
@@ -156,3 +212,5 @@ export default ({ currentPair }: { currentPair: String }) => {
     </PairOrderFormBox>
   )
 }
+
+export default TradePairOrder
