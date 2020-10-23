@@ -40,17 +40,18 @@ export const initTraceState = {
   ],
 }
 
-const tradeReducer = (state = initTraceState, action: { type: string; payload: object }) => {
+const tradeReducer = (state = initTraceState, action: { type: string; payload: any }) => {
+  console.log(action.payload)
   switch (action.type) {
     case SELECTED_TRADE:
       return {
         ...state,
-        currentPair: action.payload.currentPair,
+        currentPair: action.payload?.currentPair,
       }
     case TRACEORDER_STEP:
       return {
         ...state,
-        orderStep: action.payload.orderStep,
+        orderStep: action.payload?.orderStep,
       }
     default:
       return state
