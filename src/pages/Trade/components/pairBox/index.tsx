@@ -1,48 +1,35 @@
 import React from 'react'
-import ckb from '../../../../assets/img/token/ckb.png'
-import { PairList, PairBox } from './styled'
+import { PairSpace, PairBox } from './styled'
+import { PairList } from '../../../../utils/const'
 
-export const PairContent = ({ addressList }: { addressList: Array<object> }) => {
+export const TradeCoinBox = ({ pair }: { pair: String }) => {
+  let coinBox = PairList.find((item => pair === item.name))
   return (
     <PairBox>
-      {addressList?.map((item: any) => (
-        <PairList key={item.logo}>
-          <img src={item.logo} alt="logo pair" />
-          {item.name}
-        </PairList>
-      ))}
+      {
+        coinBox ? (
+          <PairSpace>
+            <img src={coinBox.logo} alt="logo pair" />
+            {coinBox.name}
+          </PairSpace>
+        ) : ''
+      }
     </PairBox>
   )
 }
-const mapStateToProps = (state: State.AppState) => {
-  return {
-    ...state,
-  }
-}
 
-export const PairTraceLine = ({ addressList }: { addressList: Array<object> }) => {
-  // const onClickSelectPair = (name: string) => {
-  //   // props.selectPair(false, name)
-
-  //   return name
-  // }
+export const PairTraceOption = () => {
   return (
     <PairBox>
-      {addressList?.map((item: any) => (
+      {PairList.map((item, index) => (
         <li className="pairTraceList" key={item.name}>
-          <PairList key={item.logo}>
-            <img src={item.logo} alt="logo pair" />
-            {item.name}
-          </PairList>
+          <TradeCoinBox key={index} pair={item.name}></TradeCoinBox>
           <div className="decollect">/</div>
-          <PairList>
-            <img src={ckb} alt="logo pair" />
-            CKB
-          </PairList>
+          <TradeCoinBox pair="CKB"></TradeCoinBox>
         </li>
-      ))}
+      )).slice(1)}
     </PairBox>
   )
 }
 
-export default connect(mapStateToProps)(PairContent)
+export default PairTraceOption

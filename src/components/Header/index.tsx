@@ -9,16 +9,19 @@ import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
 
-const mapStateToProps = (state: State.AppState) => {
+const mapStateToProps = (state: State.WalletState) => {
   return {
     ...state,
   }
 }
 
-export default connect(mapStateToProps)((props: State.AppState) => {
-  const { isConnectWallet } = props
-  const { address } = props
-
+export default connect(mapStateToProps)(({
+  walletConnectStatus,
+  currentSelectedAddress
+}: {
+  walletConnectStatus: string,
+  currentSelectedAddress: string
+}) => {
   const history = useHistory()
 
   const truncatureStr = (str: string): string => {
@@ -43,7 +46,7 @@ export default connect(mapStateToProps)((props: State.AppState) => {
           </Menu>
         </div>
         <HeaderMeta id="headerMeta">
-          {!isConnectWallet ? (
+          {walletConnectStatus !== 'success' ? (
             <Popover placement="bottomRight" trigger="click" content={popoverContent}>
               <Button className="collect-btn">{i18n.t('header.wallet')}</Button>
             </Popover>
@@ -51,7 +54,7 @@ export default connect(mapStateToProps)((props: State.AppState) => {
             <>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
-                {truncatureStr(address)}
+                {truncatureStr(currentSelectedAddress)}
               </UserMeta>
               <Popover
                 placement="bottomRight"

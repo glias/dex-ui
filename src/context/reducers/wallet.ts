@@ -1,8 +1,9 @@
 import { SELECTED_TRADE } from '../actions/types'
 
 export const initWallet = {
-  walletConnectStatus: 'unexecuted',
+  walletConnectStatus: 'unstart',
   addressList: [],
+  currentSelectedAddress: ''
 }
 
 const tradeReducer = (state = initWallet, action: { type: string; payload: Object }) => {
