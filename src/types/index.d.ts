@@ -15,7 +15,6 @@ declare namespace State {
     language: 'en' | 'zh'
     appWidth: number
     appHeight: number
-    isConnectWallet: boolean
     address: string
   }
 
@@ -35,12 +34,13 @@ declare namespace State {
   }
 
   interface WalletState {
-    walletConnectStatus: 'unexecuted' | 'padding' | 'success' | 'failed'
-    addressList: String[]
+    walletConnectStatus: 'unstart' | 'padding' | 'success' | 'failed' // 钱包连接状态
+    addressList: String[], // 所有钱包地址
+    currentSelectedAddress: string // 当前选中的地址
   }
 
   interface TraceState {
-    pair: string
+    currentPair: string
     ordersList: Array<object>
     tableHeaderColumn: Array<object>
   }

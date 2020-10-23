@@ -3,7 +3,7 @@ import styled from 'styled-components'
 export const HeaderWalletBox = styled.div`
   width: 250px;
   overflow: hidden;
-  .walletTitle {
+  .wallet-title {
     display: flex;
     justify-content: space-between;
     align-items: center;

@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const PairList = styled.div`
+export const PairSpace = styled.div`
   color: rgba(102, 102, 102, 1);
   font-size: 16px;
   display: flex;

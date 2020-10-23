@@ -17,7 +17,7 @@ export default () => {
   return (
     <HeaderWalletBox>
       <HeaderWallet>Account</HeaderWallet>
-      <div className="walletTitle">
+      <div className="wallet-title">
         <span>Wallet</span>
         <img src={signOutpng} alt="signOut" />
       </div>
@@ -34,11 +34,6 @@ export default () => {
           </div>
         ))}
       </WalletList>
-      {/* {currentTab === 'balances' ? (
-        <div className="balances" onClick={() => setCurrentTab('balances')} />
-      ) : (
-        <div className="activites" onClick={() => setCurrentTab('activites')} />
-      )} */}
     </HeaderWalletBox>
   )
 }

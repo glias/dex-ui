@@ -27,15 +27,11 @@ export const ConnectLists = [
     logo: metaMask,
   },
 ]
-
-export const PairTrace = [
+export const PairList = [
   {
     name: 'CKB',
     logo: ckb,
   },
-]
-
-export const PairLists = [
   {
     name: 'DAI',
     logo: dai,
@@ -51,5 +47,5 @@ export const PairLists = [
   {
     name: 'USDT(REC20)',
     logo: bitcoin,
-  },
+  }
 ]

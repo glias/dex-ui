@@ -1,6 +1,7 @@
 import { SELECTED_TRADE } from '../actions/types'
 
 export const initTraceState = {
+  currentPair: 'DAI',
   ordersList: [],
   tableHeaderColumn: [
     {
