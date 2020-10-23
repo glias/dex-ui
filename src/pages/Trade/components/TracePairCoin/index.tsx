@@ -1,7 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import { TracePairLine } from './styled'
 
-export default ({ currentPair }: { currentPair: String }) => {
+const TracePairCoin = () => {
+  const currentPair = useSelector((state: any) => state.trace.currentPair)
+
   return (
     <TracePairLine>
       <span>{currentPair}</span>
@@ -17,3 +20,5 @@ export default ({ currentPair }: { currentPair: String }) => {
     </TracePairLine>
   )
 }
+
+export default TracePairCoin

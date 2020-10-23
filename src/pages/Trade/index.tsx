@@ -1,27 +1,33 @@
 import React from 'react'
 import { Layout, Row, Col } from 'antd'
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 import TradePairOrder from './components/TradePairOrder'
 import TradeTableBox from './components/TradeContent'
+import TradePairConfirm from './components/TradePairConfirm'
+import TradePairResult from './components/TradePairResult'
 import { TradePage, TradeContent } from './styled'
 
 const { Content } = Layout
 
-const mapStateToProps = ({ trace, wallet }: { trace: State.TraceState; wallet: State.WalletState }) => {
-  return {
-    ...trace,
-    ...wallet,
-  }
-}
+const Trade = () => {
+  const orderStep = useSelector((state: any) => state.trace.orderStep)
 
-const Trade = ({ currentPair }: { currentPair: String }) => {
+  const traceNavigation = () => {
+    switch (orderStep) {
+      case 1:
+        return <TradePairOrder />
+      case 2:
+        return <TradePairConfirm />
+      default:
+        return <TradePairResult />
+    }
+  }
+
   return (
     <TradePage>
       <Row>
         <Col span={6}>
-          <TradeContent>
-            <TradePairOrder currentPair={currentPair} />
-          </TradeContent>
+          <TradeContent>{traceNavigation()}</TradeContent>
         </Col>
         <Col span={18}>
           <Content
@@ -37,4 +43,4 @@ const Trade = ({ currentPair }: { currentPair: String }) => {
   )
 }
 
-export default connect(mapStateToProps)(Trade)
+export default Trade

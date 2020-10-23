@@ -8,9 +8,9 @@ export const PairTraceOption = () => {
     <PairBox>
       {PairList.map(item => (
         <li className="pairTraceList" key={item.name}>
-          <TradeCoinBox currentPair={item.name} />
+          <TradeCoinBox />
           <div className="decollect">/</div>
-          <TradeCoinBox currentPair="CKB" />
+          <TradeCoinBox />
         </li>
       )).slice(1)}
     </PairBox>

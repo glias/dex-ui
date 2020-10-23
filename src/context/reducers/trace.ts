@@ -1,8 +1,11 @@
-import { SELECTED_TRADE } from '../actions/types'
+import { SELECTED_TRADE, TRACEORDER_STEP } from '../actions/types'
 
 export const initTraceState = {
   currentPair: 'DAI',
   ordersList: [],
+  orderStep: 1,
+  isOrderSuccess: false,
+  maximumPayable: 0,
   tableHeaderColumn: [
     {
       title: 'Pay',
@@ -37,10 +40,18 @@ export const initTraceState = {
   ],
 }
 
-const tradeReducer = (state = initTraceState, action: { type: string; payload: Object }) => {
+const tradeReducer = (state = initTraceState, action: { type: string; payload: any }) => {
   switch (action.type) {
     case SELECTED_TRADE:
-      return action.payload
+      return {
+        ...state,
+        currentPair: action.payload?.currentPair,
+      }
+    case TRACEORDER_STEP:
+      return {
+        ...state,
+        orderStep: action.payload?.orderStep,
+      }
     default:
       return state
   }

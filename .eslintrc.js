@@ -92,12 +92,7 @@ module.exports = {
         exceptions: [''],
       },
     ],
-    'no-console': [
-      'error',
-      {
-        allow: ['info', 'error'],
-      },
-    ],
+    'no-console': 0,
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     camelcase: [

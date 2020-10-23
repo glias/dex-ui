@@ -43,6 +43,9 @@ declare namespace State {
     currentPair: string
     ordersList: Array<object>
     tableHeaderColumn: Array<object>
+    orderStep: number
+    isOrderSuccess: boolean
+    maximumPayable: number
   }
 
   interface CounterState {

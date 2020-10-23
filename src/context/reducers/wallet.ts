@@ -1,4 +1,4 @@
-import { SELECTED_TRADE } from '../actions/types'
+import { SELECTED_TRADE, CONNECT_WALLET } from '../actions/types'
 
 export const initWallet = {
   walletConnectStatus: 'unstart',
@@ -6,10 +6,15 @@ export const initWallet = {
   currentSelectedAddress: '',
 }
 
-const tradeReducer = (state = initWallet, action: { type: string; payload: Object }) => {
+const tradeReducer = (state = initWallet, action: { type: string; payload: any }) => {
   switch (action.type) {
     case SELECTED_TRADE:
       return action.payload
+    case CONNECT_WALLET:
+      return {
+        ...state,
+        walletConnectStatus: action.payload?.walletConnectStatus,
+      }
     default:
       return state
   }
