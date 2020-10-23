@@ -80,7 +80,6 @@ export const PayMeta = styled.div`
   }
 `
 
-
 export const PairBox = styled.div`
   font-size: 16px;
   display: flex;

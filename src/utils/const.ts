@@ -47,5 +47,5 @@ export const PairList = [
   {
     name: 'USDT(REC20)',
     logo: bitcoin,
-  }
+  },
 ]

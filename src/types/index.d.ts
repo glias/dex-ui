@@ -35,7 +35,7 @@ declare namespace State {
 
   interface WalletState {
     walletConnectStatus: 'unstart' | 'padding' | 'success' | 'failed' // 钱包连接状态
-    addressList: String[], // 所有钱包地址
+    addressList: String[] // 所有钱包地址
     currentSelectedAddress: string // 当前选中的地址
   }
 
