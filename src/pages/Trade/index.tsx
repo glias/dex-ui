@@ -13,8 +13,6 @@ const { Content } = Layout
 const Trade = () => {
   const orderStep = useSelector(({ trace }: { trace: traceState }) => trace.orderStep)
 
-  console.log(orderStep)
-
   const traceNavigation = () => {
     switch (orderStep) {
       case 1:

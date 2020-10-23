@@ -39,43 +39,48 @@ const TradePairOrder = () => {
   }
 
   // eslint-disable-next-line consistent-return
-  const checkPay = (rule, value = 0) => {
-    if (value <= 0) {
-      setDisabled(true)
-      // eslint-disable-next-line prefer-promise-reject-errors
-      return Promise.reject('Pay must be greater than zero!')
-    }
-    if (value <= 0.01) {
-      setDisabled(true)
-      // eslint-disable-next-line prefer-promise-reject-errors
-      return Promise.reject('Order too small')
-    }
-    if (value > maximumPayable) {
-      setDisabled(true)
-      // eslint-disable-next-line prefer-promise-reject-errors
-      return Promise.reject('unsuffcient balance')
+  const checkPay = (rule: any, value = 0) => {
+    if (rule.field === 'pay') {
+      if (value <= 0) {
+        setDisabled(true)
+        // eslint-disable-next-line prefer-promise-reject-errors
+        return Promise.reject('Pay must be greater than zero!')
+      }
+      if (value <= 0.01) {
+        setDisabled(true)
+        // eslint-disable-next-line prefer-promise-reject-errors
+        return Promise.reject('Order too small')
+      }
+      if (value > maximumPayable) {
+        setDisabled(true)
+        // eslint-disable-next-line prefer-promise-reject-errors
+        return Promise.reject('unsuffcient balance')
+      }
     }
     setDisabled(false)
     return Promise.resolve()
   }
 
   // eslint-disable-next-line consistent-return
-  const checkPrice = (rule, value = 0) => {
-    if (value <= 0) {
-      setDisabled(true)
-      // eslint-disable-next-line prefer-promise-reject-errors
-      return Promise.reject('Price must be greater than zero!')
+  const checkPrice = (rule: any, value = 0) => {
+    if (rule.field === 'price') {
+      if (value <= 0) {
+        setDisabled(true)
+        // eslint-disable-next-line prefer-promise-reject-errors
+        return Promise.reject('Price must be greater than zero!')
+      }
+      if (value <= 0.01) {
+        setDisabled(true)
+        // eslint-disable-next-line prefer-promise-reject-errors
+        return Promise.reject('Order too small')
+      }
+      if (value > maximumPayable) {
+        setDisabled(true)
+        // eslint-disable-next-line prefer-promise-reject-errors
+        return Promise.reject('unsuffcient balance')
+      }
     }
-    if (value <= 0.01) {
-      setDisabled(true)
-      // eslint-disable-next-line prefer-promise-reject-errors
-      return Promise.reject('Order too small')
-    }
-    if (value > maximumPayable) {
-      setDisabled(true)
-      // eslint-disable-next-line prefer-promise-reject-errors
-      return Promise.reject('unsuffcient balance')
-    }
+
     setDisabled(false)
     return Promise.resolve()
   }
@@ -149,6 +154,7 @@ const TradePairOrder = () => {
             rules={[
               {
                 validator: checkPay,
+                len: 8,
               },
             ]}
           >
@@ -175,6 +181,7 @@ const TradePairOrder = () => {
             rules={[
               {
                 validator: checkPrice,
+                len: 12,
               },
             ]}
           >

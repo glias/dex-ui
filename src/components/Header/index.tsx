@@ -13,7 +13,6 @@ const HeaderContainer = () => {
   const walletConnectStatus = useSelector(({ wallet }: { wallet: walletState }) => wallet.walletConnectStatus)
   const currentSelectedAddress = useSelector(({ wallet }: { wallet: walletState }) => wallet.currentSelectedAddress)
   const history = useHistory()
-
   const walletBalance = (
     <div className="popover-wallet-box">
       {/* <div className="wallet-list"></div> */}
