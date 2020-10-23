@@ -5,7 +5,7 @@
   "dependencies": {
     "@ant-design/icons": "4.2.2",
     "@ant-design/icons-react": "2.0.1",
-    "@lay2/pw-core": "^0.3.20-beta.0",
+    "@lay2/pw-core": "0.3.20-beta.0",
     "@toruslabs/torus-embed": "^1.8.6",
     "@types/react-redux": "7.1.9",
     "@types/redux": "3.6.0",
