@@ -10,13 +10,12 @@ import { TradePage, TradeContent } from './styled'
 const { Content } = Layout
 
 const Trade = () => {
-  const currentPair = useSelector(state => state.trace.currentPair)
   const orderStep = useSelector(state => state.trace.orderStep)
 
   const traceNavigation = () => {
     switch (orderStep) {
       case 1:
-        return <TradePairOrder currentPair={currentPair} />
+        return <TradePairOrder />
       case 2:
         return <TradePairConfirm />
       default:

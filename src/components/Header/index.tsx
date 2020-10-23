@@ -14,6 +14,8 @@ const HeaderContainer = () => {
   const dispatch = useDispatch()
   const history = useHistory()
 
+  const openSideBar = () => {}
+
   const handleConnect = async () => {
     // connnect wallet...
     const web3Modal = new Web3Modal({
@@ -64,6 +66,9 @@ const HeaderContainer = () => {
         <HeaderMeta id="headerMeta">
           <Button className="collect-btn" onClick={() => handleConnect()}>
             {i18n.t('header.wallet')}
+          </Button>
+          <Button onClick={() => openSideBar()}>
+            <i className="ai-ellipsis" />
           </Button>
         </HeaderMeta>
       </HeaderPanel>
