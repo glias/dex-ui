@@ -10,8 +10,8 @@ import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta } from '.
 
 const HeaderContainer = () => {
   const dispatch = useDispatch()
-  const walletConnectStatus = useSelector((state: walletState) => state.walletConnectStatus)
-  const currentSelectedAddress = useSelector((state: walletState) => state.currentSelectedAddress)
+  const walletConnectStatus = useSelector(({ wallet }: { wallet: walletState }) => wallet.walletConnectStatus)
+  const currentSelectedAddress = useSelector(({ wallet }: { wallet: walletState }) => wallet.currentSelectedAddress)
   const history = useHistory()
 
   const walletBalance = (

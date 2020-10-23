@@ -13,8 +13,8 @@ import { PairOrderFormBox, PairBox, PayMeta } from './styled'
 const TradePairOrder = () => {
   const [form] = Form.useForm()
   const { Option } = Select
-  const currentPair = useSelector((state: traceState) => state.currentPair)
-  const maximumPayable = useSelector((state: traceState) => state.maximumPayable)
+  const currentPair = useSelector(({ trace }: { trace: traceState }) => trace.currentPair)
+  const maximumPayable = useSelector(({ trace }: { trace: traceState }) => trace.maximumPayable)
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled, setDisabled] = useState(false)

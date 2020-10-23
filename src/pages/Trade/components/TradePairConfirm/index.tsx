@@ -13,7 +13,7 @@ import {
 } from './styled'
 
 export default () => {
-  const currentPair = useSelector((state: traceState) => state.currentPair)
+  const currentPair = useSelector(({ trace }: { trace: traceState }) => trace.currentPair)
   const dispatch = useDispatch()
 
   const handleClickConfirm = (step: number) => {

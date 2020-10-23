@@ -11,7 +11,9 @@ import { traceState } from '../../context/reducers/trace'
 const { Content } = Layout
 
 const Trade = () => {
-  const orderStep = useSelector((state: traceState) => state.orderStep)
+  const orderStep = useSelector(({ trace }: { trace: traceState }) => trace.orderStep)
+
+  console.log(orderStep)
 
   const traceNavigation = () => {
     switch (orderStep) {

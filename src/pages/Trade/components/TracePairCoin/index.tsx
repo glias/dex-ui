@@ -4,7 +4,7 @@ import { TracePairLine } from './styled'
 import { traceState } from '../../../../context/reducers/trace'
 
 const TracePairCoin = () => {
-  const currentPair = useSelector((state: traceState) => state.currentPair)
+  const currentPair = useSelector(({ trace }: { trace: traceState }) => trace.currentPair)
 
   return (
     <TracePairLine>
