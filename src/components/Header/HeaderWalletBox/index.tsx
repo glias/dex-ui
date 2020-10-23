@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react'
 import { Tooltip } from 'antd'
 import signOutpng from '../../../assets/img/signOut.png'
@@ -5,7 +6,7 @@ import copy from '../../../assets/img/copy.png'
 import questionMark from '../../../assets/img/questionMark_frame.png'
 import { HeaderWalletBox, HeaderWallet, WalletList } from './styled'
 
-export default () => {
+export default ({ disconnect }: { disconnect: () => void }) => {
   const truncatureStr = (str: string): string => {
     return `${str.slice(0, 10)}...${str.slice(-6)}`
   }
@@ -18,8 +19,8 @@ export default () => {
     <HeaderWalletBox>
       <HeaderWallet>Account</HeaderWallet>
       <div className="wallet-title">
-        <span>Wallet</span>
-        <img src={signOutpng} alt="signOut" />
+        <span>Test Wallet</span>
+        <img src={signOutpng} alt="signOut" onClick={disconnect} />
       </div>
       <WalletList>
         {walletList.map(address => (

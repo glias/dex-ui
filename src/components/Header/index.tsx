@@ -1,79 +1,101 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import PWCore, {
+  Web3ModalProvider,
+  // EthSigner,
+} from '@lay2/pw-core'
+import Web3 from 'web3'
+import Web3Modal from 'web3modal'
 import { useHistory } from 'react-router-dom'
-import { connect } from 'react-redux'
 import { Button, Popover, Menu, Badge } from 'antd'
-import popoverContent from './HeaderPopoverContent'
-import walletBox from './HeaderWalletBox'
+import WalletBox from './HeaderWalletBox'
 import i18n from '../../utils/i18n'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
+import { getChainData, getProviderOptions } from './chain'
 
-const mapStateToProps = (state: State.WalletState) => {
-  return {
-    ...state,
+const { SDCollector } = require('./sd-collector')
+
+export default () => {
+  const history = useHistory()
+
+  const [address, setAddress] = useState('')
+
+  const truncatureStr = (str: string): string => {
+    return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
   }
-}
 
-export default connect(mapStateToProps)(
-  ({
-    walletConnectStatus,
-    currentSelectedAddress,
-  }: {
-    walletConnectStatus: string
-    currentSelectedAddress: string
-  }) => {
-    const history = useHistory()
+  const web3Modal = useRef<Web3Modal | null>(null)
 
-    const truncatureStr = (str: string): string => {
-      return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
+  const connectWallet = async () => {
+    const provider = await web3Modal.current!.connect()
+    const web3 = new Web3(provider)
+    await new PWCore('https://aggron.ckb.dev').init(new Web3ModalProvider(web3), new SDCollector() as any)
+    setAddress(PWCore.provider.address.toCKBAddress())
+  }
+
+  const disconnectWallet = async () => {
+    await PWCore.provider.close()
+    await web3Modal.current!.clearCachedProvider()
+    setAddress('')
+  }
+
+  useEffect(() => {
+    web3Modal.current = new Web3Modal({
+      network: getChainData(1).network,
+      cacheProvider: true,
+      providerOptions: getProviderOptions(),
+    })
+
+    if (web3Modal.current.cachedProvider) {
+      connectWallet()
     }
+  }, [])
 
-    return (
-      <HeaderBox className="header-box">
-        <HeaderPanel>
-          <div className="panel-nav">
-            <HeaderLogoBox>CKB DEX</HeaderLogoBox>
-            <Menu mode="horizontal" onClick={e => history.push(`/${e.key}`)}>
-              <Menu.Item key="trade">
-                <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
-              </Menu.Item>
-              <Menu.Item key="pool">
-                <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
-              </Menu.Item>
-              <Menu.Item key="match">
-                <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
-              </Menu.Item>
-            </Menu>
-          </div>
-          <HeaderMeta id="headerMeta">
-            {walletConnectStatus !== 'success' ? (
-              <Popover placement="bottomRight" trigger="click" content={popoverContent}>
-                <Button className="collect-btn">{i18n.t('header.wallet')}</Button>
+  return (
+    <HeaderBox className="header-box">
+      <HeaderPanel>
+        <div className="panel-nav">
+          <HeaderLogoBox>CKB DEX</HeaderLogoBox>
+          <Menu mode="horizontal" onClick={e => history.push(`/${e.key}`)}>
+            <Menu.Item key="trade">
+              <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
+            </Menu.Item>
+            <Menu.Item key="pool">
+              <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
+            </Menu.Item>
+            <Menu.Item key="match">
+              <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
+            </Menu.Item>
+          </Menu>
+        </div>
+        <HeaderMeta id="headerMeta">
+          {address === '' ? (
+            <Button className="collect-btn" onClick={connectWallet}>
+              {i18n.t('header.wallet')}
+            </Button>
+          ) : (
+            <>
+              <UserMeta>
+                <img src={MetaMaskpng} alt="metaMask" />
+                {truncatureStr(address)}
+              </UserMeta>
+              <Popover
+                placement="bottomRight"
+                title=""
+                overlayClassName="no-arrorPoint"
+                trigger="click"
+                content={<WalletBox disconnect={disconnectWallet} />}
+              >
+                <Badge count="">
+                  <img src={outlined} alt="account" className="account-btn" />
+                  {/* <Button className="account-btn" icon={ <AlignCenterOutlined /> }></Button> */}
+                </Badge>
               </Popover>
-            ) : (
-              <>
-                <UserMeta>
-                  <img src={MetaMaskpng} alt="metaMask" />
-                  {truncatureStr(currentSelectedAddress)}
-                </UserMeta>
-                <Popover
-                  placement="bottomRight"
-                  title=""
-                  overlayClassName="no-arrorPoint"
-                  trigger="click"
-                  content={walletBox}
-                >
-                  <Badge count="">
-                    <img src={outlined} alt="account" className="account-btn" />
-                    {/* <Button className="account-btn" icon={ <AlignCenterOutlined /> }></Button> */}
-                  </Badge>
-                </Popover>
-              </>
-            )}
-          </HeaderMeta>
-        </HeaderPanel>
-      </HeaderBox>
-    )
-  },
-)
+            </>
+          )}
+        </HeaderMeta>
+      </HeaderPanel>
+    </HeaderBox>
+  )
+}
