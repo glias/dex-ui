@@ -12,7 +12,7 @@ export interface walletState {
   currentSelectedAddress: string
 }
 
-const tradeReducer = (state: walletState = initWallet, action: State.actionType) => {
+const tradeReducer = (state = initWallet, action: State.actionType) => {
   switch (action.type) {
     case SELECTED_TRADE:
       return action.payload

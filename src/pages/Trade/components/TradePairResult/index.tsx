@@ -10,7 +10,7 @@ import { OrderButton, TracePairResultBox, TradePairConfirmHeader, TradePairConfi
 
 export default () => {
   const dispatch = useDispatch()
-  const isOrderSuccess = useSelector((state: traceState) => state.isOrderSuccess)
+  const isOrderSuccess = useSelector(({ trace }: { trace: traceState }) => trace.isOrderSuccess)
   const tradeResultStr = isOrderSuccess ? i18n.t(`trade.TradeSuccess`) : i18n.t(`trade.TradeFailed`)
   const handleClickSubmit = () => {
     dispatch({
