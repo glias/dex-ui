@@ -8,6 +8,7 @@ import './utils/i18n'
 import { Provider } from 'react-redux'
 import Routers from './routes'
 import store from './context/store'
+import { WalletContainer } from './context/containers/wallet'
 
 const AppDiv = styled.div`
   width: 100%;
@@ -16,9 +17,11 @@ const AppDiv = styled.div`
 
 ReactDOM.render(
   <Provider store={store}>
-    <AppDiv>
-      <Routers />
-    </AppDiv>
+    <WalletContainer.Provider>
+      <AppDiv>
+        <Routers />
+      </AppDiv>
+    </WalletContainer.Provider>
   </Provider>,
   document.getElementById('root'),
 )

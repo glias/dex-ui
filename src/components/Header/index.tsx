@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef } from 'react'
 import PWCore, {
   Web3ModalProvider,
   // EthSigner,
 } from '@lay2/pw-core'
 import Web3 from 'web3'
+import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
 import { useHistory } from 'react-router-dom'
 import { Button, Popover, Menu, Badge } from 'antd'
@@ -13,14 +14,17 @@ import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
 import { getChainData, getProviderOptions } from './chain'
+import WalletContainer from '../../context/containers/wallet'
+import { useDidMount } from '../../hooks'
 
 const { SDCollector } = require('./sd-collector')
 
 export default () => {
   const history = useHistory()
-
-  const [ckbAddress, setCkbAddress] = useState('')
-  const [ethAddress, setEthAddress] = useState('')
+  const Wallet = useContainer(WalletContainer)
+  const { ckbWallet, ethWallet } = Wallet
+  const ckbAddress = ckbWallet.address
+  const ethAddress = ethWallet.address
 
   const truncatureStr = (str: string): string => {
     return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
@@ -32,21 +36,23 @@ export default () => {
     const provider = await web3Modal.current!.connect()
     const web3 = new Web3(provider)
     // eslint-disable-next-line no-debugger
-    await new PWCore('https://aggron.ckb.dev').init(new Web3ModalProvider(web3), new SDCollector() as any)
+    const pw = await new PWCore('https://aggron.ckb.dev').init(new Web3ModalProvider(web3), new SDCollector() as any)
     const [address] = await web3.eth.getAccounts()
     // eslint-disable-next-line no-console
-    setEthAddress(address.toLowerCase())
-    setCkbAddress(PWCore.provider.address.toCKBAddress())
+    Wallet.setEthAddress(address.toLowerCase())
+    Wallet.setCkbAddress(PWCore.provider.address.toCKBAddress())
+    Wallet.setWeb3(web3)
+    Wallet.setPw(pw)
   }
 
   const disconnectWallet = async () => {
     await PWCore.provider.close()
     await web3Modal.current!.clearCachedProvider()
-    setCkbAddress('')
-    setEthAddress('')
+    Wallet.setCkbAddress('')
+    Wallet.setEthAddress('')
   }
 
-  useEffect(() => {
+  useDidMount(() => {
     web3Modal.current = new Web3Modal({
       network: getChainData(1).network,
       cacheProvider: true,
@@ -56,7 +62,7 @@ export default () => {
     if (web3Modal.current.cachedProvider) {
       connectWallet()
     }
-  }, [])
+  })
 
   return (
     <HeaderBox className="header-box">
