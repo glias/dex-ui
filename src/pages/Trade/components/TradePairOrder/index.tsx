@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
 import { PairList } from '../../../../utils/const'
-import { TradeCoinBox } from '../PairBox'
+import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'

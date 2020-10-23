@@ -31,3 +31,5 @@ export const PairBox = styled.div`
     }
   }
 `
+
+export default PairBox
