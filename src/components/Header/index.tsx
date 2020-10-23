@@ -1,47 +1,36 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import { Button, Menu } from 'antd'
+import { useDispatch, useSelector } from 'react-redux'
+import { Button, Menu, Popover } from 'antd'
 import { useHistory } from 'react-router-dom'
-import Web3 from 'web3'
-import Web3Modal from 'web3modal'
-import WalletConnectProvider from '@walletconnect/web3-provider'
-
 import { CONNECT_WALLET } from '../../context/actions/types'
+import metamask from '../../assets/img/wallet/metamask.png'
 import i18n from '../../utils/i18n'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta } from './styled'
 
 const HeaderContainer = () => {
   const dispatch = useDispatch()
+  const walletConnectStatus = useSelector(state => state.wallet.walletConnectStatus)
+  const currentSelectedAddress = useSelector(state => state.wallet.currentSelectedAddress)
   const history = useHistory()
 
+  const walletBalance = (
+    <div className="popover-wallet-box">
+      {/* <div className="wallet-list"></div> */}
+      <div className="balances">
+        <h4>Balances</h4>
+        <ul>
+          <li>CKB</li>
+        </ul>
+      </div>
+    </div>
+  )
   const openSideBar = () => {}
 
-  const handleConnect = async () => {
-    // connnect wallet...
-    const web3Modal = new Web3Modal({
-      network: 'mainnet', // optional
-      cacheProvider: true, // optional
-      providerOptions: {
-        walletconnect: {
-          package: WalletConnectProvider, // required
-          options: {
-            infuraId: 'INFURA_ID', // required
-          },
-        },
-      },
-    })
-
-    const provider = await web3Modal.connect()
-
-    // todoing...
-    const web3 = new Web3(provider)
-
-    console.log(web3)
-
+  const handleConnect = () => {
     dispatch({
       type: CONNECT_WALLET,
       payload: {
-        walletConnectStatus: 'pedding',
+        walletConnectStatus: 'success',
       },
     })
   }
@@ -63,11 +52,41 @@ const HeaderContainer = () => {
             </Menu.Item>
           </Menu>
         </div>
-        <HeaderMeta id="headerMeta">
-          <Button className="collect-btn" onClick={() => handleConnect()}>
-            {i18n.t('header.wallet')}
-          </Button>
-          <Button onClick={() => openSideBar()}>
+        <HeaderMeta id="header-meta">
+          {!walletConnectStatus ? (
+            <Button
+              className="collect-btn"
+              onClick={() => handleConnect()}
+              style={{
+                borderRadius: '10px',
+              }}
+            >
+              {i18n.t('header.wallet')}
+            </Button>
+          ) : (
+            <span className="wallet-box">
+              <img src={metamask} alt="wallet type" />
+              <span>{currentSelectedAddress}</span>
+              <Popover
+                placement="bottomRight"
+                title=""
+                content={walletBalance}
+                trigger="click"
+                getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
+              >
+                <Button size="middle">
+                  <i className="ai-bars" />
+                </Button>
+              </Popover>
+            </span>
+          )}
+          <Button
+            onClick={() => openSideBar()}
+            type="primary"
+            style={{
+              borderRadius: '10px',
+            }}
+          >
             <i className="ai-ellipsis" />
           </Button>
         </HeaderMeta>

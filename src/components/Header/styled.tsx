@@ -61,6 +61,9 @@ export const UserMeta = styled.div`
 `
 
 export const HeaderMeta = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   .collect-btn {
     color: #fff;
     background-color: #006a97;
@@ -73,5 +76,17 @@ export const HeaderMeta = styled.div`
     display: inline-block;
     margin-left: 10px;
     cursor: pointer;
+  }
+  .wallet-box {
+    font-size: 13px;
+    img {
+      width: 25px;
+      margin-right: 10px;
+    }
+    button {
+      border-color: rgba(0, 106, 151, 1);
+      border-redius: 10px;
+      margin: 0 10px;
+    }
   }
 `
