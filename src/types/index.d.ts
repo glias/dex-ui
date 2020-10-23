@@ -33,6 +33,11 @@ declare namespace State {
     walletState: WalletState
   }
 
+  export interface actionType {
+    type: string
+    payload: any
+  }
+
   interface WalletState {
     walletConnectStatus: 'unstart' | 'success' | 'failed' // 钱包连接状态
     addressList: String[] // 所有钱包地址

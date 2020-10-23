@@ -6,7 +6,13 @@ export const initWallet = {
   currentSelectedAddress: '0x7e8svdger98sd9sdu89fsd89ds89d290e1',
 }
 
-const tradeReducer = (state = initWallet, action: { type: string; payload: any }) => {
+export interface walletState {
+  walletConnectStatus: string
+  addressList: string[]
+  currentSelectedAddress: string
+}
+
+const tradeReducer = (state: walletState, action: State.actionType) => {
   switch (action.type) {
     case SELECTED_TRADE:
       return action.payload

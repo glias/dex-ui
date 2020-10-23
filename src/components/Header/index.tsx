@@ -2,6 +2,7 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Button, Menu, Popover } from 'antd'
 import { useHistory } from 'react-router-dom'
+import { walletState } from '../../context/reducers/wallet'
 import { CONNECT_WALLET } from '../../context/actions/types'
 import metamask from '../../assets/img/wallet/metamask.png'
 import i18n from '../../utils/i18n'
@@ -9,8 +10,8 @@ import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta } from '.
 
 const HeaderContainer = () => {
   const dispatch = useDispatch()
-  const walletConnectStatus = useSelector(state => state.wallet.walletConnectStatus)
-  const currentSelectedAddress = useSelector(state => state.wallet.currentSelectedAddress)
+  const walletConnectStatus = useSelector((state: walletState) => state.walletConnectStatus)
+  const currentSelectedAddress = useSelector((state: walletState) => state.currentSelectedAddress)
   const history = useHistory()
 
   const walletBalance = (

@@ -5,11 +5,12 @@ import { TRACEORDER_STEP } from '../../../../context/actions/types'
 import i18n from '../../../../utils/i18n'
 import orderPlace from '../../../../assets/img/orderPlaced.png'
 import declined from '../../../../assets/img/declined.png'
+import { traceState } from '../../../../context/reducers/trace'
 import { OrderButton, TracePairResultBox, TradePairConfirmHeader, TradePairConfirmContent } from './styled'
 
 export default () => {
   const dispatch = useDispatch()
-  const isOrderSuccess = useSelector(state => state.trace.isOrderSuccess)
+  const isOrderSuccess = useSelector((state: traceState) => state.isOrderSuccess)
   const tradeResultStr = isOrderSuccess ? i18n.t(`trade.TradeSuccess`) : i18n.t(`trade.TradeFailed`)
   const handleClickSubmit = () => {
     dispatch({

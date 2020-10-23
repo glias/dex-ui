@@ -7,13 +7,15 @@ import { SELECTED_TRADE, TRACEORDER_STEP } from '../../../../context/actions/typ
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
+import { traceState } from '../../../../context/reducers/trace'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
+
 
 const TradePairOrder = () => {
   const [form] = Form.useForm()
   const { Option } = Select
-  const currentPair = useSelector(state => state.trace.currentPair)
-  const maximumPayable = useSelector(state => state.trace.maximumPayable)
+  const currentPair = useSelector((state: traceState) => state.currentPair)
+  const maximumPayable = useSelector((state: traceState) => state.maximumPayable)
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled, setDisabled] = useState(false)

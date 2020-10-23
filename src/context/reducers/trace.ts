@@ -1,5 +1,14 @@
 import { SELECTED_TRADE, TRACEORDER_STEP } from '../actions/types'
 
+export interface traceState {
+  currentPair: string
+  ordersList: string[]
+  orderStep: number
+  isOrderSuccess: boolean
+  maximumPayable: number
+  tableHeaderColumn: Array<object>
+}
+
 export const initTraceState = {
   currentPair: 'DAI',
   ordersList: [],
@@ -40,7 +49,7 @@ export const initTraceState = {
   ],
 }
 
-const tradeReducer = (state = initTraceState, action: { type: string; payload: any }) => {
+const tradeReducer = (state: traceState, action: State.actionType) => {
   switch (action.type) {
     case SELECTED_TRADE:
       return {

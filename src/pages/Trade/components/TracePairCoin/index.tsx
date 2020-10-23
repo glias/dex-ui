@@ -1,9 +1,10 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { TracePairLine } from './styled'
+import { traceState } from '../../../../context/reducers/trace'
 
 const TracePairCoin = () => {
-  const currentPair = useSelector(state => state.trace.currentPair)
+  const currentPair = useSelector((state: traceState) => state.currentPair)
 
   return (
     <TracePairLine>
