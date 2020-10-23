@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
 import { PairList } from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
@@ -11,6 +11,15 @@ export default ({ currentPair }: { currentPair: String }) => {
   const { Option } = Select
   const [pair, setPair] = useState(currentPair)
   const changePair = (value: String) => setPair(value)
+  const [price, priceOnChange] = useState('')
+  const [pay, payOnChange] = useState('')
+  const receive = useMemo(() => {
+    if (price && pay) {
+      return (parseFloat(price) * parseFloat(pay)).toFixed(2)
+    }
+
+    return '0.00'
+  }, [price, pay])
 
   const onFinish = () => {
     form.setFieldsValue({
@@ -103,6 +112,11 @@ export default ({ currentPair }: { currentPair: String }) => {
                 color: 'rgba(81, 119, 136, 1)',
                 width: '100%',
               }}
+              type="number"
+              value={pay}
+              onChange={e => {
+                payOnChange(e.target.value)
+              }}
             />
           </Form.Item>
         </Form.Item>
@@ -124,9 +138,14 @@ export default ({ currentPair }: { currentPair: String }) => {
           >
             <Input
               placeholder="0.0"
-              suffix={`${pair} per DAI`}
+              suffix="CKB per DAI"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
+              }}
+              type="number"
+              value={price}
+              onChange={e => {
+                priceOnChange(e.target.value)
               }}
             />
           </Form.Item>
@@ -140,9 +159,9 @@ export default ({ currentPair }: { currentPair: String }) => {
         >
           <i className="ai-caret-down" />
         </Form.Item>
-        <Form.Item label="Receiver" name="receiver">
+        <Form.Item label="Receive" name="receiver">
           <div className="receiver-box">
-            <span className="receiver-ckb">0.0</span>
+            <span className="receiver-ckb">{receive}</span>
             <span>CKB</span>
           </div>
         </Form.Item>
