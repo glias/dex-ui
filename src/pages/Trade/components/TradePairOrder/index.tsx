@@ -117,6 +117,7 @@ export default ({ currentPair }: { currentPair: String }) => {
               onChange={e => {
                 payOnChange(e.target.value)
               }}
+              min={0}
             />
           </Form.Item>
         </Form.Item>
@@ -147,6 +148,7 @@ export default ({ currentPair }: { currentPair: String }) => {
               onChange={e => {
                 priceOnChange(e.target.value)
               }}
+              min={0}
             />
           </Form.Item>
         </Form.Item>

@@ -19,7 +19,8 @@ const { SDCollector } = require('./sd-collector')
 export default () => {
   const history = useHistory()
 
-  const [address, setAddress] = useState('')
+  const [ckbAddress, setCkbAddress] = useState('')
+  const [ethAddress, setEthAddress] = useState('')
 
   const truncatureStr = (str: string): string => {
     return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
@@ -30,14 +31,19 @@ export default () => {
   const connectWallet = async () => {
     const provider = await web3Modal.current!.connect()
     const web3 = new Web3(provider)
+    // eslint-disable-next-line no-debugger
     await new PWCore('https://aggron.ckb.dev').init(new Web3ModalProvider(web3), new SDCollector() as any)
-    setAddress(PWCore.provider.address.toCKBAddress())
+    const [address] = await web3.eth.getAccounts()
+    // eslint-disable-next-line no-console
+    setEthAddress(address.toLowerCase())
+    setCkbAddress(PWCore.provider.address.toCKBAddress())
   }
 
   const disconnectWallet = async () => {
     await PWCore.provider.close()
     await web3Modal.current!.clearCachedProvider()
-    setAddress('')
+    setCkbAddress('')
+    setEthAddress('')
   }
 
   useEffect(() => {
@@ -70,7 +76,7 @@ export default () => {
           </Menu>
         </div>
         <HeaderMeta id="headerMeta">
-          {address === '' ? (
+          {ckbAddress === '' ? (
             <Button className="collect-btn" onClick={connectWallet}>
               {i18n.t('header.wallet')}
             </Button>
@@ -78,14 +84,14 @@ export default () => {
             <>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
-                {truncatureStr(address)}
+                {truncatureStr(ckbAddress)}
               </UserMeta>
               <Popover
                 placement="bottomRight"
                 title=""
                 overlayClassName="no-arrorPoint"
                 trigger="click"
-                content={<WalletBox disconnect={disconnectWallet} />}
+                content={<WalletBox disconnect={disconnectWallet} addresses={[ckbAddress, ethAddress]} />}
               >
                 <Badge count="">
                   <img src={outlined} alt="account" className="account-btn" />
