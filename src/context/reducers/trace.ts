@@ -49,7 +49,7 @@ export const initTraceState = {
   ],
 }
 
-const tradeReducer = (state: traceState, action: State.actionType) => {
+const tradeReducer = (state: traceState = initTraceState, action: State.actionType) => {
   switch (action.type) {
     case SELECTED_TRADE:
       return {

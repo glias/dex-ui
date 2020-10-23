@@ -10,7 +10,6 @@ import TracePairCoin from '../TracePairCoin'
 import { traceState } from '../../../../context/reducers/trace'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
 
-
 const TradePairOrder = () => {
   const [form] = Form.useForm()
   const { Option } = Select
