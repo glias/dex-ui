@@ -3,6 +3,7 @@ import { Button } from 'antd'
 import { useContainer } from 'unstated-next'
 import { useSelector } from 'react-redux'
 import i18n from '../../../../utils/i18n'
+
 import orderPlace from '../../../../assets/img/orderPlaced.png'
 import declined from '../../../../assets/img/declined.png'
 import { OrderButton, TracePairResultBox, TradePairConfirmHeader, TradePairConfirmContent } from './styled'
