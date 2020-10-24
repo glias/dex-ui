@@ -1,14 +1,18 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react'
-import { useSelector } from 'react-redux'
+import { useContainer } from 'unstated-next'
+import OrderContainer from '../../../../containers/order'
 import { TracePairLine } from './styled'
 
 const TracePairCoin = () => {
-  const currentPair = useSelector((state: any) => state.trace.currentPair)
+  const Order = useContainer(OrderContainer)
+  const [buyer, seller] = Order.pair
 
   return (
     <TracePairLine>
-      <span>{currentPair}</span>
-      <span>
+      <span>{buyer}</span>
+      <span onClick={() => Order.togglePair()}>
         <i
           className="ai-right-circle"
           style={{
@@ -16,7 +20,7 @@ const TracePairCoin = () => {
           }}
         />
       </span>
-      <span>CKB</span>
+      <span>{seller}</span>
     </TracePairLine>
   )
 }

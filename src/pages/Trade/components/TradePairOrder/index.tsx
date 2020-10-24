@@ -16,11 +16,11 @@ const TradePairOrder = () => {
   const { Option } = Select
   const Order = useContainer(OrderContainer)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
-  const currentPair = 'dai'
   const maximumPayable = 0
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled] = useState(false)
+  const [buyer, seller] = Order.pair
 
   const changePair = (value: any) => {
     dispatch({
@@ -81,7 +81,7 @@ const TradePairOrder = () => {
     <PairOrderFormBox>
       <div className="trace-form-select" id="trace-form-select">
         <Select
-          defaultValue={currentPair}
+          defaultValue="DAI"
           style={{
             width: '100%',
           }}
@@ -151,7 +151,7 @@ const TradePairOrder = () => {
           >
             <Input
               placeholder="0.0"
-              suffix="DAI"
+              suffix={buyer}
               type="number"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
@@ -182,7 +182,7 @@ const TradePairOrder = () => {
           >
             <Input
               placeholder="0.0"
-              suffix="CKB per DAI"
+              suffix={`${seller} per ${buyer}`}
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
@@ -207,7 +207,7 @@ const TradePairOrder = () => {
         <Form.Item label="Receive" name="receiver">
           <div className="receiver-box">
             <span className="receiver-ckb">{receive}</span>
-            <span>CKB</span>
+            <span>{seller}</span>
           </div>
         </Form.Item>
         <div className="dividing-line" />

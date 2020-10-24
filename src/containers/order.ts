@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { createContainer } from 'unstated-next'
 
 // eslint-disable-next-line no-shadow
@@ -8,11 +8,32 @@ export enum OrderStep {
   Result,
 }
 
+// eslint-disable-next-line no-shadow
+export enum OrderType {
+  Buy,
+  Sell,
+}
+
 export function useOrder() {
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
   const [txHash, setTxHash] = useState('')
+  const [orderType, setOrderType] = useState(OrderType.Buy)
+  const buyPair = ['DAI', 'CKB']
+  const sellPair = ['CKB', 'DAI']
+
+  const [pair, setPair] = useState(buyPair)
+
+  const togglePair = useCallback(() => {
+    if (orderType === OrderType.Buy) {
+      setPair(sellPair)
+      setOrderType(OrderType.Sell)
+    } else {
+      setPair(buyPair)
+      setOrderType(OrderType.Buy)
+    }
+  }, [orderType, sellPair, buyPair])
 
   const receive = useMemo(() => {
     if (price && pay) {
@@ -38,6 +59,10 @@ export function useOrder() {
     reset,
     txHash,
     setTxHash,
+    orderType,
+    setOrderType,
+    togglePair,
+    pair,
   }
 }
 
