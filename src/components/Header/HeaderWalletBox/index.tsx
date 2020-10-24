@@ -47,7 +47,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
 
   const [clipboardTooltip, setClipboardTooltip] = useState(copyToClipboard)
 
-  const validityText = value => (value >= 0 ? value : '--')
+  const validityText = (value: number) => (value >= 0 ? value : '--')
 
   const walletFlexBox = (item: any) => {
     console.log(item)
