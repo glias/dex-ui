@@ -4,7 +4,8 @@
       "Trade": "兑换",
       "Pool": "提供流动性",
       "Match": "撮合挖矿",
-      "wallet": "钱包"
+      "wallet": "钱包",
+      "addressTooltip": "A transit address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
     },
     "trade": {
       "pair": "Pair",
