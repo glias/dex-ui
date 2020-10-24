@@ -20,7 +20,7 @@ export const HeaderNavgationLists = [
     path: '/match',
   },
 ]
-export const TraceTableList = ['All', 'Pedding', 'Opening', 'Complete', 'Claimed', 'Aborted']
+export const TraceTableList = ['All', 'Pending', 'Opening', 'Complete', 'Claimed', 'Aborted']
 
 export const ConnectLists = [
   {

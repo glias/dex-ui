@@ -1,5 +1,5 @@
 import PWCore, { Amount } from '@lay2/pw-core'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { createContainer } from 'unstated-next'
 import Web3 from 'web3'
 
@@ -26,6 +26,7 @@ export function useWallet() {
     balance: Amount.ZERO,
     address: '',
   })
+
   const setEthBalance = (balance: Amount) => {
     setEthWallet({
       ...ethWallet,
@@ -54,6 +55,27 @@ export function useWallet() {
     })
   }
 
+  const reloadCkbWallet = useCallback(async (address: string) => {
+    const balance = await PWCore.defaultCollector.getBalance(PWCore.provider.address)
+    const filledCells = await PWCore.defaultCollector.collect(PWCore.provider.address, {
+      withData: true,
+    } as any)
+    const emptyCells = await PWCore.defaultCollector.collect(PWCore.provider.address, {
+      withData: false,
+    } as any)
+
+    const inuse = filledCells.length ? filledCells.map(c => c.capacity).reduce((sum, cap) => sum.add(cap)) : Amount.ZERO
+    const free = emptyCells.length ? emptyCells.map(c => c.capacity).reduce((sum, cap) => sum.add(cap)) : Amount.ZERO
+
+    // eslint-disable-next-line no-debugger
+    setCkbWallet({
+      balance,
+      inuse,
+      free,
+      address,
+    })
+  }, [])
+
   return {
     pw,
     web3,
@@ -66,6 +88,7 @@ export function useWallet() {
     setCkbBalance,
     setEthAddress,
     setCkbAddress,
+    reloadCkbWallet,
   }
 }
 

@@ -33,25 +33,6 @@ export default () => {
 
   const web3Modal = useRef<Web3Modal | null>(null)
 
-  async function getCkbWalletSummary() {
-    const balance = await PWCore.defaultCollector.getBalance(PWCore.provider.address)
-    const filledCells = await PWCore.defaultCollector.collect(PWCore.provider.address, {
-      withData: true,
-    } as any)
-    const emptyCells = await PWCore.defaultCollector.collect(PWCore.provider.address, {
-      withData: false,
-    } as any)
-
-    const inuse = filledCells.length ? filledCells.map(c => c.capacity).reduce((sum, cap) => sum.add(cap)) : Amount.ZERO
-    const free = emptyCells.length ? emptyCells.map(c => c.capacity).reduce((sum, cap) => sum.add(cap)) : Amount.ZERO
-
-    return {
-      balance,
-      inuse,
-      free,
-    }
-  }
-
   const connectWallet = async () => {
     const provider = await web3Modal.current!.connect()
     const web3 = new Web3(provider)
@@ -62,11 +43,8 @@ export default () => {
     // eslint-disable-next-line no-console
     Wallet.setWeb3(web3)
     Wallet.setPw(pw)
-    const summary = await getCkbWalletSummary()
-    Wallet.setCkbWallet({
-      ...summary,
-      address: ckbAddr,
-    })
+
+    await Wallet.reloadCkbWallet(ckbAddr)
     const ethBalance = await web3.eth.getBalance(ethAddr)
     Wallet.setEthBalance(new Amount(ethBalance))
     Wallet.setEthAddress(ethAddr.toLowerCase())

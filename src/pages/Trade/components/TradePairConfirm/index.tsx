@@ -25,12 +25,11 @@ export default function TradePairConfirm() {
       new Amount('400'),
       '0x0000000000000000000000000000000000286bee00000000000000000000000000743ba40b00000000',
     )
-
     const txHash = await Wallet.pw?.sendTransaction(builder)
     if (txHash) {
       Order.setTxHash(txHash)
+      Order.setStep(OrderStep.Result)
     }
-    Order.setStep(OrderStep.Result)
   }
 
   return (
