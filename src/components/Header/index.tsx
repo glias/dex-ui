@@ -104,7 +104,7 @@ const Header = () => {
               {i18n.t('header.wallet')}
             </Button>
           ) : (
-            <>
+            <div>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
                 {truncatureStr(ckbAddress)}
@@ -121,7 +121,7 @@ const Header = () => {
                   {/* <Button className="account-btn" icon={ <AlignCenterOutlined /> }></Button> */}
                 </Badge>
               </Popover>
-            </>
+            </div>
           )}
           <Popover
             placement="bottomRight"
