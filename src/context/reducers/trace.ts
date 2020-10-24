@@ -49,7 +49,7 @@ export const initTraceState = {
       key: 'price',
     },
     {
-      title: 'Statue',
+      title: 'Status',
       dataIndex: 'status',
       key: 'status',
     },

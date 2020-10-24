@@ -23,6 +23,7 @@ const { SDCollector } = require('./sd-collector')
 export default () => {
   const history = useHistory()
   const Wallet = useContainer(WalletContainer)
+
   const { ckbWallet, ethWallet } = Wallet
   const ckbAddress = ckbWallet.address
   const ethAddress = ethWallet.address

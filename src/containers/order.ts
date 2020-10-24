@@ -22,6 +22,14 @@ export function useOrder() {
   const [orderType, setOrderType] = useState(OrderType.Buy)
   const buyPair = ['DAI', 'CKB']
   const sellPair = ['CKB', 'DAI']
+  const [historyOrders, setHisotryOrders] = useState([])
+
+  const concatHistoryOrders = useCallback(
+    (arr: any[]) => {
+      setHisotryOrders(historyOrders.concat(...arr))
+    },
+    [historyOrders],
+  )
 
   const [pair, setPair] = useState(buyPair)
 
@@ -63,6 +71,9 @@ export function useOrder() {
     setOrderType,
     togglePair,
     pair,
+    concatHistoryOrders,
+    historyOrders,
+    setHisotryOrders,
   }
 }
 

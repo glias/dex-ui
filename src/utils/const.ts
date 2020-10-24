@@ -73,5 +73,5 @@ export const ORDER_BOOK_LOOK_DEP = new CellDep(
   new OutPoint('0x751f0d4591e6a2c7bd54bc7a9cf6e9e87d31bd8cf2af9f7dda38c9d8d8cc29ee', '0x0'),
 )
 
-export const CKB_NODE_URL = 'http://localhost:8114'
+export const CKB_NODE_URL = 'https://aggron.ckb.dev'
 export const CKB_INDEXER_URL = 'https://prototype.ckbapp.dev/testnet/indexer'
