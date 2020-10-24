@@ -20,7 +20,6 @@ export class CancelOrderBuilder extends Builder {
     const input = await Cell.loadFromBlockchain(new PWCore(CKB_NODE_URL).rpc, this.outPoint)
     const lockArgs = this.address.toLockScript()
     // eslint-disable-next-line no-debugger
-    debugger
     const output = new Cell(outputCapacity, lockArgs)
 
     const tx = new Transaction(new RawTransaction([input], [output]), [Builder.WITNESS_ARGS.Secp256k1])
