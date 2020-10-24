@@ -1,32 +1,32 @@
-import PWCore from '@lay2/pw-core'
+import PWCore, { Amount } from '@lay2/pw-core'
 import { useState } from 'react'
 import { createContainer } from 'unstated-next'
 import Web3 from 'web3'
 
 interface Wallet {
-  balance: number
+  balance: Amount
   address: string
 }
 
 interface CkbWallet extends Wallet {
-  inUse: number
-  free: number
+  inuse: Amount
+  free: Amount
 }
 
 export function useWallet() {
   const [pw, setPw] = useState<null | PWCore>(null)
   const [web3, setWeb3] = useState<null | Web3>(null)
   const [ckbWallet, setCkbWallet] = useState<CkbWallet>({
-    balance: 0,
-    inUse: 0,
-    free: 0,
+    balance: Amount.ZERO,
+    inuse: Amount.ZERO,
+    free: Amount.ZERO,
     address: '',
   })
   const [ethWallet, setEthWallet] = useState<Wallet>({
-    balance: 0,
+    balance: Amount.ZERO,
     address: '',
   })
-  const setEthBalance = (balance: number) => {
+  const setEthBalance = (balance: Amount) => {
     setEthWallet({
       ...ethWallet,
       balance,
@@ -47,7 +47,7 @@ export function useWallet() {
     })
   }
 
-  const setCkbBalance = (balance: number) => {
+  const setCkbBalance = (balance: Amount) => {
     setCkbWallet({
       ...ckbWallet,
       balance,

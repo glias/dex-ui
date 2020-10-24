@@ -1,22 +1,22 @@
 import React from 'react'
+import { useContainer } from 'unstated-next'
 import { Layout, Row, Col } from 'antd'
-import { useSelector } from 'react-redux'
 import TradePairOrder from './components/TradePairOrder'
 import TradeTableBox from './components/TradeContent'
 import TradePairConfirm from './components/TradePairConfirm'
 import TradePairResult from './components/TradePairResult'
 import { TradePage, TradeContent } from './styled'
+import OrderContainer, { OrderStep } from '../../containers/order'
 
 const { Content } = Layout
 
 const Trade = () => {
-  const orderStep = useSelector((state: any) => state.trace.orderStep)
-
+  const Order = useContainer(OrderContainer)
   const traceNavigation = () => {
-    switch (orderStep) {
-      case 1:
+    switch (Order.step) {
+      case OrderStep.Order:
         return <TradePairOrder />
-      case 2:
+      case OrderStep.Comfirm:
         return <TradePairConfirm />
       default:
         return <TradePairResult />

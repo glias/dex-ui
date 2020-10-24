@@ -1,7 +1,8 @@
 import React from 'react'
+import { Address, AddressType, Amount } from '@lay2/pw-core'
+import { useContainer } from 'unstated-next'
 import { Button, Divider } from 'antd'
-import { useSelector, useDispatch } from 'react-redux'
-import { TRACEORDER_STEP } from '../../../../context/actions/types'
+import { useSelector } from 'react-redux'
 import {
   TradePairConfirmBox,
   OrderBox,
@@ -10,18 +11,26 @@ import {
   TradePairConfirmHeader,
   TradePairConfirmContent,
 } from './styled'
+import OrderContainer, { OrderStep } from '../../../../containers/order'
+import WalletContainer from '../../../../containers/wallet'
+import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 
-export default () => {
+export default function TradePairConfirm() {
   const currentPair = useSelector((state: any) => state.trace.currentPair)
-  const dispatch = useDispatch()
+  const Wallet = useContainer(WalletContainer)
+  const Order = useContainer(OrderContainer)
+  const onConfirm = async () => {
+    const builder = new PlaceOrderBuilder(
+      new Address(Wallet.ckbWallet.address, AddressType.ckb),
+      new Amount('400'),
+      '0x0000000000000000000000000000000000286bee00000000000000000000000000743ba40b00000000',
+    )
 
-  const handleClickConfirm = (step: number) => {
-    dispatch({
-      type: TRACEORDER_STEP,
-      payload: {
-        orderStep: step,
-      },
-    })
+    const txHash = await Wallet.pw?.sendTransaction(builder)
+    if (txHash) {
+      Order.setTxHash(txHash)
+    }
+    Order.setStep(OrderStep.Result)
   }
 
   return (
@@ -31,7 +40,7 @@ export default () => {
           type="text"
           size="large"
           onClick={() => {
-            handleClickConfirm(1)
+            Order.setStep(OrderStep.Order)
           }}
         >
           <i className="ai-left" />
@@ -51,14 +60,14 @@ export default () => {
             <li>
               <div>Pay</div>
               <div>
-                <span>--</span>
+                <span>{Order.pay}</span>
                 <span>{currentPair}</span>
               </div>
             </li>
             <li>
               <div>Price</div>
               <div>
-                <span>--</span>
+                <span>{Order.price}</span>
                 <span>
                   CKB per
                   {currentPair}
@@ -69,7 +78,7 @@ export default () => {
             <li>
               <div>Receive</div>
               <div>
-                <span>--</span>
+                <span>{Order.receive}</span>
                 <span>CKB</span>
               </div>
             </li>
@@ -86,7 +95,7 @@ export default () => {
           </ul>
         </OrderBox>
         <OrderButton>
-          <Button type="text" size="large" onClick={() => handleClickConfirm(3)}>
+          <Button type="text" size="large" onClick={onConfirm}>
             Confirm Order
           </Button>
         </OrderButton>

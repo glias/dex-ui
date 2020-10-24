@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import PWCore, {
+  Amount,
   Web3ModalProvider,
   // EthSigner,
 } from '@lay2/pw-core'
@@ -14,7 +15,7 @@ import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
 import { getChainData, getProviderOptions } from './chain'
-import WalletContainer from '../../context/containers/wallet'
+import WalletContainer from '../../containers/wallet'
 import { useDidMount } from '../../hooks'
 
 const { SDCollector } = require('./sd-collector')
@@ -32,17 +33,43 @@ export default () => {
 
   const web3Modal = useRef<Web3Modal | null>(null)
 
+  async function getCkbWalletSummary() {
+    const balance = await PWCore.defaultCollector.getBalance(PWCore.provider.address)
+    const filledCells = await PWCore.defaultCollector.collect(PWCore.provider.address, {
+      withData: true,
+    } as any)
+    const emptyCells = await PWCore.defaultCollector.collect(PWCore.provider.address, {
+      withData: false,
+    } as any)
+
+    const inuse = filledCells.length ? filledCells.map(c => c.capacity).reduce((sum, cap) => sum.add(cap)) : Amount.ZERO
+    const free = emptyCells.length ? emptyCells.map(c => c.capacity).reduce((sum, cap) => sum.add(cap)) : Amount.ZERO
+
+    return {
+      balance,
+      inuse,
+      free,
+    }
+  }
+
   const connectWallet = async () => {
     const provider = await web3Modal.current!.connect()
     const web3 = new Web3(provider)
     // eslint-disable-next-line no-debugger
     const pw = await new PWCore('https://aggron.ckb.dev').init(new Web3ModalProvider(web3), new SDCollector() as any)
-    const [address] = await web3.eth.getAccounts()
+    const [ethAddr] = await web3.eth.getAccounts()
+    const ckbAddr = PWCore.provider.address.toCKBAddress()
     // eslint-disable-next-line no-console
-    Wallet.setEthAddress(address.toLowerCase())
-    Wallet.setCkbAddress(PWCore.provider.address.toCKBAddress())
     Wallet.setWeb3(web3)
     Wallet.setPw(pw)
+    const summary = await getCkbWalletSummary()
+    Wallet.setCkbWallet({
+      ...summary,
+      address: ckbAddr,
+    })
+    const ethBalance = await web3.eth.getBalance(ethAddr)
+    Wallet.setEthBalance(new Amount(ethBalance))
+    Wallet.setEthAddress(ethAddr.toLowerCase())
   }
 
   const disconnectWallet = async () => {

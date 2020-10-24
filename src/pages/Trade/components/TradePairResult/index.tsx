@@ -1,31 +1,29 @@
 import React from 'react'
 import { Button } from 'antd'
-import { useSelector, useDispatch } from 'react-redux'
-import { TRACEORDER_STEP } from '../../../../context/actions/types'
+import { useContainer } from 'unstated-next'
+import { useSelector } from 'react-redux'
 import i18n from '../../../../utils/i18n'
 import orderPlace from '../../../../assets/img/orderPlaced.png'
 import declined from '../../../../assets/img/declined.png'
 import { OrderButton, TracePairResultBox, TradePairConfirmHeader, TradePairConfirmContent } from './styled'
+import OrderContainer, { OrderStep } from '../../../../containers/order'
 
 export default function Trade() {
-  const dispatch = useDispatch()
   const isOrderSuccess = useSelector((state: any) => state.trace.isOrderSuccess)
   const tradeResultStr = isOrderSuccess ? i18n.t(`trade.TradeSuccess`) : i18n.t(`trade.TradeFailed`)
+  const Order = useContainer(OrderContainer)
   const handleClickSubmit = () => {
-    dispatch({
-      type: TRACEORDER_STEP,
-      payload: {
-        orderStep: 1,
-      },
-    })
+    Order.setStep(OrderStep.Order)
   }
-  const tradeSuccessBox = () => (
+  const tradeSuccessBox = (txHash: string) => (
     <div className="trace-success">
       <div className="order-place">
         <img src={orderPlace} alt="Order Place" />
       </div>
-      <div>order Place</div>
-      <div>View you CKB Explorer</div>
+      <div>Order Place</div>
+      <a target="_blank" rel="noreferrer noopener" href={`https://explorer.nervos.org/aggron/transaction/${txHash}`}>
+        View you CKB Explorer
+      </a>
     </div>
   )
 
@@ -42,7 +40,9 @@ export default function Trade() {
       <TradePairConfirmHeader>
         <span>Review Order</span>
       </TradePairConfirmHeader>
-      <TradePairConfirmContent>{isOrderSuccess ? tradeSuccessBox() : tradeFailedBox()}</TradePairConfirmContent>
+      <TradePairConfirmContent>
+        {Order.txHash ? tradeSuccessBox(Order.txHash) : tradeFailedBox()}
+      </TradePairConfirmContent>
       <OrderButton>
         <Button type="text" size="large" onClick={() => handleClickSubmit()}>
           {tradeResultStr}

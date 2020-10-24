@@ -16,7 +16,7 @@ export class PlaceOrderBuilder extends Builder {
   }
 
   async build(fee: Amount = Amount.ZERO): Promise<Transaction> {
-    const neededAmount = Builder.MIN_CHANGE.add(fee)
+    const neededAmount = this.amount.add(fee)
     let inputSum = Amount.ZERO
     const inputCells: Cell[] = []
 
@@ -25,7 +25,7 @@ export class PlaceOrderBuilder extends Builder {
     // fill the inputs
     const cells = await this.collector.collect(PWCore.provider.address, neededAmount)
     cells.forEach(cell => {
-      if (inputSum.lte(neededAmount)) {
+      if (inputSum.lte(neededAmount.add(Builder.MIN_CHANGE))) {
         inputCells.push(cell)
         inputSum = inputSum.add(cell.capacity)
       }
@@ -39,10 +39,7 @@ export class PlaceOrderBuilder extends Builder {
       )
     }
 
-    const changeCell = new Cell(
-      inputSum.sub(neededAmount.sub(Builder.MIN_CHANGE)),
-      PWCore.provider.address.toLockScript(),
-    )
+    const changeCell = new Cell(inputSum.sub(neededAmount), PWCore.provider.address.toLockScript())
 
     const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, changeCell]), [
       Builder.WITNESS_ARGS.Secp256k1,
