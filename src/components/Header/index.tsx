@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import PWCore, {
+  Amount,
   Web3ModalProvider,
   // EthSigner,
 } from '@lay2/pw-core'
@@ -15,12 +16,12 @@ import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
 import { getChainData, getProviderOptions } from './chain'
-import WalletContainer from '../../context/containers/wallet'
+import WalletContainer from '../../containers/wallet'
 import { useDidMount } from '../../hooks'
 
 const { SDCollector } = require('./sd-collector')
 
-export default () => {
+const Header = () => {
   const history = useHistory()
   const Wallet = useContainer(WalletContainer)
 
@@ -37,14 +38,17 @@ export default () => {
   const connectWallet = async () => {
     const provider = await web3Modal.current!.connect()
     const web3 = new Web3(provider)
-    // eslint-disable-next-line no-debugger
     const pw = await new PWCore('https://aggron.ckb.dev').init(new Web3ModalProvider(web3), new SDCollector() as any)
-    const [address] = await web3.eth.getAccounts()
-    // eslint-disable-next-line no-console
-    Wallet.setEthAddress(address.toLowerCase())
-    Wallet.setCkbAddress(PWCore.provider.address.toCKBAddress())
+    const [ethAddr] = await web3.eth.getAccounts()
+    const ckbAddr = PWCore.provider.address.toCKBAddress()
+
     Wallet.setWeb3(web3)
     Wallet.setPw(pw)
+
+    await Wallet.reloadCkbWallet(ckbAddr)
+    const ethBalance = await web3.eth.getBalance(ethAddr)
+    Wallet.setEthBalance(new Amount(ethBalance))
+    Wallet.setEthAddress(ethAddr.toLowerCase())
   }
 
   const disconnectWallet = async () => {
@@ -143,3 +147,5 @@ export default () => {
     </HeaderBox>
   )
 }
+
+export default Header

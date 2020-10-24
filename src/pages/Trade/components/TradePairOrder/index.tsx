@@ -1,26 +1,23 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { FormInstance } from 'antd/lib/form'
+import { useContainer } from 'unstated-next'
 import { PairList } from '../../../../utils/const'
-import { SELECTED_TRADE, TRACEORDER_STEP } from '../../../../context/actions/types'
+import { SELECTED_TRADE } from '../../../../context/actions/types'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
+import OrderContainer, { OrderStep } from '../../../../containers/order'
+import { walletState } from '../../../../context/reducers/wallet'
 
 const TradePairOrder = () => {
+  const { walletConnectStatus } = useSelector(({ wallet }: { wallet: walletState }) => wallet)
   const [form] = Form.useForm()
   const { Option } = Select
-  const [price, priceOnChange] = useState('')
-  const [pay, payOnChange] = useState('')
-  const receive = useMemo(() => {
-    if (price && pay) {
-      return (parseFloat(price) * parseFloat(pay)).toFixed(2)
-    }
-
-    return '0.00'
-  }, [price, pay])
+  const Order = useContainer(OrderContainer)
+  const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
   const currentPair = 'dai'
   const maximumPayable = 0
   const dispatch = useDispatch()
@@ -37,13 +34,9 @@ const TradePairOrder = () => {
   }
 
   const onFinish = () => {
-    // todo....
-    dispatch({
-      type: TRACEORDER_STEP,
-      payload: {
-        orderStep: 2,
-      },
-    })
+    if (walletConnectStatus === 'success') {
+      setStep(OrderStep.Comfirm)
+    }
   }
 
   // eslint-disable-next-line consistent-return
