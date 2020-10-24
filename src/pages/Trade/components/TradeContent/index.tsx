@@ -1,20 +1,18 @@
 /* eslint-disable react/jsx-curly-newline */
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useContainer } from 'unstated-next'
 import { Table, Button, Input } from 'antd'
-import axios from 'axios'
-import { Address, Amount, OutPoint, AddressType } from '@lay2/pw-core'
+import PWCore, { Address, Amount, OutPoint, AddressType } from '@lay2/pw-core'
 import { TraceTableList } from '../../../../utils/const'
 import { TradeTableBox, FilterTablePire } from './styled'
 import toExplorer from '../../../../assets/img/toExplorer.png'
 import { titleCase } from '../../../../lib/string'
-import { useDidMount } from '../../../../hooks'
+// import { useDidMount } from '../../../../hooks'
 import OrderContainer from '../../../../containers/order'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import WalletContainer from '../../../../containers/wallet'
+import { getHistoryOrders } from '../../../../APIs'
 
-const url =
-  'http://192.168.110.123:8080/order-history?public_key_hash=0x6c8c7f80161485c3e4adceda4c6c425410140054&type_code_hash=0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4&type_hash_type=type&type_args=0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902'
 const RECEIVE_UNIT = 10 * 1000 * 1000 * 1000
 const PRICE_UNIT = 100 * 1000 * 1000
 
@@ -24,8 +22,12 @@ export default () => {
 
   const ordersList: any[] = Order.historyOrders
 
-  useDidMount(() => {
-    axios.get(url).then(res => {
+  useEffect(() => {
+    if (Wallet.ckbWallet.address === '') {
+      return
+    }
+    const lockArgs = PWCore.provider.address.toLockScript().args
+    getHistoryOrders(lockArgs).then(res => {
       Order.concatHistoryOrders(
         res.data.map((item: any) => {
           const txHash = item.last_order_cell_outpoint.tx_hash
@@ -38,12 +40,13 @@ export default () => {
             price: `${item.price / PRICE_UNIT} USDT per DAI`,
             receive: `${item.traded_amount / RECEIVE_UNIT} ${item.is_bid ? 'CKB' : 'SUDT'}`,
             // eslint-disable-next-line no-nested-ternary
-            action: item.claimable ? 'claim' : item.status === 'open' ? 'cancel' : 'location',
+            action: item.claimable ? 'claimed' : item.status === 'open' ? 'cancel' : 'location',
           }
         }),
       )
     })
-  })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Wallet.ckbWallet.address])
 
   const onCancel = useCallback(
     async (txHash: string) => {
@@ -55,7 +58,7 @@ export default () => {
       const builder = new CancelOrderBuilder(
         new Address(Wallet.ckbWallet.address, AddressType.ckb),
         new OutPoint(outpoint.tx_hash, outpoint.index),
-        new Amount('400'),
+        new Amount('80'),
       )
 
       const hash = await Wallet.pw?.sendTransaction(await builder.build())
@@ -118,7 +121,7 @@ export default () => {
                   onCancel(column.key)
                 }}
               >
-                {column.action}
+                Claim
               </Button>
             )
           case 'cancel':
@@ -133,7 +136,7 @@ export default () => {
                   onCancel(column.key)
                 }}
               >
-                {column.action}
+                Cancel
               </Button>
             )
           case 'location':
