@@ -13,6 +13,9 @@ export default () => {
   const dispatch = useDispatch()
   const ordersList = useSelector(({ trace }: { trace: traceState }) => trace.ordersList)
   const { walletConnectStatus } = useSelector(({ wallet }: { wallet: walletState }) => wallet)
+  // const onChangePagation = (value: number) => {
+  //   console.log(value)
+  // }
   useMemo(() => {
     if (walletConnectStatus === 'success') {
       axios.post('/getTableList').then(res => {
@@ -54,6 +57,15 @@ export default () => {
       title: 'Statue',
       dataIndex: 'status',
       key: 'status',
+      render: (value: string) => (
+        <span
+          style={{
+            color: ['Completed', 'Claimed'].includes(value) ? 'rgba(136, 136, 136, 1)' : 'rgba(0, 0, 0, 1)',
+          }}
+        >
+          {value}
+        </span>
+      ),
     },
     {
       title: 'Executed',
@@ -113,8 +125,10 @@ export default () => {
       <Table
         dataSource={ordersList}
         columns={columns}
+        size="small"
         pagination={{
           pageSize: 10,
+          showSizeChanger: false,
         }}
         rowKey={(record: any) => record.key}
       />
