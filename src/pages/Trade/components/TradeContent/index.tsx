@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-curly-newline */
 import React, { useCallback, useEffect } from 'react'
 import { useContainer } from 'unstated-next'
-import { Table, Button, Input } from 'antd'
+import { Table, Button, Input, Spin } from 'antd'
 import PWCore, { Address, Amount, OutPoint, AddressType } from '@lay2/pw-core'
 import { TraceTableList } from '../../../../utils/const'
 import { TradeTableBox, FilterTablePire } from './styled'
@@ -52,6 +52,7 @@ export default () => {
     async (txHash: string) => {
       // eslint-disable-next-line no-debugger
       // debugger
+      Order.setLoading(txHash)
       const order = ordersList.find((o: any) => o.last_order_cell_outpoint.tx_hash === txHash)
       const outpoint = order.last_order_cell_outpoint
 
@@ -61,10 +62,17 @@ export default () => {
         new Amount('80'),
       )
 
-      const hash = await Wallet.pw?.sendTransaction(await builder.build())
-      console.log(hash)
+      try {
+        const hash = await Wallet.pw?.sendTransaction(await builder.build())
+        console.log(hash)
+      } catch (error) {
+        //
+      } finally {
+        Order.setLoading(txHash)
+      }
     },
-    [ordersList, Wallet.pw, Wallet.ckbWallet.address],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ordersList, Wallet.pw, Wallet.ckbWallet.address, Order.setLoading],
   )
 
   const columns = [
@@ -113,6 +121,7 @@ export default () => {
             return (
               <Button
                 shape="round"
+                disabled={column.loading}
                 style={{
                   color: 'rgba(102, 102, 102, 1)',
                 }}
@@ -121,7 +130,7 @@ export default () => {
                   onCancel(column.key)
                 }}
               >
-                Claim
+                {column.loading ? <Spin /> : 'Claim'}
               </Button>
             )
           case 'cancel':
@@ -131,12 +140,13 @@ export default () => {
                 style={{
                   color: 'rgba(102, 102, 102, 1)',
                 }}
+                disabled={column.loading}
                 onClick={() => {
                   // eslint-disable-next-line no-debugger
                   onCancel(column.key)
                 }}
               >
-                Cancel
+                {column.loading ? <Spin /> : 'Cancel'}
               </Button>
             )
           case 'location':

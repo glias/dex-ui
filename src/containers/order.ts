@@ -22,7 +22,7 @@ export function useOrder() {
   const [orderType, setOrderType] = useState(OrderType.Buy)
   const buyPair = ['DAI', 'CKB']
   const sellPair = ['CKB', 'DAI']
-  const [historyOrders, setHisotryOrders] = useState([])
+  const [historyOrders, setHisotryOrders] = useState<any[]>([])
 
   const concatHistoryOrders = useCallback(
     (arr: any[]) => {
@@ -51,6 +51,18 @@ export function useOrder() {
     return '0.00'
   }, [price, pay])
 
+  const setLoading = useCallback(
+    (key: string) => {
+      // eslint-disable-next-line no-debugger
+      const order = historyOrders.find(o => o.key === key)
+      if (order) {
+        order.loading = true
+        setHisotryOrders(historyOrders)
+      }
+    },
+    [historyOrders],
+  )
+
   function reset() {
     setPay('')
     setPrice('')
@@ -74,6 +86,7 @@ export function useOrder() {
     concatHistoryOrders,
     historyOrders,
     setHisotryOrders,
+    setLoading,
   }
 }
 

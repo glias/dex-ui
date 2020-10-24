@@ -47,42 +47,22 @@ export default function WalletBox({ disconnect, addresses }: Props) {
 
   const [clipboardTooltip, setClipboardTooltip] = useState(copyToClipboard)
 
-  const validityText = (value: number) => (value >= 0 ? value : '--')
+  const validityText = (value: number) => (value >= 0 ? (value / 10 ** 8).toString() : '--')
 
   const walletFlexBox = (item: any) => {
-    console.log(item)
-    if (item.name === 'CKB') {
-      return (
-        <>
-          <div className="ckb-main-box">
-            <div className="ckb-name">CKB</div>
-            <div className="ckb-price">
-              <div className="ckb-total">{validityText(item.balance?.amount)}</div>
-              <div className="ckb-price">
-                <span>$</span>
-                {validityText(item.price?.amount)}
-              </div>
-            </div>
-          </div>
-          <div className="ckb-use">
-            <span>In Use</span>
-            <span>{validityText(item.inUse?.amount)}</span>
-          </div>
-          <div className="ckb-use">
-            <span>Free</span>
-            <span>{validityText(item.free?.amount)}</span>
-          </div>
-        </>
-      )
-    }
     return (
       <div className="balance-item">
         <div className="balance-name">{item.name}</div>
-        <div className="balance-price">
+        <div
+          className="balance-price"
+          style={{
+            textAlign: 'right',
+            alignItems: 'revert',
+          }}
+        >
           <div className="total-num">{validityText(item.balance?.amount)}</div>
           <div className="price">
-            <span>$</span>
-            {validityText(item.price?.amount)}
+            <span>$ 0.00</span>
           </div>
         </div>
       </div>
@@ -154,7 +134,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                         <Button
                           type="text"
                           size="small"
-                          onClick={() => window.open(`https://explorer.nervos.org/aggron/transaction/${item.address}`)}
+                          onClick={() => window.open(`https://explorer.nervos.org/aggron/address/${item.address}`)}
                         >
                           <img src={toExplorer} alt="explorer" />
                         </Button>
