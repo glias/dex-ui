@@ -50,7 +50,6 @@ export default function WalletBox({ disconnect, addresses }: Props) {
   const validityText = (value: number) => (value >= 0 ? value : '--')
 
   const walletFlexBox = (item: any) => {
-    console.log(item)
     if (item.name === 'CKB') {
       return (
         <>
@@ -89,8 +88,8 @@ export default function WalletBox({ disconnect, addresses }: Props) {
     )
   }
 
-  // const [currentTab, setCurrentTab] = useState('balances')
-  const tooltip = `A transit address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address.`
+  const tooltip_eth = `A transit address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address.`
+  const tooltip_ckb = `A Transit Address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address.`
 
   return (
     <HeaderWalletBox>
@@ -119,7 +118,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                 />
               </Tooltip>
             </span>
-            <Tooltip title={tooltip} placement="bottom">
+            <Tooltip title={address.startsWith('ck') ? tooltip_ckb : tooltip_eth} placement="bottom">
               <img src={questionMark} className="questionMark" alt="question about wallet address" />
             </Tooltip>
           </div>
