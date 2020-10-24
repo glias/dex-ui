@@ -11,7 +11,7 @@ import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
 
-const TradePairOrder = () => {
+export default () => {
   const [form] = Form.useForm()
   const { Option } = Select
   const Order = useContainer(OrderContainer)
@@ -23,6 +23,7 @@ const TradePairOrder = () => {
   const [buyer, seller] = Order.pair
 
   const changePair = (value: any) => {
+    form.resetFields()
     dispatch({
       type: SELECTED_TRADE,
       payload: {
@@ -175,7 +176,10 @@ const TradePairOrder = () => {
         </Form.Item>
         <Form.Item label="Price" className="price-box">
           <PayMeta>
-            <span className="max-num">Suggestion: 10.5</span>
+            <Button type="text" className="max-num">
+              Suggestion:
+              {10.5}
+            </Button>
             <Tooltip title="todo">
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -228,5 +232,3 @@ const TradePairOrder = () => {
     </PairOrderFormBox>
   )
 }
-
-export default TradePairOrder

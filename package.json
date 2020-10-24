@@ -19,6 +19,7 @@
     "enzyme-adapter-react-16": "1.15.5",
     "enzyme-to-json": "3.6.1",
     "i18next": "19.8.2",
+    "mockjs": "^1.1.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-i18next": "11.7.3",
