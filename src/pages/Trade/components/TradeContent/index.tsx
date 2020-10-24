@@ -125,7 +125,10 @@ export default () => {
     },
   ]
 
-  const onChangePagation = ({ currentPage, status }: { currentPage: number; status: string }) => {
+  const onChangeStatus = (status: string) => updateTableList(1, status)
+  const onChangePagation = (page: number) => updateTableList(page, 'all')
+
+  const updateTableList = (currentPage: number, status: string) => {
     axios.get(`/xxx?page=${currentPage}&status=${status}`).then(res => {
       dispatch({
         type: TRACE_TABLELIST,
@@ -161,17 +164,7 @@ export default () => {
         </div>
         <FilterTablePire>
           {TraceTableList.map(val => (
-            <Button
-              type="text"
-              key={val}
-              size="small"
-              onClick={() =>
-                onChangePagation({
-                  status: val,
-                  currentPage: 1,
-                })
-              }
-            >
+            <Button type="text" key={val} size="small" onClick={() => onChangeStatus(val)}>
               {val}
             </Button>
           ))}
