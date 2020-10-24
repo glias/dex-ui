@@ -5,7 +5,7 @@
       "dom.iterable",
       "esnext"
     ],
-    "target": "es6",
+    "target": "es2016",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "strict": true,

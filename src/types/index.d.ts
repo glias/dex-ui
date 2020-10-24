@@ -33,8 +33,13 @@ declare namespace State {
     walletState: WalletState
   }
 
+  export interface actionType {
+    type: string
+    payload: any
+  }
+
   interface WalletState {
-    walletConnectStatus: 'unstart' | 'padding' | 'success' | 'failed' // 钱包连接状态
+    walletConnectStatus: 'unstart' | 'success' | 'failed' // 钱包连接状态
     addressList: String[] // 所有钱包地址
     currentSelectedAddress: string // 当前选中的地址
   }
@@ -43,6 +48,9 @@ declare namespace State {
     currentPair: string
     ordersList: Array<object>
     tableHeaderColumn: Array<object>
+    orderStep: number
+    isOrderSuccess: boolean
+    maximumPayable: number
   }
 
   interface CounterState {

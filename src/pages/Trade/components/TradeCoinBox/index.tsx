@@ -2,8 +2,12 @@ import React from 'react'
 import { PairBox, PairSpace } from './styled'
 import { PairList } from '../../../../utils/const'
 
-export const TradeCoinBox = ({ pair }: { pair: String }) => {
-  const coinBox = PairList.find(item => pair === item.name)
+interface IMenuListProps {
+  pair: String
+}
+
+export const TradeCoinBox = (props: IMenuListProps) => {
+  const coinBox = PairList.find(item => props.pair === item.name)
   return (
     <PairBox>
       {coinBox ? (

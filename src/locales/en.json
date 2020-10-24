@@ -4,12 +4,15 @@
       "Trade": "Trade",
       "Pool": "Pool",
       "Match": "Match",
-      "wallet": "Connect Wallet"
+      "wallet": "Connect Wallet",
+      "addressTooltip": "A transit address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
     },
     "trade": {
       "pair": "Pair",
       "placeOrder": "Place Order",
-      "searchPairPlaceHolder": "Search name or Type ID"
+      "searchPairPlaceHolder": "Search name or Type ID",
+      "TradeSuccess": "New Trade",
+      "TradeFailed": "Dismiss"
     },
     "pool": {}
   }

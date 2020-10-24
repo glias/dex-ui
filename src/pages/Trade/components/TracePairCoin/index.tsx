@@ -1,11 +1,18 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react'
+import { useContainer } from 'unstated-next'
+import OrderContainer from '../../../../containers/order'
 import { TracePairLine } from './styled'
 
-export default ({ currentPair }: { currentPair: String }) => {
+const TracePairCoin = () => {
+  const Order = useContainer(OrderContainer)
+  const [buyer, seller] = Order.pair
+
   return (
     <TracePairLine>
-      <span>{currentPair}</span>
-      <span>
+      <span>{buyer}</span>
+      <span onClick={() => Order.togglePair()}>
         <i
           className="ai-right-circle"
           style={{
@@ -13,7 +20,9 @@ export default ({ currentPair }: { currentPair: String }) => {
           }}
         />
       </span>
-      <span>CKB</span>
+      <span>{seller}</span>
     </TracePairLine>
   )
 }
+
+export default TracePairCoin

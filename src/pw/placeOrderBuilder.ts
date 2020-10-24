@@ -1,5 +1,5 @@
-import PWCore, { Builder, Transaction, Cell, Amount, AmountUnit, RawTransaction, Address } from '@lay2/pw-core'
-import { SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
+import PWCore, { Builder, Transaction, Cell, Amount, AmountUnit, RawTransaction, Address, Script } from '@lay2/pw-core'
+import { ORDER_BOOK_LOOK_SCRIPT, SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -16,16 +16,22 @@ export class PlaceOrderBuilder extends Builder {
   }
 
   async build(fee: Amount = Amount.ZERO): Promise<Transaction> {
-    const neededAmount = Builder.MIN_CHANGE.add(fee)
+    const neededAmount = this.amount.add(fee)
     let inputSum = Amount.ZERO
     const inputCells: Cell[] = []
 
-    const orderOutput = new Cell(this.amount, this.address.toLockScript(), SUDT_TYPE_SCRIPT)
+    const orderLock = new Script(
+      ORDER_BOOK_LOOK_SCRIPT.codeHash,
+      this.address.toLockScript().args,
+      ORDER_BOOK_LOOK_SCRIPT.hashType,
+    )
+
+    const orderOutput = new Cell(this.amount, orderLock, SUDT_TYPE_SCRIPT)
 
     // fill the inputs
     const cells = await this.collector.collect(PWCore.provider.address, neededAmount)
     cells.forEach(cell => {
-      if (inputSum.lte(neededAmount)) {
+      if (inputSum.lte(neededAmount.add(Builder.MIN_CHANGE))) {
         inputCells.push(cell)
         inputSum = inputSum.add(cell.capacity)
       }
@@ -39,10 +45,7 @@ export class PlaceOrderBuilder extends Builder {
       )
     }
 
-    const changeCell = new Cell(
-      inputSum.sub(neededAmount.sub(Builder.MIN_CHANGE)),
-      PWCore.provider.address.toLockScript(),
-    )
+    const changeCell = new Cell(inputSum.sub(neededAmount), PWCore.provider.address.toLockScript())
 
     const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, changeCell]), [
       Builder.WITNESS_ARGS.Secp256k1,
