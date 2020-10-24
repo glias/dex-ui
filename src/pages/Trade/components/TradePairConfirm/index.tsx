@@ -23,7 +23,7 @@ export default function TradePairConfirm() {
     const builder = new PlaceOrderBuilder(
       new Address(Wallet.ckbWallet.address, AddressType.ckb),
       new Amount('400'),
-      '0x0000000000000000000000000000000000286bee00000000000000000000000000743ba40b00000000',
+      '0x0000000000000000000000000000000000286bee00000000000000000000000000743ba40b00000001',
     )
 
     const txHash = await Wallet.pw?.sendTransaction(builder)
