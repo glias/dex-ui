@@ -28,6 +28,13 @@ export const HeaderPanel = styled.div`
     h1 {
       margin: 0 20px 0 0;
     }
+    .ant-menu-item-selected {
+      color: rgba(0, 106, 151, 1);
+      border-bottom-color: rgba(0, 106, 151, 1);
+      &:hover {
+        color: rgba(0, 106, 151, 1);
+      }
+    }
   }
   .ant-menu-horizontal 
     color: rgba(0,106,151,0.6);

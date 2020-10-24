@@ -35,6 +35,7 @@ export default () => {
             executed: item.turnover_rate * 100,
             key: txHash,
             txHash,
+            pay: `${item.traded_amount / RECEIVE_UNIT} ${item.is_bid ? 'SUDT' : 'SUDT'}`,
             price: `${item.price / PRICE_UNIT} USDT per DAI`,
             receive: `${item.traded_amount / RECEIVE_UNIT} ${item.is_bid ? 'CKB' : 'SUDT'}`,
             // eslint-disable-next-line no-nested-ternary

@@ -86,7 +86,14 @@ const Header = () => {
       <HeaderPanel>
         <div className="panel-nav">
           <HeaderLogoBox>CKB DEX</HeaderLogoBox>
-          <Menu mode="horizontal" onClick={e => history.push(`/${e.key}`)}>
+          <Menu
+            mode="horizontal"
+            style={{
+              color: 'rgba(0, 106, 151, 0.6)',
+            }}
+            onClick={e => history.push(`/${e.key}`)}
+            defaultSelectedKeys={['trade']}
+          >
             <Menu.Item key="trade">
               <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
             </Menu.Item>
