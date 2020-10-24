@@ -1,5 +1,5 @@
-import PWCore, { Builder, Transaction, Cell, Amount, AmountUnit, RawTransaction, Address } from '@lay2/pw-core'
-import { SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
+import PWCore, { Builder, Transaction, Cell, Amount, AmountUnit, RawTransaction, Address, Script } from '@lay2/pw-core'
+import { ORDER_BOOK_LOOK_SCRIPT, SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -20,7 +20,13 @@ export class PlaceOrderBuilder extends Builder {
     let inputSum = Amount.ZERO
     const inputCells: Cell[] = []
 
-    const orderOutput = new Cell(this.amount, this.address.toLockScript(), SUDT_TYPE_SCRIPT)
+    const orderLock = new Script(
+      ORDER_BOOK_LOOK_SCRIPT.codeHash,
+      this.address.toLockScript().args,
+      ORDER_BOOK_LOOK_SCRIPT.hashType,
+    )
+
+    const orderOutput = new Cell(this.amount, orderLock, SUDT_TYPE_SCRIPT)
 
     // fill the inputs
     const cells = await this.collector.collect(PWCore.provider.address, neededAmount)
