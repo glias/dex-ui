@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { FormInstance } from 'antd/lib/form'
 import { useContainer } from 'unstated-next'
 import { PairList } from '../../../../utils/const'
@@ -10,21 +10,20 @@ import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
-import { walletState } from '../../../../context/reducers/wallet'
 
-const TradePairOrder = () => {
-  const { walletConnectStatus } = useSelector(({ wallet }: { wallet: walletState }) => wallet)
+export default () => {
   const [form] = Form.useForm()
   const { Option } = Select
   const Order = useContainer(OrderContainer)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
-  const currentPair = 'dai'
   const maximumPayable = 0
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled] = useState(false)
+  const [buyer, seller] = Order.pair
 
   const changePair = (value: any) => {
+    form.resetFields()
     dispatch({
       type: SELECTED_TRADE,
       payload: {
@@ -33,10 +32,16 @@ const TradePairOrder = () => {
     })
   }
 
-  const onFinish = () => {
-    if (walletConnectStatus === 'success') {
-      setStep(OrderStep.Comfirm)
-    }
+  const onFinish = async () => {
+    setStep(OrderStep.Comfirm)
+
+    // const builder = new CancelOrderBuilder(
+    //   new Address(Wallet.ckbWallet.address, AddressType.ckb),
+    //   new OutPoint('0x098ce457225a8565c5f2b9a541e865c66052d835b43712cf24e6a9662a944a00', '0x0'),
+    //   new Amount('400'),
+    // )
+    // const txHash = await Wallet.pw?.sendTransaction(await builder.build())
+    // console.info(`Cancel order: ${txHash}`)
   }
 
   // eslint-disable-next-line consistent-return
@@ -85,7 +90,7 @@ const TradePairOrder = () => {
     <PairOrderFormBox>
       <div className="trace-form-select" id="trace-form-select">
         <Select
-          defaultValue={currentPair}
+          defaultValue="DAI"
           style={{
             width: '100%',
           }}
@@ -155,7 +160,7 @@ const TradePairOrder = () => {
           >
             <Input
               placeholder="0.0"
-              suffix="DAI"
+              suffix={buyer}
               type="number"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
@@ -171,7 +176,10 @@ const TradePairOrder = () => {
         </Form.Item>
         <Form.Item label="Price" className="price-box">
           <PayMeta>
-            <span className="max-num">Suggestion: 10.5</span>
+            <Button type="text" className="max-num">
+              Suggestion:
+              {10.5}
+            </Button>
             <Tooltip title="todo">
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -186,7 +194,7 @@ const TradePairOrder = () => {
           >
             <Input
               placeholder="0.0"
-              suffix="CKB per DAI"
+              suffix={`${seller} per ${buyer}`}
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
@@ -211,7 +219,7 @@ const TradePairOrder = () => {
         <Form.Item label="Receive" name="receiver">
           <div className="receiver-box">
             <span className="receiver-ckb">{receive}</span>
-            <span>CKB</span>
+            <span>{seller}</span>
           </div>
         </Form.Item>
         <div className="dividing-line" />
@@ -224,5 +232,3 @@ const TradePairOrder = () => {
     </PairOrderFormBox>
   )
 }
-
-export default TradePairOrder
