@@ -38,7 +38,7 @@ export default () => {
             price: `${item.price / PRICE_UNIT} USDT per DAI`,
             receive: `${item.traded_amount / RECEIVE_UNIT} ${item.is_bid ? 'CKB' : 'SUDT'}`,
             // eslint-disable-next-line no-nested-ternary
-            action: item.claimable ? 'claimed' : item.status === 'open' ? 'cancel' : 'location',
+            action: item.claimable ? 'claim' : item.status === 'open' ? 'cancel' : 'location',
           }
         }),
       )
@@ -112,6 +112,10 @@ export default () => {
                 shape="round"
                 style={{
                   color: 'rgba(102, 102, 102, 1)',
+                }}
+                onClick={() => {
+                  // eslint-disable-next-line no-debugger
+                  onCancel(column.key)
                 }}
               >
                 {column.action}
