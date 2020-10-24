@@ -63,15 +63,15 @@ export const SUDT_DEP = new CellDep(
 )
 
 export const ORDER_BOOK_LOOK_SCRIPT = new Script(
-  '0x6982301f72a13f64ed63cbb8985ca22f8f38f90405f86bf6b661f69a01a1dedf',
+  '0x8d03e403d1e5c44e0b7fa44e98ec2b3da4c20c06f646119324004eec28f62289',
   '0xb74a976e3ceab91f27690b27473731d7ccdff45302bb082394a03cb97641edaa',
   HashType.type,
 )
 
 export const ORDER_BOOK_LOOK_DEP = new CellDep(
-  DepType.code,
-  new OutPoint('0x32f425601393d0162ac7f30f9c637f33ce3a64599d18108f65f98c27659d7be9', '0x0'),
+  DepType.depGroup,
+  new OutPoint('0x751f0d4591e6a2c7bd54bc7a9cf6e9e87d31bd8cf2af9f7dda38c9d8d8cc29ee', '0x0'),
 )
 
-export const CKB_NODE_URL = 'http://47.111.84.118:8000'
-export const CKB_INDEXER_URL = 'http://47.111.84.118:8000/indexer'
+export const CKB_NODE_URL = 'http://localhost:8114'
+export const CKB_INDEXER_URL = 'https://prototype.ckbapp.dev/testnet/indexer'

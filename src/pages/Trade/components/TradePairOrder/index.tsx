@@ -31,8 +31,16 @@ const TradePairOrder = () => {
     })
   }
 
-  const onFinish = () => {
+  const onFinish = async () => {
     setStep(OrderStep.Comfirm)
+
+    // const builder = new CancelOrderBuilder(
+    //   new Address(Wallet.ckbWallet.address, AddressType.ckb),
+    //   new OutPoint('0x098ce457225a8565c5f2b9a541e865c66052d835b43712cf24e6a9662a944a00', '0x0'),
+    //   new Amount('400'),
+    // )
+    // const txHash = await Wallet.pw?.sendTransaction(await builder.build())
+    // console.info(`Cancel order: ${txHash}`)
   }
 
   // eslint-disable-next-line consistent-return
