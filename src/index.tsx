@@ -8,6 +8,7 @@ import './utils/i18n'
 import { Provider } from 'react-redux'
 import Routers from './routes'
 import store from './context/store'
+import './mock/trace.js'
 
 const AppDiv = styled.div`
   width: 100%;

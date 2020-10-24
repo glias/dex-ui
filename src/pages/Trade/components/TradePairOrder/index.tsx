@@ -10,16 +10,16 @@ import TracePairCoin from '../TracePairCoin'
 import { traceState } from '../../../../context/reducers/trace'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
 
-const TradePairOrder = () => {
+export default () => {
   const [form] = Form.useForm()
   const { Option } = Select
-  const currentPair = useSelector(({ trace }: { trace: traceState }) => trace.currentPair)
-  const maximumPayable = useSelector(({ trace }: { trace: traceState }) => trace.maximumPayable)
+  const { suggestionPrice, currentPair, maximumPayable } = useSelector(({ trace }: { trace: traceState }) => trace)
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled, setDisabled] = useState(false)
 
   const changePair = (value: any) => {
+    form.resetFields()
     dispatch({
       type: SELECTED_TRADE,
       payload: {
@@ -61,8 +61,7 @@ const TradePairOrder = () => {
     return Promise.resolve()
   }
 
-  // eslint-disable-next-line consistent-return
-  const checkPrice = (rule: any, value = 0) => {
+  const checkPrice = (rule: any, value = 0): Promise<void> | void => {
     if (rule.field === 'price') {
       if (value <= 0) {
         setDisabled(true)
@@ -83,6 +82,14 @@ const TradePairOrder = () => {
 
     setDisabled(false)
     return Promise.resolve()
+  }
+
+  const pullPrice = () => {
+    if (suggestionPrice !== '-') {
+      form.setFieldsValue({
+        price: suggestionPrice,
+      })
+    }
   }
 
   return (
@@ -159,7 +166,7 @@ const TradePairOrder = () => {
             ]}
           >
             <Input
-              placeholder="0.0"
+              placeholder="0"
               suffix="DAI"
               type="number"
               style={{
@@ -171,7 +178,10 @@ const TradePairOrder = () => {
         </Form.Item>
         <Form.Item label="Price" className="price-box">
           <PayMeta>
-            <span className="max-num">Suggestion: 10.5</span>
+            <Button type="text" className="max-num" onClick={() => pullPrice()}>
+              Suggestion:
+              {suggestionPrice}
+            </Button>
             <Tooltip title="todo">
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -186,7 +196,7 @@ const TradePairOrder = () => {
             ]}
           >
             <Input
-              placeholder="0.0"
+              placeholder="0"
               type="number"
               suffix={`${currentPair} per CKB`}
               style={{
@@ -220,5 +230,3 @@ const TradePairOrder = () => {
     </PairOrderFormBox>
   )
 }
-
-export default TradePairOrder

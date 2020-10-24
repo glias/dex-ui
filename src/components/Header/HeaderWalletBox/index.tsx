@@ -7,7 +7,7 @@ import { HeaderWalletBox, HeaderWallet, WalletList } from './styled'
 
 export default () => {
   const truncatureStr = (str: string): string => {
-    return `${str.slice(0, 10)}...${str.slice(-6)}`
+    return str.length > 10 ? `${str.slice(0, 5)}...${str.slice(-6)}` : str
   }
 
   // const [currentTab, setCurrentTab] = useState('balances')
