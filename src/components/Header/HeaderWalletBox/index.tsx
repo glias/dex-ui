@@ -47,27 +47,30 @@ export default function WalletBox({ disconnect, addresses }: Props) {
 
   const [clipboardTooltip, setClipboardTooltip] = useState(copyToClipboard)
 
+  const validityText = (value: number) => (value >= 0 ? value : '--')
+
   const walletFlexBox = (item: any) => {
+    console.log(item)
     if (item.name === 'CKB') {
       return (
         <>
           <div className="ckb-main-box">
             <div className="ckb-name">CKB</div>
             <div className="ckb-price">
-              <div className="ckb-total">{item.balance >= 0 ? item.balance : '--'}</div>
+              <div className="ckb-total">{validityText(item.balance?.amount)}</div>
               <div className="ckb-price">
                 <span>$</span>
-                {item.price >= 0 ? item.price : '--'}
+                {validityText(item.price?.amount)}
               </div>
             </div>
           </div>
           <div className="ckb-use">
             <span>In Use</span>
-            <span>{item.inUse >= 0 ? item.inUse : '--'}</span>
+            <span>{validityText(item.inUse?.amount)}</span>
           </div>
           <div className="ckb-use">
             <span>Free</span>
-            <span>{item.free >= 0 ? item.free : '--'}</span>
+            <span>{validityText(item.free?.amount)}</span>
           </div>
         </>
       )
@@ -76,10 +79,10 @@ export default function WalletBox({ disconnect, addresses }: Props) {
       <div className="balance-item">
         <div className="balance-name">{item.name}</div>
         <div className="balance-price">
-          <div className="total-num">{item.balance}</div>
+          <div className="total-num">{validityText(item.balance?.amount)}</div>
           <div className="price">
             <span>$</span>
-            {item.price}
+            {validityText(item.price?.amount)}
           </div>
         </div>
       </div>
@@ -100,9 +103,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
         {addresses.map(address => (
           <div className="wallet" key={address}>
             <span className="address">
-              <Tooltip title={tooltip} placement="bottom">
-                {truncatureStr(address)}
-              </Tooltip>
+              {truncatureStr(address)}
               <Tooltip
                 title={clipboardTooltip}
                 placement="bottom"
@@ -118,7 +119,9 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                 />
               </Tooltip>
             </span>
-            <img src={questionMark} className="questionMark" alt="question about wallet address" />
+            <Tooltip title={tooltip} placement="bottom">
+              <img src={questionMark} className="questionMark" alt="question about wallet address" />
+            </Tooltip>
           </div>
         ))}
       </WalletList>
@@ -127,7 +130,13 @@ export default function WalletBox({ disconnect, addresses }: Props) {
           <HeaderMeta id="header-meta">
             <div className="popover-wallet-box">
               <div className="balances">
-                <h4>Balances</h4>
+                <h4
+                  style={{
+                    marginLeft: '10px',
+                  }}
+                >
+                  Balances
+                </h4>
                 <div className="divider" />
                 <ul>
                   {balancesListWapper.map(item => (
@@ -142,7 +151,11 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                       </div>
                       <div className="wallet-info">{walletFlexBox(item)}</div>
                       <div className="explorer">
-                        <Button type="text" size="small">
+                        <Button
+                          type="text"
+                          size="small"
+                          onClick={() => window.open(`https://explorer.nervos.org/aggron/transaction/${item.address}`)}
+                        >
                           <img src={toExplorer} alt="explorer" />
                         </Button>
                       </div>
