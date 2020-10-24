@@ -10,6 +10,7 @@ import { useHistory } from 'react-router-dom'
 import { Button, Popover, Menu, Badge } from 'antd'
 import WalletBox from './HeaderWalletBox'
 import i18n from '../../utils/i18n'
+import { thirdPartyLinks } from '../../utils/const'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
@@ -22,6 +23,7 @@ const { SDCollector } = require('./sd-collector')
 export default () => {
   const history = useHistory()
   const Wallet = useContainer(WalletContainer)
+
   const { ckbWallet, ethWallet } = Wallet
   const ckbAddress = ckbWallet.address
   const ethAddress = ethWallet.address
@@ -64,6 +66,17 @@ export default () => {
     }
   })
 
+  const sideBarContent = (
+    <div className="sidebar-content">
+      <div className="sidebar-title">More</div>
+      {thirdPartyLinks.map(item => (
+        <Button type="text" onClick={() => window.open(item.link)} key={item.name}>
+          {item.name}
+        </Button>
+      ))}
+    </div>
+  )
+
   return (
     <HeaderBox className="header-box">
       <HeaderPanel>
@@ -81,7 +94,7 @@ export default () => {
             </Menu.Item>
           </Menu>
         </div>
-        <HeaderMeta id="headerMeta">
+        <HeaderMeta id="header-meta">
           {ckbAddress === '' ? (
             <Button className="collect-btn" onClick={connectWallet}>
               {i18n.t('header.wallet')}
@@ -106,6 +119,25 @@ export default () => {
               </Popover>
             </>
           )}
+          <Popover
+            placement="bottomRight"
+            title=""
+            content={sideBarContent}
+            trigger="click"
+            overlayClassName="sidebarBox no-arrorPoint"
+            getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
+          >
+            <Button
+              style={{
+                borderRadius: '10px',
+                background: 'rgba(0,106,151,1)',
+                color: '#fff',
+                marginLeft: '5px',
+              }}
+            >
+              <i className="ai-ellipsis" />
+            </Button>
+          </Popover>
         </HeaderMeta>
       </HeaderPanel>
     </HeaderBox>

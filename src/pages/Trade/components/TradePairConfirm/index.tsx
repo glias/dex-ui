@@ -2,6 +2,7 @@ import React from 'react'
 import { Button, Divider } from 'antd'
 import { useSelector, useDispatch } from 'react-redux'
 import { TRACEORDER_STEP } from '../../../../context/actions/types'
+import { traceState } from '../../../../context/reducers/trace'
 import {
   TradePairConfirmBox,
   OrderBox,
@@ -12,7 +13,7 @@ import {
 } from './styled'
 
 export default () => {
-  const currentPair = useSelector((state: any) => state.trace.currentPair)
+  const currentPair = useSelector(({ trace }: { trace: traceState }) => trace.currentPair)
   const dispatch = useDispatch()
 
   const handleClickConfirm = (step: number) => {

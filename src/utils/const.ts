@@ -20,6 +20,18 @@ export const HeaderNavgationLists = [
     path: '/match',
   },
 ]
+
+export const thirdPartyLinks = [
+  {
+    name: 'FAQ',
+    link: 'https://bihu.com/',
+  },
+  {
+    name: 'Github',
+    link: 'https://github.com/',
+  },
+]
+
 export const TraceTableList = ['All', 'Pedding', 'Opening', 'Complete', 'Claimed', 'Aborted']
 
 export const ConnectLists = [

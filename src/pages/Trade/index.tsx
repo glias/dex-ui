@@ -6,11 +6,12 @@ import TradeTableBox from './components/TradeContent'
 import TradePairConfirm from './components/TradePairConfirm'
 import TradePairResult from './components/TradePairResult'
 import { TradePage, TradeContent } from './styled'
+import { traceState } from '../../context/reducers/trace'
 
 const { Content } = Layout
 
 const Trade = () => {
-  const orderStep = useSelector((state: any) => state.trace.orderStep)
+  const orderStep = useSelector(({ trace }: { trace: traceState }) => trace.orderStep)
 
   const traceNavigation = () => {
     switch (orderStep) {
