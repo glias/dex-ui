@@ -1640,7 +1640,7 @@
 
 "@lay2/pw-core@0.3.20-beta.0":
   version "0.3.20-beta.0"
-  resolved "https://registry.yarnpkg.com/@lay2/pw-core/-/pw-core-0.3.20-beta.0.tgz#5731fc47b19dcc35c90f89f54f0b65394982866f"
+  resolved "https://registry.npmjs.org/@lay2/pw-core/-/pw-core-0.3.20-beta.0.tgz#5731fc47b19dcc35c90f89f54f0b65394982866f"
   integrity sha512-oO0dm0bq8ExnrGQJC/26cES7baqHLme7JApJKBikyWhZ7KtCR+lXBFtr3H+ffyxBP2o4vW4HGvLWvZ7WW3BtNg==
   dependencies:
     "@ckb-lumos/types" "^0.2.4"
@@ -14451,7 +14451,7 @@ unset-value@^1.0.0:
 
 unstated-next@^1.1.0:
   version "1.1.0"
-  resolved "https://registry.yarnpkg.com/unstated-next/-/unstated-next-1.1.0.tgz#7bb4911a12fdf3cc8ad3eb11a0b315e4a8685ea8"
+  resolved "https://registry.npmjs.org/unstated-next/-/unstated-next-1.1.0.tgz#7bb4911a12fdf3cc8ad3eb11a0b315e4a8685ea8"
   integrity sha512-AAn47ZncPvgBGOvMcn8tSRxsrqwf2VdAPxLASTuLJvZt4rhKfDvUkmYZLGfclImSfTVMv7tF4ynaVxin0JjDCA==
 
 upath@^1.1.1:
