@@ -2,10 +2,10 @@ import React, { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 
 const NotFound = lazy(() => import('../pages/404'))
-const Home = lazy(() => import('../pages/Home'))
 const Trade = lazy(() => import('../pages/Trade'))
 const Header = lazy(() => import('../components/Header'))
 const Footer = lazy(() => import('../components/Footer'))
+const Pool = lazy(() => import('../pages/Pool'))
 
 const Containers: CustomRouter.Route[] = [
   {
@@ -13,7 +13,7 @@ const Containers: CustomRouter.Route[] = [
     path: '/',
     exact: true,
     showHeader: true,
-    component: Home,
+    component: Trade,
   },
   {
     name: 'Trade',
@@ -21,6 +21,13 @@ const Containers: CustomRouter.Route[] = [
     exact: true,
     showHeader: true,
     component: Trade,
+  },
+  {
+    name: 'Pool',
+    path: '/pool',
+    exact: true,
+    showHeader: true,
+    component: Pool,
   },
   {
     name: '404',
