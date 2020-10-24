@@ -3,24 +3,28 @@ import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
 import { useDispatch } from 'react-redux'
 import { FormInstance } from 'antd/lib/form'
 import { useContainer } from 'unstated-next'
+import { Address, AddressType, Amount, OutPoint } from '@lay2/pw-core'
 import { PairList } from '../../../../utils/const'
 import { SELECTED_TRADE } from '../../../../context/actions/types'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
-import OrderContainer, { OrderStep } from '../../../../containers/order'
+import OrderContainer from '../../../../containers/order'
+import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
+import WalletContainer from '../../../../containers/wallet'
 
 const TradePairOrder = () => {
   const [form] = Form.useForm()
   const { Option } = Select
   const Order = useContainer(OrderContainer)
-  const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
+  const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive } = Order
   const currentPair = 'dai'
   const maximumPayable = 0
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled] = useState(false)
+  const Wallet = useContainer(WalletContainer)
 
   const changePair = (value: any) => {
     dispatch({
@@ -31,8 +35,16 @@ const TradePairOrder = () => {
     })
   }
 
-  const onFinish = () => {
-    setStep(OrderStep.Comfirm)
+  const onFinish = async () => {
+    // setStep(OrderStep.Comfirm)
+
+    const builder = new CancelOrderBuilder(
+      new Address(Wallet.ckbWallet.address, AddressType.ckb),
+      new OutPoint('0x098ce457225a8565c5f2b9a541e865c66052d835b43712cf24e6a9662a944a00', '0x0'),
+      new Amount('400'),
+    )
+    const txHash = await Wallet.pw?.sendTransaction(await builder.build())
+    console.info(`Cancel order: ${txHash}`)
   }
 
   // eslint-disable-next-line consistent-return
