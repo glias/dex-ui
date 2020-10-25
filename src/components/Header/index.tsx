@@ -17,6 +17,7 @@ import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
 import { getChainData, getProviderOptions } from './chain'
 import WalletContainer from '../../containers/wallet'
+import AppContainer from '../../containers/app'
 import { useDidMount } from '../../hooks'
 
 const { SDCollector } = require('./sd-collector')
@@ -24,6 +25,7 @@ const { SDCollector } = require('./sd-collector')
 const Header = () => {
   const history = useHistory()
   const Wallet = useContainer(WalletContainer)
+  const app = useContainer(AppContainer)
 
   const { ckbWallet, ethWallet } = Wallet
   const ckbAddress = ckbWallet.address
@@ -49,6 +51,10 @@ const Header = () => {
     const ethBalance = await web3.eth.getBalance(ethAddr)
     Wallet.setEthBalance(new Amount(ethBalance))
     Wallet.setEthAddress(ethAddr.toLowerCase())
+
+    app.setFullLoadingInfo({
+      show: false,
+    })
   }
 
   const disconnectWallet = async () => {
@@ -66,6 +72,9 @@ const Header = () => {
     })
 
     if (web3Modal.current.cachedProvider) {
+      app.setFullLoadingInfo({
+        show: true,
+      })
       connectWallet()
     }
   })
@@ -84,27 +93,32 @@ const Header = () => {
   return (
     <HeaderBox className="header-box">
       <HeaderPanel>
-        <div className="panel-nav">
-          <HeaderLogoBox>CKB DEX</HeaderLogoBox>
-          <Menu mode="horizontal" onClick={e => history.push(`/${e.key}`)}>
-            <Menu.Item key="trade">
-              <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
-            </Menu.Item>
-            <Menu.Item key="pool">
-              <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
-            </Menu.Item>
-            <Menu.Item key="match">
-              <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
-            </Menu.Item>
-          </Menu>
-        </div>
+        <HeaderLogoBox>CKB DEX</HeaderLogoBox>
+        <Menu
+          mode="horizontal"
+          onClick={e => history.push(`/${e.key}`)}
+          style={{
+            color: 'rgba(0, 106, 151, 0.6)',
+          }}
+          defaultSelectedKeys={['trade']}
+        >
+          <Menu.Item key="trade">
+            <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
+          </Menu.Item>
+          <Menu.Item key="pool">
+            <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
+          </Menu.Item>
+          <Menu.Item key="match">
+            <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
+          </Menu.Item>
+        </Menu>
         <HeaderMeta id="header-meta">
           {ckbAddress === '' ? (
             <Button className="collect-btn" onClick={connectWallet}>
               {i18n.t('header.wallet')}
             </Button>
           ) : (
-            <div>
+            <>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
                 {truncatureStr(ckbAddress)}
@@ -121,7 +135,7 @@ const Header = () => {
                   {/* <Button className="account-btn" icon={ <AlignCenterOutlined /> }></Button> */}
                 </Badge>
               </Popover>
-            </div>
+            </>
           )}
           <Popover
             placement="bottomRight"
