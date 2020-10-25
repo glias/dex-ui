@@ -17,7 +17,14 @@ const App = () => {
   const app = useContainer(AppContainer)
 
   return (
-    <Spin spinning={app.fullLoading.show} tip={app.fullLoading.tip}>
+    <Spin
+      style={{
+        height: '100%',
+      }}
+      wrapperClassName="spin-full-loading"
+      spinning={app.fullLoading.show}
+      tip={app.fullLoading.tip}
+    >
       <Routers />
     </Spin>
   )

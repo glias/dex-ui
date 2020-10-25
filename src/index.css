@@ -91,3 +91,12 @@ input::-webkit-input-placeholder {
 .no-arrorPoint .ant-popover-inner-content {
   padding: 0;
 }
+
+/* antd-spin-fulling-loading */
+.spin-full-loading {
+  height: 100%;
+  
+}
+.spin-full-loading .ant-spin-container {
+  height: 100%;
+}
