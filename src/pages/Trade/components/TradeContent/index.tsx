@@ -12,6 +12,7 @@ import OrderContainer from '../../../../containers/order'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import WalletContainer from '../../../../containers/wallet'
 import { getHistoryOrders } from '../../../../APIs'
+import i18n from '../../../../utils/i18n'
 
 const RECEIVE_UNIT = 10 * 1000 * 1000 * 1000
 const PRICE_UNIT = 100 * 1000 * 1000
@@ -77,22 +78,22 @@ export default () => {
 
   const columns = [
     {
-      title: 'Pay',
+      title: i18n.t('trade.pay'),
       dataIndex: 'pay',
       key: 'pay',
     },
     {
-      title: 'Receive',
+      title: i18n.t('trade.receive'),
       dataIndex: 'receive',
       key: 'receive',
     },
     {
-      title: 'Price',
+      title: i18n.t('trade.price'),
       dataIndex: 'price',
       key: 'price',
     },
     {
-      title: 'Status',
+      title: i18n.t('trade.status'),
       dataIndex: 'status',
       key: 'status',
       render: (value: string) => (
@@ -106,13 +107,13 @@ export default () => {
       ),
     },
     {
-      title: 'Executed',
+      title: i18n.t('trade.executed'),
       dataIndex: 'executed',
       key: 'executed',
       render: (value: any) => (value ? `${value} %` : '--'),
     },
     {
-      title: 'Action',
+      title: i18n.t('trade.action'),
       dataIndex: '',
       key: 'action',
       render: (column: any) => {
@@ -176,7 +177,7 @@ export default () => {
     <TradeTableBox>
       <div className="tableHederBox">
         <div className="tableHeaderSearch">
-          <h3>My Orders</h3>
+          <h3>{i18n.t('trade.myOrder')}</h3>
           <Input
             placeholder="Filter Token"
             style={{
@@ -189,7 +190,7 @@ export default () => {
         <FilterTablePire>
           {TraceTableList.map(val => (
             <Button type="text" key={val} size="small">
-              {val}
+              {i18n.t(`trade.${val}`)}
             </Button>
           ))}
         </FilterTablePire>

@@ -10,6 +10,7 @@ import {
   TradePairConfirmHeader,
   TradePairConfirmContent,
 } from './styled'
+import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
@@ -45,7 +46,7 @@ export default function TradePairConfirm() {
         >
           <i className="ai-left" />
         </Button>
-        <div>Review Order</div>
+        <div>{i18n.t(`trade.reviewOrder`)}</div>
       </TradePairConfirmHeader>
       <TradePairConfirmContent>
         <PairOrder>
@@ -58,14 +59,14 @@ export default function TradePairConfirm() {
         <OrderBox>
           <ul>
             <li>
-              <div>Pay</div>
+              <div>{i18n.t(`trade.pay`)}</div>
               <div>
                 <span>{Order.pay}</span>
                 <span>{buyer}</span>
               </div>
             </li>
             <li>
-              <div>Price</div>
+              <div>{i18n.t(`trade.price`)}</div>
               <div>
                 <span>{Order.price}</span>
                 <span>{`${seller} per ${buyer}`}</span>
@@ -73,7 +74,7 @@ export default function TradePairConfirm() {
             </li>
             <Divider />
             <li>
-              <div>Receive</div>
+              <div>{i18n.t(`trade.receive`)}</div>
               <div>
                 <span>{Order.receive}</span>
                 <span>{seller}</span>
@@ -81,7 +82,7 @@ export default function TradePairConfirm() {
             </li>
             <li className="execution-fee">
               <div>
-                Execution Fee
+                {i18n.t(`trade.executionFee`)}
                 <i className="ai-question-circle-o" />
               </div>
               <div>
@@ -93,7 +94,7 @@ export default function TradePairConfirm() {
         </OrderBox>
         <OrderButton>
           <Button type="text" size="large" onClick={onConfirm}>
-            Confirm Order
+            {i18n.t(`trade.confirmOrder`)}
           </Button>
         </OrderButton>
       </TradePairConfirmContent>
