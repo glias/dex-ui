@@ -52,21 +52,35 @@ export default function WalletBox({ disconnect, addresses }: Props) {
 
   const walletFlexBox = (item: any) => {
     return (
-      <div className="balance-item">
-        <div className="balance-name">{item.name}</div>
-        <div
-          className="balance-price"
-          style={{
-            textAlign: 'right',
-            alignItems: 'revert',
-          }}
-        >
-          <div className="total-num">{validityText(item.balance?.amount)}</div>
-          <div className="price">
-            <span>$ 0.00</span>
+      <>
+        <div className="balance-item">
+          <div className="balance-name">{item.name}</div>
+          <div
+            className="balance-price"
+            style={{
+              textAlign: 'right',
+              alignItems: 'revert',
+            }}
+          >
+            <div className="total-num">{validityText(item.balance?.amount)}</div>
+            <div className="price">
+              <span>$ 0.00</span>
+            </div>
           </div>
         </div>
-      </div>
+        {item.name === 'CKB' ? (
+          <div className="balance-ckb">
+            <div className="ckb-item">
+              <span>In Use</span>
+              <span>100.0000</span>
+            </div>
+            <div className="ckb-item">
+              <span>Free</span>
+              <span>900.0000</span>
+            </div>
+          </div>
+        ) : null}
+      </>
     )
   }
 

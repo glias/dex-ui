@@ -22,6 +22,7 @@
       "myOrder": "我的交易",
       "receive": "接收值",
       "executionFee": "交易费",
+      "filterToken": "Token 查询",
       "reviewOrder": "检查交易",
       "searchPairPlaceHolder": "查询币名或者Type ID",
       "TradeSuccess": "新建交易",

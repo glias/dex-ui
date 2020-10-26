@@ -13,6 +13,7 @@ export const HeaderWalletBox = styled.div`
     img {
       width: 15px;
       height: 15px;
+      cursor: pointer;
     }
   }
 `
@@ -173,7 +174,7 @@ export const HeaderMeta = styled.div`
         margin: 10px 0 0 10px;
         display: flex;
         justify-content: center;
-        align-items: flex-start;
+        align-items: baseline;
         .logo img {
           width: 40px;
         }
@@ -197,6 +198,18 @@ export const HeaderMeta = styled.div`
             display: flex;
             justify-content: space-between;
             font-size: 12px;
+          }
+          .balance-ckb {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 1);
+            .ckb-item {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              &:first-child {
+                margin-top: 1px solid red;
+              }
+            }
           }
           .balance-item {
             display: flex;

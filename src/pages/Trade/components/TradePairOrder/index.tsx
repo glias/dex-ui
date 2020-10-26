@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
+import { Form, Input, Button, Tooltip, Popover, Divider } from 'antd'
 import { useDispatch } from 'react-redux'
 import { FormInstance } from 'antd/lib/form'
 import { useContainer } from 'unstated-next'
@@ -8,20 +8,24 @@ import { SELECTED_TRADE } from '../../../../context/actions/types'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
-import { PairOrderFormBox, PairBox, PayMeta, OrderSelectBox } from './styled'
+import { PairOrderFormBox, PayMeta, OrderSelectBox, OrderSelectPopver, PairBlock } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
 
 export default () => {
   const [form] = Form.useForm()
-  const { Option } = Select
   const Order = useContainer(OrderContainer)
+  const [visiblePopver, setVisiblePopver] = useState(false)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled] = useState(false)
   const [buyer, seller] = Order.pair
 
+  console.log(Order)
+
   const changePair = (value: any) => {
+    setVisiblePopver(false)
+    Order.togglePair(value)
     form.resetFields()
     dispatch({
       type: SELECTED_TRADE,
@@ -43,101 +47,54 @@ export default () => {
     // console.info(`Cancel order: ${txHash}`)
   }
 
-  // eslint-disable-next-line consistent-return
-  // const checkPay = (_: any, value = 0) => {
-  //   if (value <= 0) {
-  //     setDisabled(true)
-  //     // eslint-disable-next-line prefer-promise-reject-errors
-  //     return Promise.reject('Pay must be greater than zero!')
-  //   }
-  //   if (value <= 0.01) {
-  //     setDisabled(true)
-  //     // eslint-disable-next-line prefer-promise-reject-errors
-  //     return Promise.reject('Order too small')
-  //   }
-  //   if (value > maximumPayable) {
-  //     setDisabled(true)
-  //     // eslint-disable-next-line prefer-promise-reject-errors
-  //     return Promise.reject('unsuffcient balance')
-  //   }
-  //   setDisabled(false)
-  //   return Promise.resolve()
-  // }
-
-  // eslint-disable-next-line consistent-return
-  // const checkPrice = (_: any, value = 0) => {
-  //   if (value <= 0) {
-  //     // setDisabled(true)
-  //     // eslint-disable-next-line prefer-promise-reject-errors
-  //     return Promise.reject('Price must be greater than zero!')
-  //   }
-  //   if (value <= 0.01) {
-  //     // setDisabled(true)
-  //     // eslint-disable-next-line prefer-promise-reject-errors
-  //     return Promise.reject('Order too small')
-  //   }
-  //   if (value > maximumPayable) {
-  //     // setDisabled(true)
-  //     // eslint-disable-next-line prefer-promise-reject-errors
-  //     return Promise.reject('unsuffcient balance')
-  //   }
-  //   setDisabled(false)
-  //   return Promise.resolve()
-  // }
+  const SelectContent = (
+    <OrderSelectPopver>
+      <Input
+        style={{
+          flex: 'auto',
+          fontSize: '16px',
+          background: 'rgba(236, 242, 244, 1)',
+        }}
+        placeholder={i18n.t('trade.searchPairPlaceHolder')}
+      />
+      <Divider
+        style={{
+          background: '#ABD1E1',
+        }}
+      />
+      {PairList.slice(1).map(item => (
+        <PairBlock key={item.name} onClick={() => changePair(item.name)}>
+          <Button className="pairTraceList" type="text">
+            <TradeCoinBox pair={item.name} />
+            <div className="decollect">/</div>
+            <TradeCoinBox pair="CKB" />
+          </Button>
+        </PairBlock>
+      ))}
+    </OrderSelectPopver>
+  )
 
   return (
-    <PairOrderFormBox>
-      <OrderSelectBox id="trace-form-select">
-        <span className="pair">Pair</span>
-        <Select
-          defaultValue="DAI"
-          bordered={false}
-          style={{
-            width: '100%',
-          }}
-          getPopupContainer={() => document.getElementById('trace-form-select') as HTMLElement}
-          size="large"
-          onChange={changePair}
-          dropdownRender={(menu: any) => (
-            <div>
-              {menu}
-              <Divider
-                style={{
-                  margin: '4px 0',
-                }}
-              />
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'nowrap',
-                  padding: 8,
-                }}
-              >
-                <Input
-                  size="large"
-                  style={{
-                    flex: 'auto',
-                    background: 'rgba(236, 242, 244, 1)',
-                  }}
-                  placeholder={i18n.t('trade.searchPairPlaceHolder')}
-                />
-              </div>
-            </div>
-          )}
-        >
-          {PairList.map(item => (
-            <Option label={item.name} value={item.name} key={item.name}>
-              <PairBox>
-                <li className="pairTraceList">
-                  <TradeCoinBox pair={item.name} />
-                  <div className="decollect">/</div>
-                  <TradeCoinBox pair="CKB" />
-                </li>
-              </PairBox>
-            </Option>
-          )).slice(1)}
-        </Select>
-      </OrderSelectBox>
+    <PairOrderFormBox id="order-box">
+      <Popover
+        overlayClassName="no-arrorPoint popver-overlay"
+        trigger="click"
+        visible={visiblePopver}
+        getPopupContainer={() => document.getElementById('order-box') as HTMLElement}
+        content={SelectContent}
+        onVisibleChange={(visible: boolean) => setVisiblePopver(visible)}
+      >
+        <OrderSelectBox id="trace-form-select">
+          <PairBlock>
+            <span className="pair">{i18n.t('trade.pair')}</span>
+            <Button className="pairTraceList" type="text">
+              <TradeCoinBox pair={Order.pair[0]} />
+              <div className="decollect">/</div>
+              <TradeCoinBox pair={Order.pair[1]} />
+            </Button>
+          </PairBlock>
+        </OrderSelectBox>
+      </Popover>
       <TracePairCoin />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
         <Form.Item label={i18n.t('trade.pay')}>

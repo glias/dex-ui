@@ -10,7 +10,6 @@ const TracePairCoin = () => {
   const [transform, setTransform] = useState(false)
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
-  console.log(buyer)
 
   const togglePair = () => {
     Order.togglePair()

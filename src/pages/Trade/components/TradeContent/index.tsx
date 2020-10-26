@@ -178,11 +178,9 @@ export default () => {
         <div className="tableHeaderSearch">
           <h3>{i18n.t('trade.myOrder')}</h3>
           <Input
-            placeholder="Filter Token"
-            style={{
-              width: '180px',
-              color: 'rgba(136, 136, 136, 1)',
-            }}
+            placeholder={i18n.t('trade.filterToken')}
+            className="table-header-input"
+            size="middle"
             prefix={<i className="ai-search" />}
           />
         </div>

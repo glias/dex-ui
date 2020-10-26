@@ -2,8 +2,16 @@ import styled from 'styled-components'
 
 export const PairOrderFormBox = styled.div`
   overflow: hidden;
+  position: relative;
   color: rgba(102, 102, 102, 1);
   box-sizing: border-box;
+  .popver-overlay {
+    width: 100%;
+    .ant-popover-content {
+      margin-top: -10px;
+      border: 1px solid rgba(171, 209, 225, 1);
+    }
+  }
   .ant-form {
     background: #fff;
     margin-top: 10px;
@@ -58,10 +66,16 @@ export const PairOrderFormBox = styled.div`
       font-size: 17px;
       font-weight: 500;
       height: 60px;
+      width: 100%;
       color: rgba(0, 106, 151, 1);
       text-align: center;
     }
   }
+`
+
+export const OrderSelectPopver = styled.div`
+  width: 100%;
+  padding: 10px 10px 30px;
 `
 
 export const OrderSelectBox = styled.div`
@@ -97,13 +111,14 @@ export const PayMeta = styled.div`
   }
 `
 
-export const PairBox = styled.div`
+export const PairBlock = styled.div`
   font-size: 16px;
   display: flex;
   .pairTraceList {
     display: flex;
     padding: 0 10px;
     height: 40px;
+    width: 100%;
     line-height: 40px;
     cursor: pointer;
     &: hover {

@@ -102,7 +102,7 @@ const Header = () => {
               {i18n.t('header.wallet')}
             </Button>
           ) : (
-            <div>
+            <>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
                 {truncatureStr(ckbAddress)}
@@ -110,16 +110,16 @@ const Header = () => {
               <Popover
                 placement="bottomRight"
                 title=""
-                overlayClassName="no-arrorPoint"
+                overlayClassName="no-arrorPoint popover-wallet"
                 trigger="click"
+                getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
                 content={<WalletBox disconnect={disconnectWallet} addresses={[ckbAddress, ethAddress]} />}
               >
                 <Badge count="">
                   <img src={outlined} alt="account" className="account-btn" />
-                  {/* <Button className="account-btn" icon={ <AlignCenterOutlined /> }></Button> */}
                 </Badge>
               </Popover>
-            </div>
+            </>
           )}
           <Popover
             placement="bottomRight"

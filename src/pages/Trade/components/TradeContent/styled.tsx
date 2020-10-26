@@ -18,6 +18,17 @@ export const TradeTableBox = styled.div`
       display: flex;
       align-items: center;
       justify-content: flex-start;
+      .table-header-input {
+        color: rgba(136, 136, 136, 1);
+        background: #ecf2f4;
+        border-radius: 10px;
+        height: 28px;
+        width: 120px;
+        input {
+          background: #ecf2f4;
+          color: rgba(136, 136, 136, 1);
+        }
+      }
       h3 {
         color: #fff;
         font-size: 16px;

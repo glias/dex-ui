@@ -6,7 +6,6 @@ export const HeaderBox = styled.div`
   margin: 0 auto;
   overflow: hidden;
   color: rgba(81, 119, 136, 1);
-  border-bottom: 1px solid #abd1e1;
 `
 export const MenuLiText = styled.span`
   font-weight: bolder;
@@ -67,28 +66,27 @@ export const HeaderMeta = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  .sidebarBox {
-    .ant-popover-content {
-      overflow: hidden;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 106, 151, 1);
-    }
-    .ant-popover-inner-content {
-      padding: 0;
-      .sidebar-content {
-        width: 150px;
-        display: flex;
-        flex-direction: column;
-        .sidebar-title {
-          line-height: 40px;
-          height: 40px;
-          text-align: center;
-          background: rgba(0, 106, 151, 1);
-          color: #fff;
-        }
-        button {
-          margin: 5px 0;
-        }
+  .ant-popover-content {
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 106, 151, 1);
+  }
+  .ant-popover-content {
+    padding: 0;
+    border-radius: 10px;
+    .sidebar-content {
+      width: 150px;
+      display: flex;
+      flex-direction: column;
+      .sidebar-title {
+        line-height: 40px;
+        height: 40px;
+        text-align: center;
+        background: rgba(0, 106, 151, 1);
+        color: #fff;
+      }
+      button {
+        margin: 5px 0;
       }
     }
   }
@@ -123,6 +121,7 @@ export const HeaderMeta = styled.div`
       }
       ul > li {
         margin: 10px 0;
+        padding: 0 10px;
         display: flex;
         justify-content: center;
         align-items: center;

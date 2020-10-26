@@ -35,15 +35,25 @@ export function useOrder() {
 
   const [pair, setPair] = useState(buyPair)
 
-  const togglePair = useCallback(() => {
-    if (orderType === OrderType.Buy) {
-      setPair(sellPair)
-      setOrderType(OrderType.Sell)
-    } else {
-      setPair(buyPair)
-      setOrderType(OrderType.Buy)
-    }
-  }, [orderType, sellPair, buyPair])
+  const togglePair = useCallback(
+    (pairName?: string) => {
+      console.log(pairName)
+      if (pairName) {
+        setPair([pairName, 'CKB'])
+        setOrderType(OrderType.Sell)
+        return
+      }
+
+      if (orderType === OrderType.Buy) {
+        setPair(sellPair)
+        setOrderType(OrderType.Sell)
+      } else {
+        setPair(buyPair)
+        setOrderType(OrderType.Buy)
+      }
+    },
+    [orderType, sellPair, buyPair],
+  )
 
   const receive = useMemo(() => {
     if (price && pay) {
