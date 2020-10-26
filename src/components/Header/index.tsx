@@ -72,7 +72,7 @@ const Header = () => {
 
   const sideBarContent = (
     <div className="sidebar-content">
-      <div className="sidebar-title">More</div>
+      <div className="sidebar-title">{i18n.t('header.more')}</div>
       {thirdPartyLinks.map(item => (
         <Button type="text" onClick={() => window.open(item.link)} key={item.name}>
           {item.name}

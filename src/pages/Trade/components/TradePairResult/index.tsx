@@ -3,7 +3,6 @@ import { Button } from 'antd'
 import { useContainer } from 'unstated-next'
 import { useSelector } from 'react-redux'
 import i18n from '../../../../utils/i18n'
-
 import orderPlace from '../../../../assets/img/orderPlaced.png'
 import declined from '../../../../assets/img/declined.png'
 import { OrderButton, TracePairResultBox, TradePairConfirmHeader, TradePairConfirmContent } from './styled'
@@ -33,13 +32,13 @@ export default function Trade() {
       <div className="order-place">
         <img src={declined} alt="Order Declined" />
       </div>
-      <div>Order Declined</div>
+      <div>{i18n.t(`trade.orderDeclined`)}</div>
     </div>
   )
   return (
     <TracePairResultBox>
       <TradePairConfirmHeader>
-        <span>Review Order</span>
+        <span>{i18n.t(`trade.reviewOrder`)}</span>
       </TradePairConfirmHeader>
       <TradePairConfirmContent>
         {Order.txHash ? tradeSuccessBox(Order.txHash) : tradeFailedBox()}

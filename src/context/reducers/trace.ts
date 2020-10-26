@@ -1,4 +1,5 @@
 import { SELECTED_TRADE, TRACEORDER_STEP, TRACE_TABLELIST } from '../actions/types'
+import i18n from '../../utils/i18n'
 
 interface ordersListType {
   pay: string
@@ -34,7 +35,7 @@ export const initTraceState = {
   suggestionPrice: '-',
   tableHeaderColumn: [
     {
-      title: 'Pay',
+      title: i18n.t('trade.pay'),
       dataIndex: 'pay',
       key: 'pay',
     },
@@ -44,22 +45,22 @@ export const initTraceState = {
       key: 'receive',
     },
     {
-      title: 'Price',
+      title: i18n.t('trade.price'),
       dataIndex: 'price',
       key: 'price',
     },
     {
-      title: 'Status',
+      title: i18n.t('trade.status'),
       dataIndex: 'status',
       key: 'status',
     },
     {
-      title: 'Executed',
+      title: i18n.t('trade.executed'),
       dataIndex: 'executed',
       key: 'executed',
     },
     {
-      title: 'Action',
+      title: i18n.t('trade.action'),
       dataIndex: 'action',
       key: 'action',
     },

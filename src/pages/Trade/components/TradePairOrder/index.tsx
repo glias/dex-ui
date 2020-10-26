@@ -139,12 +139,9 @@ export default () => {
       </div>
       <TracePairCoin />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
-        <Form.Item label="Pay">
+        <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
-            <span className="max-num">
-              MAX:
-              {maximumPayable}
-            </span>
+            <span className="max-num">{`${i18n.t('trade.max')}: ${maximumPayable}`}</span>
             <Tooltip title="todo">
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -174,13 +171,12 @@ export default () => {
             />
           </Form.Item>
         </Form.Item>
-        <Form.Item label="Price" className="price-box">
+        <Form.Item label={i18n.t('trade.price')} className="price-box">
           <PayMeta>
             <Button type="text" className="max-num">
-              Suggestion:
-              {10.5}
+              {`${i18n.t('trade.suggestion')}:${10.5}`}
             </Button>
-            <Tooltip title="todo">
+            <Tooltip title={i18n.t(`trade.suggestionTooltip`)}>
               <i className="ai-question-circle-o" />
             </Tooltip>
           </PayMeta>
@@ -216,7 +212,7 @@ export default () => {
         >
           <i className="ai-caret-down" />
         </Form.Item>
-        <Form.Item label="Receive" name="receiver">
+        <Form.Item label={i18n.t('trade.receive')} name="receiver">
           <div className="receiver-box">
             <span className="receiver-ckb">{receive}</span>
             <span>{seller}</span>

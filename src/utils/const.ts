@@ -32,7 +32,7 @@ export const thirdPartyLinks = [
   },
 ]
 
-export const TraceTableList = ['All', 'Pedding', 'Opening', 'Complete', 'Claimed', 'Aborted']
+export const TraceTableList = ['all', 'pedding', 'opening', 'complete', 'claimed', 'aborted']
 
 export const ConnectLists = [
   {

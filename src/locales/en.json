@@ -5,14 +5,39 @@
       "Pool": "Pool",
       "Match": "Match",
       "wallet": "Connect Wallet",
-      "addressTooltip": "A transit address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
+      "more": "More",
+      "account": "Account",
+      "testWallet": "Test Wallet",
+      "balances": "Balances",
+      "HexAddressTooltip": "Current Eth Address. others can send CKB to this address using wallets that support pw-lock.",
+      "ckbAddressTooltip": "A Transit Address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
     },
     "trade": {
       "pair": "Pair",
+      "pay": "Pay",
+      "max": "MAX",
+      "price": "Price",
+      "executed": "Executed",
+      "status": "Status",
+      "action": "Action",
+      "reviewOrder": "Review Order",
       "placeOrder": "Place Order",
+      "myOrder": "My Order",
+      "suggestion": "Suggestion",
+      "executionFee": "Execution fee",
+      "receive": "Receive",
       "searchPairPlaceHolder": "Search name or Type ID",
       "TradeSuccess": "New Trade",
-      "TradeFailed": "Dismiss"
+      "TradeFailed": "Dismiss",
+      "confirmOrder": "Confirm Order",
+      "orderDeclined": "Order Declined",
+      "all": "All",
+      "pedding": "Pedding",
+      "opening": "Opening",
+      "complete": "Complete",
+      "aborted": "Aborted",
+      "claimed": "Claimed",
+      "suggestionTooltip": "Market Price. With this price, orders are highly likely to be filled, but not guaranteed. Unfilled order will be opening on chain."
     },
     "pool": {}
   }

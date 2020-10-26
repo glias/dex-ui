@@ -9,6 +9,7 @@ import copy from '../../../assets/img/copy.png'
 import questionMark from '../../../assets/img/questionMark_frame.png'
 import toExplorer from '../../../assets/img/toExplorer.png'
 import { PairList } from '../../../utils/const'
+import i18n from '../../../utils/i18n'
 import { HeaderBox, HeaderPanel, HeaderMeta, HeaderWalletBox, HeaderWallet, WalletList } from './styled'
 
 interface Props {
@@ -69,14 +70,11 @@ export default function WalletBox({ disconnect, addresses }: Props) {
     )
   }
 
-  // const [currentTab, setCurrentTab] = useState('balances')
-  const tooltip = `A transit address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address.`
-
   return (
     <HeaderWalletBox>
-      <HeaderWallet>Account</HeaderWallet>
+      <HeaderWallet>{i18n.t('header.account')}</HeaderWallet>
       <div className="wallet-title">
-        <span>Test Wallet</span>
+        <span>{i18n.t('header.testWallet')}</span>
         <img src={signOutpng} alt="signOut" onClick={disconnect} />
       </div>
       <WalletList>
@@ -99,7 +97,10 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                 />
               </Tooltip>
             </span>
-            <Tooltip title={tooltip} placement="bottom">
+            <Tooltip
+              title={address.startsWith('0x') ? i18n.t('header.HexAddressTooltip') : i18n.t('header.ckbAddressTooltip')}
+              placement="bottom"
+            >
               <img src={questionMark} className="questionMark" alt="question about wallet address" />
             </Tooltip>
           </div>
@@ -115,7 +116,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                     marginLeft: '10px',
                   }}
                 >
-                  Balances
+                  {i18n.t('header.balances')}
                 </h4>
                 <div className="divider" />
                 <ul>
