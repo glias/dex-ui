@@ -84,20 +84,18 @@ const Header = () => {
   return (
     <HeaderBox className="header-box">
       <HeaderPanel>
-        <div className="panel-nav">
-          <HeaderLogoBox>CKB DEX</HeaderLogoBox>
-          <Menu mode="horizontal" onClick={e => history.push(`/${e.key}`)}>
-            <Menu.Item key="trade">
-              <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
-            </Menu.Item>
-            <Menu.Item key="pool">
-              <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
-            </Menu.Item>
-            <Menu.Item key="match">
-              <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
-            </Menu.Item>
-          </Menu>
-        </div>
+        <HeaderLogoBox>CKB DEX</HeaderLogoBox>
+        <Menu mode="horizontal" className="menuBox" onClick={e => history.push(`/${e.key}`)}>
+          <Menu.Item key="trade">
+            <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
+          </Menu.Item>
+          <Menu.Item key="pool">
+            <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
+          </Menu.Item>
+          <Menu.Item key="match">
+            <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
+          </Menu.Item>
+        </Menu>
         <HeaderMeta id="header-meta">
           {ckbAddress === '' ? (
             <Button className="collect-btn" onClick={connectWallet}>

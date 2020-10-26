@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const PoolContainer = styled.div`
+export const MatchContainer = styled.div`
   font-size: 20px;
   text-align: center;
   background-color: #ecf2f4;

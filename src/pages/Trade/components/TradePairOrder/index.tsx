@@ -8,7 +8,7 @@ import { SELECTED_TRADE } from '../../../../context/actions/types'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
-import { PairOrderFormBox, PairBox, PayMeta } from './styled'
+import { PairOrderFormBox, PairBox, PayMeta, OrderSelectBox } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
 
 export default () => {
@@ -88,9 +88,11 @@ export default () => {
 
   return (
     <PairOrderFormBox>
-      <div className="trace-form-select" id="trace-form-select">
+      <OrderSelectBox id="trace-form-select">
+        <span className="pair">Pair</span>
         <Select
           defaultValue="DAI"
+          bordered={false}
           style={{
             width: '100%',
           }}
@@ -136,7 +138,7 @@ export default () => {
             </Option>
           )).slice(1)}
         </Select>
-      </div>
+      </OrderSelectBox>
       <TracePairCoin />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
         <Form.Item label={i18n.t('trade.pay')}>

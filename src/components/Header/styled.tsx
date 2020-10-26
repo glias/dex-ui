@@ -20,17 +20,20 @@ export const HeaderPanel = styled.div`
   padding: 0 50px;
   box-size: border-box;
   font-size: 20px;
-  .panel-nav {
-    flex: 1;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    h1 {
-      margin: 0 20px 0 0;
-    }
+  h1 {
+    margin: 0 20px 0 0;
   }
-  .ant-menu-horizontal 
-    color: rgba(0,106,151,0.6);
+  .ant-menu-item {
+    color: rgba(0, 106, 151, 0.6);
+    border-bottom: 2px solid transparent;
+    &: hover {
+      color: rgba(0, 106, 151, 1);
+      border-bottom: 2px solid rgba(0, 106, 151, 1);
+    }
+    &.ant-menu-item-selected {
+      color: rgba(0, 106, 151, 1);
+      border-bottom: 2px solid rgba(0, 106, 151, 1);
+    }
     .ant-menu-item-selected {
       color: rgba(0, 106, 151, 1);
     }

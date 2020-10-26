@@ -4,6 +4,9 @@ export const TradeTableBox = styled.div`
   overflow: hidden;
   background: #fff;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
+  border: 1px solid #abd1e1;
+  box-sizing: border-box;
+  border-radius: 10px;
   .tableHederBox {
     display: flex;
     justify-content: space-between;

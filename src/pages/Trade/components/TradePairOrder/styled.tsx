@@ -4,19 +4,11 @@ export const PairOrderFormBox = styled.div`
   overflow: hidden;
   color: rgba(102, 102, 102, 1);
   box-sizing: border-box;
-  .trace-form-select {
-    cursor: pointer;
-    height: 42px;
-    line-height: 42px;
-    box-sizing: border-box;
-    .ant-select-selector {
-      border: 1px solid rgba(171, 209, 225, 1);
-    }
-  }
   .ant-form {
     background: #fff;
     margin-top: 10px;
     padding-top: 10px;
+    border-radius: 10px;
     border: 1px solid rgba(171, 209, 225, 1);
     .ant-form-item {
       padding: 0 10px;
@@ -73,14 +65,35 @@ export const PairOrderFormBox = styled.div`
   }
 `
 
+export const OrderSelectBox = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  height: 42px;
+  line-height: 42px;
+  background: #fff;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid rgba(171, 209, 225, 1);
+  .pair {
+    padding-left: 10px;
+  }
+  .ant-select-selector {
+    border: 1px solid rgba(171, 209, 225, 1);
+  }
+`
+
 export const PayMeta = styled.div`
   position: absolute;
   top: -30px;
   right: 0;
   font-size: 13px;
   color: rgba(102, 102, 102, 1);
-  span.max-num {
+  .max-num {
     margin-right: 5px;
+    color: rgba(102, 102, 102, 1);
+    padding: 0;
   }
 `
 

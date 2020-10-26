@@ -6,6 +6,7 @@ const Trade = lazy(() => import('../pages/Trade'))
 const Header = lazy(() => import('../components/Header'))
 const Footer = lazy(() => import('../components/Footer'))
 const Pool = lazy(() => import('../pages/Pool'))
+const Match = lazy(() => import('../pages/Match'))
 
 const Containers: CustomRouter.Route[] = [
   {
@@ -28,6 +29,13 @@ const Containers: CustomRouter.Route[] = [
     exact: true,
     showHeader: true,
     component: Pool,
+  },
+  {
+    name: 'Match',
+    path: '/match',
+    exact: true,
+    showHeader: true,
+    component: Match,
   },
   {
     name: '404',
