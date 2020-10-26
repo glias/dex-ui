@@ -52,15 +52,14 @@ export const PairOrderFormBox = styled.div`
   .submit-item {
     padding: 0;
     margin: 0;
+    height: 60px;
+    text-align: center;
     .submitBtn {
       font-size: 17px;
       font-weight: 500;
-      color: #006a97;
+      height: 60px;
+      color: rgba(0, 106, 151, 1);
       text-align: center;
-      display: flex;
-      border: 0;
-      width: 100%;
-      justify-content: center;
     }
   }
 `
@@ -90,10 +89,11 @@ export const PayMeta = styled.div`
   right: 0;
   font-size: 13px;
   color: rgba(102, 102, 102, 1);
-  .max-num {
-    margin-right: 5px;
+  .form-label-meta-num {
+    margin: -30px 5px 0 0;
     color: rgba(102, 102, 102, 1);
     padding: 0;
+    text-decoration: underline;
   }
 `
 

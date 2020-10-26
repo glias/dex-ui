@@ -93,7 +93,14 @@ export default function TradePairConfirm() {
           </ul>
         </OrderBox>
         <OrderButton>
-          <Button type="text" size="large" onClick={onConfirm}>
+          <Button
+            type="text"
+            size="large"
+            onClick={onConfirm}
+            style={{
+              color: 'rgba(0, 106, 151, 1)',
+            }}
+          >
             {i18n.t(`trade.confirmOrder`)}
           </Button>
         </OrderButton>

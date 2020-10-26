@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-curly-newline */
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useContainer } from 'unstated-next'
 import { Table, Button, Input, Spin } from 'antd'
 import PWCore, { Address, Amount, OutPoint, AddressType } from '@lay2/pw-core'
@@ -18,6 +18,7 @@ const RECEIVE_UNIT = 10 * 1000 * 1000 * 1000
 const PRICE_UNIT = 100 * 1000 * 1000
 
 export default () => {
+  const [currentOrderName, setCurrentOrderName] = useState('all')
   const Order = useContainer(OrderContainer)
   const Wallet = useContainer(WalletContainer)
 
@@ -51,8 +52,6 @@ export default () => {
 
   const onCancel = useCallback(
     async (txHash: string) => {
-      // eslint-disable-next-line no-debugger
-      // debugger
       Order.setLoading(txHash)
       const order = ordersList.find((o: any) => o.last_order_cell_outpoint.tx_hash === txHash)
       const outpoint = order.last_order_cell_outpoint
@@ -189,7 +188,15 @@ export default () => {
         </div>
         <FilterTablePire>
           {TraceTableList.map(val => (
-            <Button type="text" key={val} size="small">
+            <Button
+              type="text"
+              key={val}
+              size="small"
+              onClick={() => setCurrentOrderName(val)}
+              style={{
+                color: currentOrderName === val ? '#fff' : 'rgba(255, 255, 255, 0.6)',
+              }}
+            >
               {i18n.t(`trade.${val}`)}
             </Button>
           ))}

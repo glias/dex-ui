@@ -16,7 +16,6 @@ export default () => {
   const { Option } = Select
   const Order = useContainer(OrderContainer)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
-  const maximumPayable = 0
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled] = useState(false)
@@ -143,7 +142,7 @@ export default () => {
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
-            <span className="max-num">{`${i18n.t('trade.max')}: ${maximumPayable}`}</span>
+            <span className="form-label-meta-num">{`${i18n.t('trade.max')}: ${Order.maximumPayable}`}</span>
             <Tooltip title="todo">
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -158,7 +157,7 @@ export default () => {
             // ]}
           >
             <Input
-              placeholder="0.0"
+              placeholder="0"
               suffix={buyer}
               type="number"
               style={{
@@ -175,9 +174,7 @@ export default () => {
         </Form.Item>
         <Form.Item label={i18n.t('trade.price')} className="price-box">
           <PayMeta>
-            <Button type="text" className="max-num">
-              {`${i18n.t('trade.suggestion')}:${10.5}`}
-            </Button>
+            <span className="form-label-meta-num">{`${i18n.t('trade.suggestion')}: ${Order.suggestionPrice}`}</span>
             <Tooltip title={i18n.t(`trade.suggestionTooltip`)}>
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -191,7 +188,7 @@ export default () => {
             // ]}
           >
             <Input
-              placeholder="0.0"
+              placeholder="0"
               suffix={`${seller} per ${buyer}`}
               style={{
                 color: 'rgba(81, 119, 136, 1)',
@@ -210,6 +207,7 @@ export default () => {
           style={{
             textAlign: 'center',
             margin: 0,
+            color: '#517788',
           }}
         >
           <i className="ai-caret-down" />

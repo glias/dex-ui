@@ -32,9 +32,9 @@
       "confirmOrder": "Confirm Order",
       "orderDeclined": "Order Declined",
       "all": "All",
-      "pedding": "Pedding",
+      "pedding": "Pending",
       "opening": "Opening",
-      "complete": "Complete",
+      "complete": "Completed",
       "aborted": "Aborted",
       "claimed": "Claimed",
       "suggestionTooltip": "Market Price. With this price, orders are highly likely to be filled, but not guaranteed. Unfilled order will be opening on chain."

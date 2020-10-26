@@ -32,7 +32,7 @@ const Trade = () => {
         <Col span={18}>
           <Content
             style={{
-              marginLeft: '10px',
+              marginLeft: '24px',
             }}
           >
             <TradeTableBox />

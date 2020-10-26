@@ -13,6 +13,7 @@ export const TracePairLine = styled.div`
   span {
     text-align: center;
     font-size: 16px;
+    width: 40%;
   }
 `
 
