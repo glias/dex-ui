@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button, Tooltip } from 'antd'
 import { useContainer } from 'unstated-next'
 import WalletContainer from '../../../containers/wallet'
-import signOutpng from '../../../assets/img/signOut.png'
+import signOutpng from '../../../assets/img/exit.png'
 import copy from '../../../assets/img/copy.png'
 import questionMark from '../../../assets/img/questionMark_frame.png'
 import toExplorer from '../../../assets/img/toExplorer.png'
@@ -86,11 +86,13 @@ export default function WalletBox({ disconnect, addresses }: Props) {
 
   return (
     <HeaderWalletBox>
-      <HeaderWallet>{i18n.t('header.account')}</HeaderWallet>
-      <div className="wallet-title">
+      <HeaderWallet>
         <span>{i18n.t('header.testWallet')}</span>
         <img src={signOutpng} alt="signOut" onClick={disconnect} />
-      </div>
+      </HeaderWallet>
+      {/* <div className="wallet-title">
+       
+      </div> */}
       <WalletList>
         {addresses.map(address => (
           <div className="wallet" key={address}>

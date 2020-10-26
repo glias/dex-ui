@@ -95,6 +95,12 @@ export const OrderSelectBox = styled.div`
   .ant-select-selector {
     border: 1px solid rgba(171, 209, 225, 1);
   }
+  .pairTraceList {
+    color: red;
+    &: hover {
+      background: transparent !important;
+    }
+  }
 `
 
 export const PayMeta = styled.div`

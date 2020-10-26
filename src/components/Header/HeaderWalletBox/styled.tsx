@@ -18,6 +18,7 @@ export const HeaderWalletBox = styled.div`
   }
 `
 export const WalletList = styled.li`
+  padding: 10px 0;
   .wallet {
     padding: 5px 15px;
     display: flex;
@@ -45,8 +46,14 @@ export const HeaderWallet = styled.div`
   background: rgba(0, 106, 151, 1);
   color: #fff;
   text-align: center;
-  span {
+  img {
     float: right;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  span {
     height: 100%;
     color: #fff;
     line-height: 40px;
