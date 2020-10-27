@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['airbnb', 'plugin:prettier/recommended'],
+  extends: ['airbnb', 'plugin:prettier/recommended', 'plugin:react/recommended'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'react-hooks'],
   rules: {
@@ -56,7 +56,7 @@ module.exports = {
     'object-curly-newline': [
       'error',
       {
-        ObjectExpression: 'always',
+        ObjectExpression: { consistent: true },
         ObjectPattern: {
           multiline: true,
         },
@@ -92,7 +92,8 @@ module.exports = {
         exceptions: [''],
       },
     ],
-    'no-console': 0,
+    "react/display-name": 0,
+    'no-console': [2, { allow: ['warn', 'error'] }],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     camelcase: [
