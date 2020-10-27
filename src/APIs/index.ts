@@ -1,7 +1,8 @@
 import { Script } from '@lay2/pw-core'
 import axios from 'axios'
+import { OrderType } from '../containers/order'
 
-const SERVER_URL = 'http://192.168.110.168:8080'
+const SERVER_URL = 'http://localhost:9090'
 
 export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHash: string, lockArgs: string) {
   return axios.get(`${SERVER_URL}/cells`, {
@@ -44,6 +45,47 @@ export function getSudtLiveCels(type: Script, lock: Script, amount: string) {
   }
 
   return axios.get(`${SERVER_URL}/cells`, {
+    params,
+  })
+}
+
+export function getSudtBalance(type: Script, lock: Script) {
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+  }
+  return axios.get(`${SERVER_URL}/sudt-balance`, {
+    params,
+  })
+}
+
+export function getCkbBalance(type: Script, lock: Script) {
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+  }
+  return axios.get(`${SERVER_URL}/ckb-balance`, {
+    params,
+  })
+}
+
+export function getBestPrice(type: Script, orderType: OrderType) {
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    is_bid: orderType === OrderType.Buy,
+  }
+
+  return axios.get(`${SERVER_URL}/best-price`, {
     params,
   })
 }

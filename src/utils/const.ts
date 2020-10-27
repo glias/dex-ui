@@ -75,14 +75,14 @@ export const SUDT_DEP = new CellDep(
 )
 
 export const ORDER_BOOK_LOOK_SCRIPT = new Script(
-  '0x8d03e403d1e5c44e0b7fa44e98ec2b3da4c20c06f646119324004eec28f62289',
+  '0x9c833b9ebd4259ca044d2c47c5e51b7fc25380b07291e54b248d3808f08ed7fd',
   '0xb74a976e3ceab91f27690b27473731d7ccdff45302bb082394a03cb97641edaa',
   HashType.type,
 )
 
 export const ORDER_BOOK_LOOK_DEP = new CellDep(
   DepType.depGroup,
-  new OutPoint('0x751f0d4591e6a2c7bd54bc7a9cf6e9e87d31bd8cf2af9f7dda38c9d8d8cc29ee', '0x0'),
+  new OutPoint('0xcdfd397823f6a130294c72fbe397c469d459b83db401296c291db7b170b15839', '0x0'),
 )
 
 export const CKB_NODE_URL = 'http://localhost:8224'
