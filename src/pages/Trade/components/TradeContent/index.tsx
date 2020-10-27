@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useContainer } from 'unstated-next'
 import { Table, Button, Input, Spin } from 'antd'
-import PWCore, { Address, Amount, OutPoint, AddressType } from '@lay2/pw-core'
+import PWCore, { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import { TraceTableList } from '../../../../utils/const'
 import { TradeTableBox, FilterTablePire, TableBox } from './styled'
 // import toExplorer from '../../../../assets/img/toExplorer.png'
@@ -60,7 +60,6 @@ export default () => {
       const builder = new CancelOrderBuilder(
         new Address(Wallet.ckbWallet.address, AddressType.ckb),
         new OutPoint(outpoint.tx_hash, outpoint.index),
-        new Amount('80'),
       )
 
       try {
