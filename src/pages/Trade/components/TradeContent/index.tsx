@@ -51,8 +51,6 @@ export default () => {
 
   const onCancel = useCallback(
     async (txHash: string) => {
-      // eslint-disable-next-line no-debugger
-      // debugger
       Order.setLoading(txHash)
       const order = ordersList.find((o: any) => o.last_order_cell_outpoint.tx_hash === txHash)
       const outpoint = order.last_order_cell_outpoint

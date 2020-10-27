@@ -1,8 +1,8 @@
 import PWCore from '@lay2/pw-core'
 import { useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
-import { getBestPrice, getSudtBalance } from '../APIs'
-import { PRICE_DECIMAL, SUDT_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils/const'
+import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
+import { CKB_DECIMAL, PRICE_DECIMAL, SUDT_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils/const'
 import calcReceive from '../utils/fee'
 import WalletContainer from './wallet'
 
@@ -59,15 +59,18 @@ export function useOrder() {
       const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
       setMaxPay((BigInt(balance) / SUDT_DECIMAL).toString())
     } else {
-      setMaxPay(ckbBalance)
+      const { balance } = (await getCkbBalance(lockScript)).data
+      setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
     }
-  }, [orderType, sellPair, buyPair, ckbBalance])
+  }, [orderType, sellPair, buyPair])
 
   const initPrice = useCallback(async () => {
-    setMaxPay(ckbBalance)
+    const lockScript = PWCore.provider.address.toLockScript()
+    const { balance } = (await getCkbBalance(lockScript)).data
+    setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
     const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
     setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
-  }, [orderType, ckbBalance])
+  }, [orderType])
 
   const receive = useMemo(() => {
     if (price && pay) {

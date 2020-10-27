@@ -181,6 +181,7 @@ export default () => {
                 color: 'rgba(81, 119, 136, 1)',
                 width: '100%',
               }}
+              step="any"
               value={pay}
               onChange={e => {
                 payOnChange(e.target.value)

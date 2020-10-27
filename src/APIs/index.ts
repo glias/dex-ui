@@ -64,11 +64,8 @@ export function getSudtBalance(type: Script, lock: Script) {
   })
 }
 
-export function getCkbBalance(type: Script, lock: Script) {
+export function getCkbBalance(lock: Script) {
   const params = {
-    type_code_hash: type.codeHash,
-    type_hash_type: type.hashType,
-    type_args: type.args,
     lock_code_hash: lock.codeHash,
     lock_hash_type: lock.hashType,
     lock_args: lock.args,

@@ -36,14 +36,12 @@ export class PlaceOrderBuilder extends Builder {
   }
 
   async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
-    const needAmount = this.amount.add(fee)
-    // eslint-disable-next-line no-console
-    console.log(needAmount)
-
     let sudtSum = BigInt(0)
     let inputSum = Amount.ZERO
     const orderLockAmount = new Amount(ORDER_CELL_CAPACITY.toString())
     const lockScript = PWCore.provider.address.toLockScript()
+    const sudtChangeAmount = new Amount('142')
+    const neededAmount = orderLockAmount.add(sudtChangeAmount).add(fee)
 
     const inputCells: Cell[] = []
 
@@ -74,37 +72,50 @@ export class PlaceOrderBuilder extends Builder {
           cell.data,
         ),
       )
+      // eslint-disable-next-line no-debugger
       inputSum = inputSum.add(new Amount(cellOutput.capacity, AmountUnit.shannon))
     })
 
-    const orderOutputData = buildSellData(sudtSum.toString(), calcReceive(pay, price), price.toString())
+    const orderOutputData = buildSellData(this.pay, calcReceive(pay, price), price.toString())
     orderOutput.setHexData(orderOutputData)
 
-    if (inputSum.lte(orderLockAmount)) {
-      const [extraCell] = await this.collector.collect(this.address, Builder.MIN_CHANGE)
-      inputCells.push(extraCell)
+    if (inputSum.lte(neededAmount)) {
+      const extraCells = await this.collector.collect(this.address, neededAmount.sub(neededAmount))
+      extraCells.forEach(cell => {
+        if (inputSum.lte(neededAmount.add(Builder.MIN_CHANGE))) {
+          inputCells.push(cell)
+          inputSum = inputSum.add(cell.capacity)
+        }
+      })
     }
 
-    const changeCell = new Cell(inputSum.sub(orderLockAmount), this.address.toLockScript())
-    // eslint-disable-next-line no-debugger
-    const sudtChange = sudtSum - BigInt(this.amount.toString())
-    changeCell.setHexData(buildChangeData(sudtChange.toString()))
+    const ckbChangeCell = new Cell(inputSum.sub(neededAmount), this.address.toLockScript())
 
-    const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, changeCell]), [
+    const sudtChangeCell = new Cell(
+      sudtChangeAmount,
+      this.address.toLockScript(),
+      new Script(SUDT_TYPE_SCRIPT.codeHash, SUDT_TYPE_SCRIPT.args, SUDT_TYPE_SCRIPT.hashType),
+    )
+
+    const sudtChange = sudtSum - BigInt(this.pay)
+    sudtChangeCell.setHexData(buildChangeData(sudtChange.toString()))
+
+    const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, sudtChangeCell, ckbChangeCell]), [
       Builder.WITNESS_ARGS.Secp256k1,
     ])
 
     tx.raw.cellDeps.push(SUDT_DEP)
     this.fee = Builder.calcFee(tx)
 
-    if (changeCell.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
-      changeCell.capacity = changeCell.capacity.sub(this.fee)
+    if (ckbChangeCell.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
+      ckbChangeCell.capacity = ckbChangeCell.capacity.sub(this.fee)
       tx.raw.outputs.pop()
-      tx.raw.outputs.push(changeCell)
+      tx.raw.outputs.push(ckbChangeCell)
+      // eslint-disable-next-line no-debugger
       return tx
     }
 
-    return tx
+    return this.buildSellTx(this.fee)
   }
 
   async build(fee: Amount = Amount.ZERO): Promise<Transaction> {
@@ -127,7 +138,7 @@ export class PlaceOrderBuilder extends Builder {
       buildBuyData(calcReceive(parseFloat(this.pay), parseFloat(this.price)).toString(), this.price),
     )
     // fill the inputs
-    const cells = await this.collector.collect(PWCore.provider.address, neededAmount)
+    const cells = await this.collector.collect(PWCore.provider.address, neededAmount, { withData: true })
     cells.forEach(cell => {
       if (inputSum.lte(neededAmount.add(Builder.MIN_CHANGE))) {
         inputCells.push(cell)
