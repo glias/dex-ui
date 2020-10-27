@@ -87,3 +87,13 @@ export const ORDER_BOOK_LOOK_DEP = new CellDep(
 
 export const CKB_NODE_URL = 'https://aggron.ckb.dev'
 export const CKB_INDEXER_URL = 'https://prototype.ckbapp.dev/testnet/indexer'
+
+export const HISTORY_PARAMS = {
+  typeCodeHash: '0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
+  typeHashType: 'type',
+  typeArgs: '0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902',
+}
+
+export const HISTORY_QUERY_KEY = {
+  type: 'history-type',
+}

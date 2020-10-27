@@ -3,7 +3,6 @@ import styled from 'styled-components'
 export const HeaderBox = styled.div`
   padding: 0 120px;
   color: rgba(81, 119, 136, 1);
-  padding: 0 50px;
   .header-col-menu {
     display: flex;
     justify-content: space-between;

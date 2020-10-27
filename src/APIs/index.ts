@@ -1,6 +1,7 @@
 import axios from 'axios'
+import { HISTORY_PARAMS } from '../utils'
 
-const SERVER_URL = 'http://192.168.110.123:8080'
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://192.168.110.123:8080'
 
 export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHash: string, lockArgs: string) {
   return axios.get(`${SERVER_URL}/cells`, {
@@ -16,8 +17,13 @@ export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHas
 }
 
 export function getHistoryOrders(lockArgs: string) {
-  const url = `${SERVER_URL}/order-history?public_key_hash=${lockArgs}&type_code_hash=0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4&type_hash_type=type&type_args=0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902`
-  return axios.get(url)
+  const query = new URLSearchParams([
+    ['public_key_hash', lockArgs],
+    ['type_code_hash', HISTORY_PARAMS.typeCodeHash],
+    ['type_hash_type', HISTORY_PARAMS.typeHashType],
+    ['type_args', HISTORY_PARAMS.typeArgs],
+  ])
+  return axios.get(`${SERVER_URL}/order-history?${query}`)
 }
 
 export default getLiveCells
