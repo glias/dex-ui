@@ -3,6 +3,30 @@ import styled from 'styled-components'
 export const HeaderBox = styled.div`
   padding: 0 120px;
   color: rgba(81, 119, 136, 1);
+  padding: 0 50px;
+  .header-col-menu {
+    display: flex;
+    justify-content: space-between;
+    .ant-menu {
+      border-bottom: none;
+      line-height: 51px;
+      .ant-menu-item {
+        color: rgba(0, 106, 151, 0.6);
+        border-bottom: 2px solid transparent;
+        &: hover {
+          color: rgba(0, 106, 151, 1);
+          border-bottom: 2px solid rgba(0, 106, 151, 1);
+        }
+        &.ant-menu-item-selected {
+          color: rgba(0, 106, 151, 1);
+          border-bottom: 2px solid rgba(0, 106, 151, 1);
+        }
+        .ant-menu-item-selected {
+          color: rgba(0, 106, 151, 1);
+        }
+      }
+    }
+  }
 `
 export const MenuLiText = styled.span`
   font-weight: bolder;
@@ -40,10 +64,11 @@ export const HeaderPanel = styled.div`
 `
 
 export const HeaderLogoBox = styled.h1`
-  margin-left: 10px;
+  margin: 0 0 0 10px;
   font-weight: 900;
   font-size: 26px;
   color: #517788;
+  line-height: 53px;
 `
 export const HeaderNavgationBox = styled.ul`
   display: flex;
@@ -98,6 +123,16 @@ export const HeaderMeta = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  .more-btn {
+    border-radius: 10px;
+    background: rgba(0, 106, 151, 1);
+    color: #fff;
+    margin-left: 5px;
+    width: 28px;
+    height: 28px;
+    text-align: center;
+    padding: 0;
+  }
   .ant-popover-content {
     overflow: hidden;
     border-radius: 10px;
