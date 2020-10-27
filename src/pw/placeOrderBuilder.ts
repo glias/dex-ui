@@ -11,7 +11,7 @@ import PWCore, {
 } from '@lay2/pw-core'
 import { getSudtLiveCels } from '../APIs'
 import { OrderType } from '../containers/order'
-import { buildSellData, getAmountFromCellData } from '../utils/buffer'
+import { buildSellData, getAmountFromCellData, buildChangeData, buildBuyData } from '../utils/buffer'
 import { ORDER_BOOK_LOOK_SCRIPT, ORDER_CELL_CAPACITY, SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
 import calcReceive from '../utils/fee'
 
@@ -20,31 +20,22 @@ export class PlaceOrderBuilder extends Builder {
 
   amount: Amount
 
-  cellData: string
-
   orderType: OrderType
 
   price: string
 
-  constructor(
-    address: Address,
-    amount: Amount,
-    cellData = '0x',
-    orderType: OrderType,
-    price: string,
-    feeRate?: number,
-  ) {
+  pay: string
+
+  constructor(address: Address, amount: Amount, pay: string, orderType: OrderType, price: string, feeRate?: number) {
     super(feeRate)
     this.address = address
     this.amount = amount
-    this.cellData = cellData
     this.orderType = orderType
     this.price = price
+    this.pay = pay
   }
 
   async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
-    // eslint-disable-next-line no-debugger
-    debugger
     const needAmount = this.amount.add(fee)
     console.log(needAmount)
 
@@ -96,13 +87,13 @@ export class PlaceOrderBuilder extends Builder {
     const changeCell = new Cell(inputSum.sub(orderLockAmount), this.address.toLockScript())
     // eslint-disable-next-line no-debugger
     const sudtChange = sudtSum - BigInt(this.amount.toString())
-    changeCell.setHexData(buildSellData(sudtChange.toString(), '0', '0'))
+    changeCell.setHexData(buildChangeData(sudtChange.toString()))
+
     const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, changeCell]), [
       Builder.WITNESS_ARGS.Secp256k1,
     ])
 
     tx.raw.cellDeps.push(SUDT_DEP)
-    tx.raw.outputsData = [this.cellData, '0x']
     this.fee = Builder.calcFee(tx)
 
     if (changeCell.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
@@ -131,7 +122,9 @@ export class PlaceOrderBuilder extends Builder {
     )
 
     const orderOutput = new Cell(this.amount, orderLock, SUDT_TYPE_SCRIPT)
-
+    orderOutput.setHexData(
+      buildBuyData(calcReceive(parseFloat(this.pay), parseFloat(this.price)).toString(), this.price),
+    )
     // fill the inputs
     const cells = await this.collector.collect(PWCore.provider.address, neededAmount)
     cells.forEach(cell => {
@@ -156,7 +149,6 @@ export class PlaceOrderBuilder extends Builder {
     ])
 
     tx.raw.cellDeps.push(SUDT_DEP)
-    tx.raw.outputsData = [this.cellData, '0x']
 
     this.fee = Builder.calcFee(tx)
 

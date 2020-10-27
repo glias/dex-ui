@@ -15,7 +15,6 @@ import OrderContainer, { OrderStep, OrderType } from '../../../../containers/ord
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import { calcBuyAmount } from '../../../../utils/fee'
-import { buildBuyData } from '../../../../utils/buffer'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
@@ -28,7 +27,7 @@ export default function TradePairConfirm() {
     const builder = new PlaceOrderBuilder(
       new Address(Wallet.ckbWallet.address, AddressType.ckb),
       Order.orderType === OrderType.Buy ? new Amount(buyAmount) : new Amount(Order.pay),
-      buildBuyData(buyAmount, Order.price),
+      Order.pay,
       Order.orderType,
       Order.price,
     )

@@ -48,3 +48,8 @@ export const buildSellData = (amount: string, orderAmount: string, price: string
   const priceData = toUint64Le(BigInt(price) * BigInt(10) ** BigInt(10)).slice(2)
   return `${amountData}${orderAmountData}${priceData}01`
 }
+
+export const buildChangeData = (amount: string) => {
+  const amountData = new Amount(amount).toUInt128LE()
+  return `${amountData}`
+}
