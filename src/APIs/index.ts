@@ -1,6 +1,7 @@
+import { Script } from '@lay2/pw-core'
 import axios from 'axios'
 
-const SERVER_URL = 'http://192.168.110.123:8080'
+const SERVER_URL = 'http://192.168.110.168:8080'
 
 export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHash: string, lockArgs: string) {
   return axios.get(`${SERVER_URL}/cells`, {
@@ -12,6 +13,38 @@ export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHas
       lock_hash_type: 'type',
       lock_args: lockArgs,
     },
+  })
+}
+
+export function getCkbLiveCels(type: Script, lock: Script, ckbAmount: string) {
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+    ckb_amount: ckbAmount,
+  }
+
+  return axios.get(`${SERVER_URL}/cells`, {
+    params,
+  })
+}
+
+export function getSudtLiveCels(type: Script, lock: Script, amount: string) {
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+    sudt_amount: amount,
+  }
+
+  return axios.get(`${SERVER_URL}/cells`, {
+    params,
   })
 }
 

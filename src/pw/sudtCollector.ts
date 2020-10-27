@@ -28,11 +28,11 @@ export default class SUDTCollector extends Collector {
   collectSUDT = async (sudt: SUDT, address: Address, neededAmount?: Amount) => {
     const cells = await this.getSUDTCells(sudt, address)
     const needAmount = neededAmount ? BigInt(neededAmount.toHexString()) : BigInt(0)
-    let sumAmount = BigInt(0)
+    const sumAmount = BigInt(0)
     const resultCells = [] as Cell[]
     cells.forEach((cell: any) => {
       if (sumAmount < needAmount) {
-        sumAmount += getAmountFromCellData(cell.data)
+        // sumAmount += BigInt(getAmountFromCellData(cell.data))
         resultCells.push(
           new Cell(
             new Amount(cell.output.capacity, AmountUnit.shannon),

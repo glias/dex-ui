@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react'
 import { createContainer } from 'unstated-next'
+import calcReceive from '../utils/fee'
 
 // eslint-disable-next-line no-shadow
 export enum OrderStep {
@@ -20,8 +21,8 @@ export function useOrder() {
   const [price, setPrice] = useState('')
   const [txHash, setTxHash] = useState('')
   const [orderType, setOrderType] = useState(OrderType.Buy)
-  const buyPair = ['DAI', 'CKB']
-  const sellPair = ['CKB', 'DAI']
+  const sellPair = ['DAI', 'CKB']
+  const buyPair = ['CKB', 'DAI']
   const [historyOrders, setHisotryOrders] = useState<any[]>([])
 
   const concatHistoryOrders = useCallback(
@@ -45,7 +46,7 @@ export function useOrder() {
 
   const receive = useMemo(() => {
     if (price && pay) {
-      return (parseFloat(price) * parseFloat(pay)).toFixed(2)
+      return calcReceive(parseFloat(pay), parseFloat(price))
     }
 
     return '0.00'

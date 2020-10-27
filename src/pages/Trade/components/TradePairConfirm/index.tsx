@@ -11,9 +11,11 @@ import {
   TradePairConfirmContent,
 } from './styled'
 import i18n from '../../../../utils/i18n'
-import OrderContainer, { OrderStep } from '../../../../containers/order'
+import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
+import { calcBuyAmount } from '../../../../utils/fee'
+import { buildBuyData } from '../../../../utils/buffer'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
@@ -21,10 +23,14 @@ export default function TradePairConfirm() {
   const [buyer, seller] = Order.pair
 
   const onConfirm = async () => {
+    // eslint-disable-next-line no-debugger
+    const buyAmount = calcBuyAmount(Order.pay)
     const builder = new PlaceOrderBuilder(
       new Address(Wallet.ckbWallet.address, AddressType.ckb),
-      new Amount('400'),
-      '0x0000000000000000000000000000000000286bee00000000000000000000000000743ba40b00000001',
+      Order.orderType === OrderType.Buy ? new Amount(buyAmount) : new Amount(Order.pay),
+      buildBuyData(buyAmount, Order.price),
+      Order.orderType,
+      Order.price,
     )
 
     const txHash = await Wallet.pw?.sendTransaction(builder)
