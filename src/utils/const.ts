@@ -97,3 +97,6 @@ export const HISTORY_PARAMS = {
 export const HISTORY_QUERY_KEY = {
   type: 'history-type',
 }
+
+// TODO: use enum
+export const REJECT_ERROR_CODE = 4001

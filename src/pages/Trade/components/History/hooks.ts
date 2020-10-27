@@ -1,8 +1,8 @@
 import { useEffect, MutableRefObject, useCallback } from 'react'
-import PWCore, { Address, Amount, OutPoint, AddressType } from '@lay2/pw-core'
+import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import { getHistoryOrders } from '../../../../APIs'
-import { parseOrderRecord, CKB_NODE_URL, pendingOrders } from '../../../../utils'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
+import { parseOrderRecord, pendingOrders, REJECT_ERROR_CODE } from '../../../../utils'
 import type { RawOrder } from '../../../../utils'
 
 export interface HistoryState {
@@ -43,6 +43,9 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
         }
       }
       return state
+    }
+    case ActionType.RemovePendingId: {
+      return { ...state, pendingIdList: state.pendingIdList.filter(o => o !== action.value) }
     }
     case ActionType.UpdateLoading: {
       return { ...state, isLoading: action.value }
@@ -111,20 +114,19 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
 
       const [txHash, index] = orderId.split(':')
 
-      const builder = new CancelOrderBuilder(
-        new Address(address, AddressType.ckb),
-        new OutPoint(txHash, index),
-        new Amount('80'),
-      )
-
-      const pw = new PWCore(CKB_NODE_URL)
+      const builder = new CancelOrderBuilder(new Address(address, AddressType.ckb), new OutPoint(txHash, index))
 
       try {
         dispatch({ type: ActionType.AddPendingId, value: orderId })
-        const hash = await pw.sendTransaction(builder)
+        const hash = await builder.send()
         pendingOrders.add(orderId, txHash)
         return hash
       } catch (error) {
+        if (error.code !== REJECT_ERROR_CODE) {
+          // TODO: use dialog or something designed for production
+          /* eslint-disable-next-line no-alert */
+          window.alert(error.message)
+        }
         dispatch({ type: ActionType.RemovePendingId, value: orderId })
         return null
       }
