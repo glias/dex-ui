@@ -214,6 +214,7 @@ export default () => {
                 color: 'rgba(81, 119, 136, 1)',
               }}
               type="number"
+              step="any"
               value={price}
               onChange={e => {
                 priceOnChange(e.target.value)
