@@ -11,7 +11,7 @@ import { useHistory } from 'react-router-dom'
 import { Button, Popover, Menu, Badge } from 'antd'
 import WalletBox from './HeaderWalletBox'
 import i18n from '../../utils/i18n'
-import { thirdPartyLinks } from '../../utils/const'
+import { CKB_NODE_URL, thirdPartyLinks } from '../../utils/const'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
 import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
@@ -38,7 +38,7 @@ const Header = () => {
   const connectWallet = async () => {
     const provider = await web3Modal.current!.connect()
     const web3 = new Web3(provider)
-    const pw = await new PWCore('https://aggron.ckb.dev').init(new Web3ModalProvider(web3), new SDCollector() as any)
+    const pw = await new PWCore(CKB_NODE_URL).init(new Web3ModalProvider(web3), new SDCollector() as any)
     const [ethAddr] = await web3.eth.getAccounts()
     const ckbAddr = PWCore.provider.address.toCKBAddress()
 

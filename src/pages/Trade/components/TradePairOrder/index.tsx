@@ -1,5 +1,4 @@
-/* eslint-disable */
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
 import { useDispatch } from 'react-redux'
 import { FormInstance } from 'antd/lib/form'
@@ -11,13 +10,14 @@ import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PairBox, PayMeta } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
+import WalletContainer from '../../../../containers/wallet'
 
 export default () => {
   const [form] = Form.useForm()
+  const Wallet = useContainer(WalletContainer)
   const { Option } = Select
   const Order = useContainer(OrderContainer)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
-  const maximumPayable = 0
   const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled] = useState(false)
@@ -32,6 +32,23 @@ export default () => {
       },
     })
   }
+
+  const setBestPrice = useCallback(() => {
+    // eslint-disable-next-line no-unused-expressions
+    formRef.current?.setFieldsValue({
+      price: Order.bestPrice,
+    })
+    priceOnChange(Order.bestPrice)
+  }, [Order.bestPrice, formRef, priceOnChange])
+
+  useEffect(() => {
+    if (Wallet.ckbWallet.address === '') {
+      return
+    }
+
+    Order.initPrice()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Wallet.ckbWallet.address])
 
   const onFinish = async () => {
     setStep(OrderStep.Comfirm)
@@ -142,7 +159,7 @@ export default () => {
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
-            <span className="max-num">{`${i18n.t('trade.max')}: ${maximumPayable}`}</span>
+            <span className="max-num">{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
             <Tooltip title="todo">
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -164,6 +181,7 @@ export default () => {
                 color: 'rgba(81, 119, 136, 1)',
                 width: '100%',
               }}
+              step="any"
               value={pay}
               onChange={e => {
                 payOnChange(e.target.value)
@@ -174,8 +192,8 @@ export default () => {
         </Form.Item>
         <Form.Item label={i18n.t('trade.price')} className="price-box">
           <PayMeta>
-            <Button type="text" className="max-num">
-              {`${i18n.t('trade.suggestion')}:${10.5}`}
+            <Button type="text" className="max-num" onClick={setBestPrice}>
+              {`${i18n.t('trade.suggestion')}:${Order.bestPrice}`}
             </Button>
             <Tooltip title={i18n.t(`trade.suggestionTooltip`)}>
               <i className="ai-question-circle-o" />
