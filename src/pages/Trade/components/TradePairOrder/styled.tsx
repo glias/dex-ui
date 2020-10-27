@@ -2,14 +2,13 @@ import styled from 'styled-components'
 
 export const PairOrderFormBox = styled.div`
   overflow: hidden;
+  position: relative;
   color: rgba(102, 102, 102, 1);
   box-sizing: border-box;
-  .trace-form-select {
-    cursor: pointer;
-    height: 42px;
-    line-height: 42px;
-    box-sizing: border-box;
-    .ant-select-selector {
+  .popver-overlay {
+    width: 100%;
+    .ant-popover-content {
+      margin-top: -10px;
       border: 1px solid rgba(171, 209, 225, 1);
     }
   }
@@ -17,6 +16,7 @@ export const PairOrderFormBox = styled.div`
     background: #fff;
     margin-top: 10px;
     padding-top: 10px;
+    border-radius: 10px;
     border: 1px solid rgba(171, 209, 225, 1);
     .ant-form-item {
       padding: 0 10px;
@@ -60,15 +60,45 @@ export const PairOrderFormBox = styled.div`
   .submit-item {
     padding: 0;
     margin: 0;
+    height: 60px;
+    text-align: center;
     .submitBtn {
       font-size: 17px;
       font-weight: 500;
-      color: #006a97;
-      text-align: center;
-      display: flex;
-      border: 0;
+      height: 60px;
       width: 100%;
-      justify-content: center;
+      color: rgba(0, 106, 151, 1);
+      text-align: center;
+    }
+  }
+`
+
+export const OrderSelectPopver = styled.div`
+  width: 100%;
+  padding: 10px 10px 30px;
+`
+
+export const OrderSelectBox = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  height: 42px;
+  line-height: 42px;
+  background: #fff;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid rgba(171, 209, 225, 1);
+  .pair {
+    padding-left: 10px;
+  }
+  .ant-select-selector {
+    border: 1px solid rgba(171, 209, 225, 1);
+  }
+  .pairTraceList {
+    color: red;
+    &: hover {
+      background: transparent !important;
     }
   }
 `
@@ -79,18 +109,22 @@ export const PayMeta = styled.div`
   right: 0;
   font-size: 13px;
   color: rgba(102, 102, 102, 1);
-  span.max-num {
-    margin-right: 5px;
+  .form-label-meta-num {
+    margin: -30px 5px 0 0;
+    color: rgba(102, 102, 102, 1);
+    padding: 0;
+    text-decoration: underline;
   }
 `
 
-export const PairBox = styled.div`
+export const PairBlock = styled.div`
   font-size: 16px;
   display: flex;
   .pairTraceList {
     display: flex;
     padding: 0 10px;
     height: 40px;
+    width: 100%;
     line-height: 40px;
     cursor: pointer;
     &: hover {

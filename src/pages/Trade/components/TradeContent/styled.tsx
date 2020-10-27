@@ -4,6 +4,9 @@ export const TradeTableBox = styled.div`
   overflow: hidden;
   background: #fff;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
+  border: 1px solid #abd1e1;
+  box-sizing: border-box;
+  border-radius: 10px;
   .tableHederBox {
     display: flex;
     justify-content: space-between;
@@ -15,6 +18,17 @@ export const TradeTableBox = styled.div`
       display: flex;
       align-items: center;
       justify-content: flex-start;
+      .table-header-input {
+        color: rgba(136, 136, 136, 1);
+        background: #ecf2f4;
+        border-radius: 10px;
+        height: 28px;
+        width: 120px;
+        input {
+          background: #ecf2f4;
+          color: rgba(136, 136, 136, 1);
+        }
+      }
       h3 {
         color: #fff;
         font-size: 16px;
@@ -29,10 +43,35 @@ export const TradeTableBox = styled.div`
     }
   }
 `
+export const TableBox = styled.div`
+  &#table-box {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    table {
+      thead {
+        tr {
+          th {
+            background: #fff;
+            text-align: center;
+            color: rgba(81, 119, 136, 1);
+            border-bottom: 1px solid #abd1e1;
+          }
+        }
+      }
+    }
+  }
+`
 
 export const FilterTablePire = styled.div`
   display: flex;
   justify-content: flex-end;
   align-items: center;
   color: #fff;
+  flex: 1;
+  button {
+    width: 16%;
+    padding: 0 3px;
+    max-width: 90px;
+  }
 `

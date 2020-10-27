@@ -44,7 +44,14 @@ export default function Trade() {
         {Order.txHash ? tradeSuccessBox(Order.txHash) : tradeFailedBox()}
       </TradePairConfirmContent>
       <OrderButton>
-        <Button type="text" size="large" onClick={() => handleClickSubmit()}>
+        <Button
+          type="text"
+          size="large"
+          onClick={() => handleClickSubmit()}
+          style={{
+            color: 'rgba(0, 106, 151, 1)',
+          }}
+        >
           {tradeResultStr}
         </Button>
       </OrderButton>

@@ -3,8 +3,11 @@ import styled from 'styled-components'
 export const TradePairConfirmBox = styled.div`
   height: 100%;
   background: #fff;
-  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
   border: 1px solid #abd1e1;
+  box-sizing: border-box;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
   .confirm-btn {
     font-size: 17px;
     font-weight: 500;
@@ -63,7 +66,7 @@ export const PairOrder = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 60px;
+  height: 86px;
   font-size: 20px;
   background: rgba(241, 241, 241, 1);
   color: rgba(0, 0, 0, 1);

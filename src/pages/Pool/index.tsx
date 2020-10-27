@@ -1,9 +1,10 @@
 import React from 'react'
+import { PoolContainer } from './styled'
 
 export default function PoolPage() {
   return (
-    <div className="pool-box">
+    <PoolContainer>
       <div className="pool-main">Pool Page</div>
-    </div>
+    </PoolContainer>
   )
 }

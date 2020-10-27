@@ -1,13 +1,14 @@
 /* eslint-disable react/jsx-curly-newline */
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useContainer } from 'unstated-next'
 import { Table, Button, Input, Spin } from 'antd'
 import PWCore, { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import { TraceTableList } from '../../../../utils/const'
-import { TradeTableBox, FilterTablePire } from './styled'
-import toExplorer from '../../../../assets/img/toExplorer.png'
+import { TradeTableBox, FilterTablePire, TableBox } from './styled'
+// import toExplorer from '../../../../assets/img/toExplorer.png'
+import { ReactComponent as ExplorerSVG } from '../../../../assets/svg/toExplorer.svg'
+
 import { titleCase } from '../../../../lib/string'
-// import { useDidMount } from '../../../../hooks'
 import OrderContainer from '../../../../containers/order'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import WalletContainer from '../../../../containers/wallet'
@@ -18,6 +19,7 @@ const RECEIVE_UNIT = 10 * 1000 * 1000 * 1000
 const PRICE_UNIT = 100 * 1000 * 1000
 
 export default () => {
+  const [currentOrderName, setCurrentOrderName] = useState('all')
   const Order = useContainer(OrderContainer)
   const Wallet = useContainer(WalletContainer)
 
@@ -153,13 +155,14 @@ export default () => {
                 rel="noreferrer noopener"
                 href={`https://explorer.nervos.org/aggron/transaction/${column.key}`}
               >
-                <img
+                <ExplorerSVG />
+                {/* <img
                   src={toExplorer}
                   alt="toExplorer"
                   style={{
                     width: '15px',
                   }}
-                />
+                /> */}
               </a>
             )
           default:
@@ -175,32 +178,40 @@ export default () => {
         <div className="tableHeaderSearch">
           <h3>{i18n.t('trade.myOrder')}</h3>
           <Input
-            placeholder="Filter Token"
-            style={{
-              width: '180px',
-              color: 'rgba(136, 136, 136, 1)',
-            }}
+            placeholder={i18n.t('trade.filterToken')}
+            className="table-header-input"
+            size="middle"
             prefix={<i className="ai-search" />}
           />
         </div>
         <FilterTablePire>
           {TraceTableList.map(val => (
-            <Button type="text" key={val} size="small">
+            <Button
+              type="text"
+              key={val}
+              size="small"
+              onClick={() => setCurrentOrderName(val)}
+              style={{
+                color: currentOrderName === val ? '#fff' : 'rgba(255, 255, 255, 0.6)',
+              }}
+            >
               {i18n.t(`trade.${val}`)}
             </Button>
           ))}
         </FilterTablePire>
       </div>
-      <Table
-        dataSource={ordersList}
-        columns={columns}
-        size="small"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: false,
-        }}
-        rowKey={(record: any) => record.key}
-      />
+      <TableBox id="table-box">
+        <Table
+          dataSource={ordersList}
+          columns={columns}
+          size="small"
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: false,
+          }}
+          rowKey={(record: any) => record.key}
+        />
+      </TableBox>
     </TradeTableBox>
   )
 }

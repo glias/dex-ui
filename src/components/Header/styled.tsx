@@ -1,12 +1,31 @@
 import styled from 'styled-components'
 
 export const HeaderBox = styled.div`
-  width: 100%;
-  overflow-x: scroll;
-  margin: 0 auto;
-  overflow: hidden;
+  padding: 0 120px;
   color: rgba(81, 119, 136, 1);
-  border-bottom: 1px solid #abd1e1;
+  .header-col-menu {
+    display: flex;
+    justify-content: space-between;
+    .ant-menu {
+      border-bottom: none;
+      line-height: 51px;
+      .ant-menu-item {
+        color: rgba(0, 106, 151, 0.6);
+        border-bottom: 2px solid transparent;
+        &: hover {
+          color: rgba(0, 106, 151, 1);
+          border-bottom: 2px solid rgba(0, 106, 151, 1);
+        }
+        &.ant-menu-item-selected {
+          color: rgba(0, 106, 151, 1);
+          border-bottom: 2px solid rgba(0, 106, 151, 1);
+        }
+        .ant-menu-item-selected {
+          color: rgba(0, 106, 151, 1);
+        }
+      }
+    }
+  }
 `
 export const MenuLiText = styled.span`
   font-weight: bolder;
@@ -17,20 +36,26 @@ export const HeaderPanel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 50px;
   box-size: border-box;
-  font-size: 20px;
-  .panel-nav {
-    flex: 1;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    h1 {
-      margin: 0 20px 0 0;
-    }
+  margin: 0 auto;
+  max-width: 1440px;
+  h1 {
+    margin: 0 20px 0 0;
   }
-  .ant-menu-horizontal 
-    color: rgba(0,106,151,0.6);
+  .ant-menu {
+    border-bottom: 1px solid transparent;
+  }
+  .ant-menu-item {
+    color: rgba(0, 106, 151, 0.6);
+    border-bottom: 2px solid transparent;
+    &: hover {
+      color: rgba(0, 106, 151, 1);
+      border-bottom: 2px solid rgba(0, 106, 151, 1);
+    }
+    &.ant-menu-item-selected {
+      color: rgba(0, 106, 151, 1);
+      border-bottom: 2px solid rgba(0, 106, 151, 1);
+    }
     .ant-menu-item-selected {
       color: rgba(0, 106, 151, 1);
     }
@@ -38,10 +63,11 @@ export const HeaderPanel = styled.div`
 `
 
 export const HeaderLogoBox = styled.h1`
-  margin-left: 10px;
+  margin: 0 0 0 10px;
   font-weight: 900;
   font-size: 26px;
   color: #517788;
+  line-height: 53px;
 `
 export const HeaderNavgationBox = styled.ul`
   display: flex;
@@ -53,10 +79,42 @@ export const HeaderNavgationBox = styled.ul`
 export const UserMeta = styled.div`
   display: inline-block;
   font-size: 12px;
+  margin-right: 10px;
   > img {
     width: 20px;
     height: 20px;
     margin-right: 10px;
+  }
+`
+export const ButtonSvgBox = styled.div`
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: ${props => props.color};
+    rect {
+      fill: ${props => props.color};
+    }
+    path {
+      fill: ${props => props.color};
+    }
+  }
+`
+export const ButtonWalletSvgBox = styled.div`
+  margin-left: -2px;
+  width: 16px;
+  height: 13px;
+  border-radius: 10px;
+  margin-top: -5px;
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: ${props => props.color};
+    rect {
+      fill: ${props => props.color};
+    }
+    path {
+      fill: ${props => props.color};
+    }
   }
 `
 
@@ -64,28 +122,46 @@ export const HeaderMeta = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  .sidebarBox {
-    .ant-popover-content {
-      overflow: hidden;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 106, 151, 1);
-    }
-    .ant-popover-inner-content {
-      padding: 0;
-      .sidebar-content {
-        width: 150px;
-        display: flex;
-        flex-direction: column;
-        .sidebar-title {
-          line-height: 40px;
-          height: 40px;
-          text-align: center;
-          background: rgba(0, 106, 151, 1);
-          color: #fff;
-        }
-        button {
-          margin: 5px 0;
-        }
+  .more-btn {
+    border-radius: 10px;
+    background: rgba(0, 106, 151, 1);
+    color: #fff;
+    margin-left: 5px;
+    width: 28px;
+    height: 28px;
+    text-align: center;
+    padding: 0;
+  }
+  .ant-popover-content {
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 106, 151, 1);
+  }
+  .btn-meta {
+    width: 28px;
+    height: 28px;
+    padding: 4px 7px;
+    background: rgba(0, 106, 151, 1);
+    color: #fff;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 106, 151, 1);
+  }
+  .ant-popover-content {
+    padding: 0;
+    border-radius: 10px;
+    .sidebar-content {
+      width: 150px;
+      display: flex;
+      flex-direction: column;
+      .sidebar-title {
+        line-height: 40px;
+        height: 40px;
+        text-align: center;
+        background: rgba(0, 106, 151, 1);
+        color: #fff;
+      }
+      button {
+        margin: 5px 0;
       }
     }
   }
@@ -120,6 +196,7 @@ export const HeaderMeta = styled.div`
       }
       ul > li {
         margin: 10px 0;
+        padding: 0 10px;
         display: flex;
         justify-content: center;
         align-items: center;

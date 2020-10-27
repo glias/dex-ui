@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import PWCore, {
   Amount,
   Web3ModalProvider,
@@ -10,11 +10,22 @@ import Web3Modal from 'web3modal'
 import { useHistory } from 'react-router-dom'
 import { Button, Popover, Menu, Badge } from 'antd'
 import WalletBox from './HeaderWalletBox'
+import { ReactComponent as HeaderMoreSVG } from '../../assets/svg/more.svg'
+import { ReactComponent as HeaderMetaSVG } from '../../assets/svg/Component12.svg'
 import i18n from '../../utils/i18n'
 import { CKB_NODE_URL, thirdPartyLinks } from '../../utils/const'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import outlined from '../../assets/img/outlined.png'
-import { HeaderBox, HeaderPanel, HeaderLogoBox, MenuLiText, HeaderMeta, UserMeta } from './styled'
+import {
+  HeaderBox,
+  HeaderPanel,
+  HeaderLogoBox,
+  MenuLiText,
+  HeaderMeta,
+  UserMeta,
+  ButtonSvgBox,
+  ButtonWalletSvgBox,
+} from './styled'
 import { getChainData, getProviderOptions } from './chain'
 import WalletContainer from '../../containers/wallet'
 import { useDidMount } from '../../hooks'
@@ -32,6 +43,10 @@ const Header = () => {
   const truncatureStr = (str: string): string => {
     return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
   }
+
+  // propver visible config
+  const [visibleMore, setVisibleMore] = useState(false)
+  const [visibleWallet, setVisibleWallet] = useState(false)
 
   const web3Modal = useRef<Web3Modal | null>(null)
 
@@ -84,62 +99,75 @@ const Header = () => {
   return (
     <HeaderBox className="header-box">
       <HeaderPanel>
-        <div className="panel-nav">
-          <HeaderLogoBox>CKB DEX</HeaderLogoBox>
-          <Menu mode="horizontal" onClick={e => history.push(`/${e.key}`)}>
-            <Menu.Item key="trade">
-              <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
-            </Menu.Item>
-            <Menu.Item key="pool">
-              <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
-            </Menu.Item>
-            <Menu.Item key="match">
-              <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
-            </Menu.Item>
-          </Menu>
-        </div>
+        <HeaderLogoBox>CKB DEX</HeaderLogoBox>
+        <Menu mode="horizontal" className="menuBox" onClick={e => history.push(`/${e.key}`)}>
+          <Menu.Item key="trade">
+            <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
+          </Menu.Item>
+          <Menu.Item key="pool">
+            <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
+          </Menu.Item>
+          <Menu.Item key="match">
+            <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
+          </Menu.Item>
+        </Menu>
         <HeaderMeta id="header-meta">
           {ckbAddress === '' ? (
             <Button className="collect-btn" onClick={connectWallet}>
               {i18n.t('header.wallet')}
             </Button>
           ) : (
-            <div>
+            <>
               <UserMeta>
-                <img src={MetaMaskpng} alt="metaMask" />
-                {truncatureStr(ckbAddress)}
+                <img src={metaMaskPng} alt="metaMask" />
+                {truncatureStr(ethAddress)}
               </UserMeta>
               <Popover
                 placement="bottomRight"
                 title=""
-                overlayClassName="no-arrorPoint"
+                overlayClassName="no-arrorPoint popover-wallet"
                 trigger="click"
+                visible={visibleWallet}
+                onVisibleChange={() => setVisibleWallet(!visibleWallet)}
+                getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
                 content={<WalletBox disconnect={disconnectWallet} addresses={[ckbAddress, ethAddress]} />}
               >
                 <Badge count="">
-                  <img src={outlined} alt="account" className="account-btn" />
-                  {/* <Button className="account-btn" icon={ <AlignCenterOutlined /> }></Button> */}
+                  <Button
+                    className="btn-meta"
+                    style={{
+                      background: visibleWallet ? '#fff' : 'rgba(0,106,151,1)',
+                    }}
+                  >
+                    <ButtonWalletSvgBox>
+                      <HeaderMetaSVG color={visibleWallet ? 'rgba(0,106,151,1)' : '#fff'} />
+                    </ButtonWalletSvgBox>
+                  </Button>
                 </Badge>
               </Popover>
-            </div>
+            </>
           )}
           <Popover
             placement="bottomRight"
             title=""
             content={sideBarContent}
             trigger="click"
+            visible={visibleMore}
+            onVisibleChange={() => setVisibleMore(!visibleMore)}
             overlayClassName="sidebarBox no-arrorPoint"
             getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
           >
             <Button
+              className="btn-meta"
               style={{
                 borderRadius: '10px',
-                background: 'rgba(0,106,151,1)',
-                color: '#fff',
+                background: visibleMore ? '#fff' : 'rgba(0,106,151,1)',
                 marginLeft: '5px',
               }}
             >
-              <i className="ai-ellipsis" />
+              <ButtonSvgBox color={visibleMore ? 'rgba(0,106,151,1)' : '#fff'}>
+                <HeaderMoreSVG />
+              </ButtonSvgBox>
             </Button>
           </Popover>
         </HeaderMeta>
