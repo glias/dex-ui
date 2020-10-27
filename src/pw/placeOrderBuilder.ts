@@ -37,6 +37,7 @@ export class PlaceOrderBuilder extends Builder {
 
   async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
     const needAmount = this.amount.add(fee)
+    // eslint-disable-next-line no-console
     console.log(needAmount)
 
     let sudtSum = BigInt(0)

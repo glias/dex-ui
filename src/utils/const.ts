@@ -95,3 +95,13 @@ export const CKB_DECIMAL = BigInt(10) ** BigInt(8)
 
 //  @TODO: comments
 export const ORDER_CELL_CAPACITY = 167
+
+export const HISTORY_PARAMS = {
+  typeCodeHash: '0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
+  typeHashType: 'type',
+  typeArgs: '0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902',
+}
+
+export const HISTORY_QUERY_KEY = {
+  type: 'history-type',
+}

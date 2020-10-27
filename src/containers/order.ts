@@ -2,7 +2,7 @@ import PWCore from '@lay2/pw-core'
 import { useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import { getBestPrice, getSudtBalance } from '../APIs'
-import { PRICE_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils/const'
+import { PRICE_DECIMAL, SUDT_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils/const'
 import calcReceive from '../utils/fee'
 import WalletContainer from './wallet'
 
@@ -57,7 +57,7 @@ export function useOrder() {
 
     if (orderType === OrderType.Buy) {
       const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
-      setMaxPay(balance)
+      setMaxPay((BigInt(balance) / SUDT_DECIMAL).toString())
     } else {
       setMaxPay(ckbBalance)
     }

@@ -1,8 +1,9 @@
 import { Script } from '@lay2/pw-core'
 import axios from 'axios'
 import { OrderType } from '../containers/order'
+import { SUDT_TYPE_SCRIPT } from '../utils'
 
-const SERVER_URL = 'http://localhost:9090'
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:9090'
 
 export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHash: string, lockArgs: string) {
   return axios.get(`${SERVER_URL}/cells`, {
@@ -91,8 +92,16 @@ export function getBestPrice(type: Script, orderType: OrderType) {
 }
 
 export function getHistoryOrders(lockArgs: string) {
-  const url = `${SERVER_URL}/order-history?order_lock_args=${lockArgs}&type_code_hash=0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4&type_hash_type=type&type_args=0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902`
-  return axios.get(url)
+  const params = {
+    order_lock_args: lockArgs,
+    type_code_hash: SUDT_TYPE_SCRIPT.codeHash,
+    type_hash_type: SUDT_TYPE_SCRIPT.hashType,
+    type_args: SUDT_TYPE_SCRIPT.args,
+  }
+
+  return axios.get(`${SERVER_URL}/order-history`, {
+    params,
+  })
 }
 
 export default getLiveCells

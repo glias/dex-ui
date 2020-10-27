@@ -2,7 +2,7 @@ import React from 'react'
 import { useContainer } from 'unstated-next'
 import { Layout, Row, Col } from 'antd'
 import TradePairOrder from './components/TradePairOrder'
-import TradeTableBox from './components/TradeContent'
+import History from './components/History'
 import TradePairConfirm from './components/TradePairConfirm'
 import TradePairResult from './components/TradePairResult'
 import { TradePage, TradeContent } from './styled'
@@ -35,7 +35,7 @@ const Trade = () => {
               marginLeft: '10px',
             }}
           >
-            <TradeTableBox />
+            <History />
           </Content>
         </Col>
       </Row>
