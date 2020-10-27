@@ -1,5 +1,10 @@
+import PWCore from '@lay2/pw-core'
 import { useState, useMemo, useCallback } from 'react'
-import { createContainer } from 'unstated-next'
+import { createContainer, useContainer } from 'unstated-next'
+import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
+import { CKB_DECIMAL, PRICE_DECIMAL, SUDT_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils/const'
+import calcReceive from '../utils/fee'
+import WalletContainer from './wallet'
 
 // eslint-disable-next-line no-shadow
 export enum OrderStep {
@@ -15,6 +20,7 @@ export enum OrderType {
 }
 
 export function useOrder() {
+  const Wallet = useContainer(WalletContainer)
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
@@ -22,9 +28,12 @@ export function useOrder() {
   const [suggestionPrice, setSuggestionPrice] = useState(0)
   const [txHash, setTxHash] = useState('')
   const [orderType, setOrderType] = useState(OrderType.Buy)
-  const buyPair = ['DAI', 'CKB']
-  const sellPair = ['CKB', 'DAI']
+  const sellPair = ['DAI', 'CKB']
+  const buyPair = ['CKB', 'DAI']
   const [historyOrders, setHisotryOrders] = useState<any[]>([])
+  const ckbBalance = Wallet.ckbWallet.free.toString()
+  const [maxPay, setMaxPay] = useState(ckbBalance)
+  const [bestPrice, setBestPrice] = useState('0.00')
 
   const concatHistoryOrders = useCallback(
     (arr: any[]) => {
@@ -35,28 +44,39 @@ export function useOrder() {
 
   const [pair, setPair] = useState(buyPair)
 
-  const togglePair = useCallback(
-    (pairName?: string) => {
-      if (pairName) {
-        setPair([pairName, 'CKB'])
-        setOrderType(OrderType.Sell)
-        return
-      }
+  const togglePair = useCallback(async () => {
+    const lockScript = PWCore.provider.address.toLockScript()
+    if (orderType === OrderType.Buy) {
+      setPair(sellPair)
+      setOrderType(OrderType.Sell)
+    } else {
+      setPair(buyPair)
+      setOrderType(OrderType.Buy)
+    }
+    // todo: error handling
+    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
+    setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
 
-      if (orderType === OrderType.Buy) {
-        setPair(sellPair)
-        setOrderType(OrderType.Sell)
-      } else {
-        setPair(buyPair)
-        setOrderType(OrderType.Buy)
-      }
-    },
-    [orderType, sellPair, buyPair],
-  )
+    if (orderType === OrderType.Buy) {
+      const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
+      setMaxPay((BigInt(balance) / SUDT_DECIMAL).toString())
+    } else {
+      const { balance } = (await getCkbBalance(lockScript)).data
+      setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
+    }
+  }, [orderType, sellPair, buyPair])
+
+  const initPrice = useCallback(async () => {
+    const lockScript = PWCore.provider.address.toLockScript()
+    const { balance } = (await getCkbBalance(lockScript)).data
+    setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
+    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
+    setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
+  }, [orderType])
 
   const receive = useMemo(() => {
     if (price && pay) {
-      return (parseFloat(price) * parseFloat(pay)).toFixed(2)
+      return calcReceive(parseFloat(pay), parseFloat(price))
     }
 
     return '0.00'
@@ -102,6 +122,9 @@ export function useOrder() {
     historyOrders,
     setHisotryOrders,
     setLoading,
+    maxPay,
+    bestPrice,
+    initPrice,
   }
 }
 

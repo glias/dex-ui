@@ -1,8 +1,9 @@
 /* eslint-disable */
 import { Collector, Amount, Cell, Script, OutPoint, AmountUnit } from '@lay2/pw-core'
+import { CKB_INDEXER_URL } from '../../utils/const'
 
 export class SDCollector extends Collector {
-  indexerUrl = 'https://prototype.ckbapp.dev/testnet/indexer'
+  indexerUrl = CKB_INDEXER_URL
 
   getParams(address) {
     return {

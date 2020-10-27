@@ -44,7 +44,9 @@ const columns = [
     title: 'pay',
     dataIndex: 'pay',
     key: 'pay',
-    ellipsis: { showTitle: false },
+    ellipsis: {
+      showTitle: false,
+    },
     render: (amount: string, order: Order) => {
       const text = `${amount} ${order.isBid ? 'CKB' : SUDT_SYMBOL}`
       return <Tooltip title={text}>{text}</Tooltip>
@@ -54,7 +56,9 @@ const columns = [
     title: 'receive',
     dataIndex: 'receive',
     key: 'receive',
-    ellipsis: { showTitle: false },
+    ellipsis: {
+      showTitle: false,
+    },
     render: (amount: string, order: Order) => {
       const text = `${amount} ${order.isBid ? SUDT_SYMBOL : 'CKB'}`
       return <Tooltip title={text}>{text}</Tooltip>
@@ -64,7 +68,9 @@ const columns = [
     title: 'price',
     dataIndex: 'price',
     key: 'price',
-    ellipsis: { showTitle: false },
+    ellipsis: {
+      showTitle: false,
+    },
     render: (price: string) => {
       const text = `${price} CKB per ${SUDT_SYMBOL}`
       return <Tooltip title={text}>{text}</Tooltip>
