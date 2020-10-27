@@ -50,16 +50,13 @@ export default () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Wallet.ckbWallet.address])
 
+  useEffect(() => {
+    Order.reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Order.step])
+
   const onFinish = async () => {
     setStep(OrderStep.Comfirm)
-
-    // const builder = new CancelOrderBuilder(
-    //   new Address(Wallet.ckbWallet.address, AddressType.ckb),
-    //   new OutPoint('0x098ce457225a8565c5f2b9a541e865c66052d835b43712cf24e6a9662a944a00', '0x0'),
-    //   new Amount('400'),
-    // )
-    // const txHash = await Wallet.pw?.sendTransaction(await builder.build())
-    // console.info(`Cancel order: ${txHash}`)
   }
 
   // eslint-disable-next-line consistent-return
@@ -186,6 +183,7 @@ export default () => {
               onChange={e => {
                 payOnChange(e.target.value)
               }}
+              max={Order.maxPay}
               min={0}
             />
           </Form.Item>
@@ -193,7 +191,7 @@ export default () => {
         <Form.Item label={i18n.t('trade.price')} className="price-box">
           <PayMeta>
             <Button type="text" className="max-num" onClick={setBestPrice}>
-              {`${i18n.t('trade.suggestion')}:${Order.bestPrice}`}
+              {`${i18n.t('trade.suggestion')}: ${Order.bestPrice}`}
             </Button>
             <Tooltip title={i18n.t(`trade.suggestionTooltip`)}>
               <i className="ai-question-circle-o" />

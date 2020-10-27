@@ -9,6 +9,7 @@ import PWCore, {
   Script,
   OutPoint,
 } from '@lay2/pw-core'
+import BigNumber from 'bignumber.js'
 import { getSudtLiveCels } from '../APIs'
 import { OrderType } from '../containers/order'
 import { buildSellData, getAmountFromCellData, buildChangeData, buildBuyData } from '../utils/buffer'
@@ -97,8 +98,8 @@ export class PlaceOrderBuilder extends Builder {
       new Script(SUDT_TYPE_SCRIPT.codeHash, SUDT_TYPE_SCRIPT.args, SUDT_TYPE_SCRIPT.hashType),
     )
 
-    const sudtChange = sudtSum - BigInt(this.pay)
-    sudtChangeCell.setHexData(buildChangeData(sudtChange.toString()))
+    const sudtChange = new BigNumber(sudtSum.toString()).minus(new BigNumber(this.pay)).toString()
+    sudtChangeCell.setHexData(buildChangeData(sudtChange))
 
     const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, sudtChangeCell, ckbChangeCell]), [
       Builder.WITNESS_ARGS.Secp256k1,
