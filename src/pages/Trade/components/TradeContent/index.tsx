@@ -64,8 +64,7 @@ export default () => {
       )
 
       try {
-        const hash = await Wallet.pw?.sendTransaction(await builder.build())
-        console.log(hash)
+        await Wallet.pw?.sendTransaction(await builder.build())
       } catch (error) {
         //
       } finally {
