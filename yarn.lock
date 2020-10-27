@@ -1839,6 +1839,13 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
+"@tanem/svg-injector@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.npmjs.org/@tanem/svg-injector/-/svg-injector-8.1.0.tgz#f04c65903c4cded31d6f3c23d3986458307ad827"
+  integrity sha512-AqV81eHF4qxXjT5KceY1AP7Fvnd0LmmQsHMFlH2yvzfNj7Y6tJyUY+nNvE5wpLyU28DDX4aWsKgMdmPaRMBBRQ==
+  dependencies:
+    "@babel/runtime" "^7.12.1"
+
 "@testing-library/dom@*":
   version "7.26.3"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-7.26.3.tgz#5554ee985f712d621bd676104b879f85d9a7a0ef"
@@ -12418,6 +12425,15 @@ react-scripts@3.4.3:
     workbox-webpack-plugin "4.3.1"
   optionalDependencies:
     fsevents "2.1.2"
+
+react-svg@^11.1.0:
+  version "11.1.0"
+  resolved "https://registry.npmjs.org/react-svg/-/react-svg-11.1.0.tgz#365cae0121bc5ae06c97081a9f0079a2a1bd8ad9"
+  integrity sha512-jxp0JVlUakgqNY4IMgwcoRhMNt0X1EJp8Pni3/oDu7KZth1WOUh9cyC/+kOoiQR9X3RtOzabM97c7iD5DIWOGg==
+  dependencies:
+    "@babel/runtime" "^7.12.1"
+    "@tanem/svg-injector" "^8.1.0"
+    prop-types "^15.7.2"
 
 react-test-renderer@16.13.1:
   version "16.13.1"

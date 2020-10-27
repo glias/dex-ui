@@ -5,6 +5,8 @@ export const MatchContainer = styled.div`
   text-align: center;
   background-color: #ecf2f4;
   min-height: calc(100% - 90px);
+  max-width: 1440px;
+  margin: 0 auto;
   padding: 10px 50px;
   box-sizing: border-box;
   color: rgb(102, 102, 102);

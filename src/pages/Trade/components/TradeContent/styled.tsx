@@ -43,10 +43,35 @@ export const TradeTableBox = styled.div`
     }
   }
 `
+export const TableBox = styled.div`
+  &#table-box {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    table {
+      thead {
+        tr {
+          th {
+            background: #fff;
+            text-align: center;
+            color: rgba(81, 119, 136, 1);
+            border-bottom: 1px solid #abd1e1;
+          }
+        }
+      }
+    }
+  }
+`
 
 export const FilterTablePire = styled.div`
   display: flex;
   justify-content: flex-end;
   align-items: center;
   color: #fff;
+  flex: 1;
+  button {
+    width: 16%;
+    padding: 0 3px;
+    max-width: 90px;
+  }
 `

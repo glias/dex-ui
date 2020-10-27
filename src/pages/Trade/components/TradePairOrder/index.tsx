@@ -21,8 +21,6 @@ export default () => {
   const [disabled] = useState(false)
   const [buyer, seller] = Order.pair
 
-  console.log(Order)
-
   const changePair = (value: any) => {
     setVisiblePopver(false)
     Order.togglePair(value)
@@ -169,7 +167,13 @@ export default () => {
         >
           <i className="ai-caret-down" />
         </Form.Item>
-        <Form.Item label={i18n.t('trade.receive')} name="receiver">
+        <Form.Item
+          label={i18n.t('trade.receive')}
+          name="receiver"
+          style={{
+            marginBottom: '10px',
+          }}
+        >
           <div className="receiver-box">
             <span className="receiver-ckb">{receive}</span>
             <span>{seller}</span>

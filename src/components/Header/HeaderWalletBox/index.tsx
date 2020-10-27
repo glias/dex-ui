@@ -4,10 +4,10 @@ import React, { useState } from 'react'
 import { Button, Tooltip } from 'antd'
 import { useContainer } from 'unstated-next'
 import WalletContainer from '../../../containers/wallet'
-import signOutpng from '../../../assets/img/exit.png'
-import copy from '../../../assets/img/copy.png'
-import questionMark from '../../../assets/img/questionMark_frame.png'
-import toExplorer from '../../../assets/img/toExplorer.png'
+import { ReactComponent as SignOutSVG } from '../../../assets/svg/exit.svg'
+import { ReactComponent as CopySVG } from '../../../assets/svg/copy.svg'
+import { ReactComponent as QuesitonSVG } from '../../../assets/svg/Question.svg'
+import { ReactComponent as ExplorerSVG } from '../../../assets/svg/toExplorer.svg'
 import { PairList } from '../../../utils/const'
 import i18n from '../../../utils/i18n'
 import { HeaderBox, HeaderPanel, HeaderMeta, HeaderWalletBox, HeaderWallet, WalletList } from './styled'
@@ -72,11 +72,11 @@ export default function WalletBox({ disconnect, addresses }: Props) {
           <div className="balance-ckb">
             <div className="ckb-item">
               <span>In Use</span>
-              <span>100.0000</span>
+              <span>{item.inuse?.amount}</span>
             </div>
             <div className="ckb-item">
               <span>Free</span>
-              <span>900.0000</span>
+              <span>{item.free?.amount}</span>
             </div>
           </div>
         ) : null}
@@ -88,11 +88,10 @@ export default function WalletBox({ disconnect, addresses }: Props) {
     <HeaderWalletBox>
       <HeaderWallet>
         <span>{i18n.t('header.testWallet')}</span>
-        <img src={signOutpng} alt="signOut" onClick={disconnect} />
+        <Button onClick={disconnect} type="text">
+          <SignOutSVG />
+        </Button>
       </HeaderWallet>
-      {/* <div className="wallet-title">
-       
-      </div> */}
       <WalletList>
         {addresses.map(address => (
           <div className="wallet" key={address}>
@@ -103,21 +102,25 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                 placement="bottom"
                 onVisibleChange={visable => visable && setClipboardTooltip(copyToClipboard)}
               >
-                <img
-                  src={copy}
-                  alt="wallet adress copy"
+                <Button
+                  type="text"
                   onClick={() => {
                     navigator.clipboard.writeText(address)
                     setClipboardTooltip(copied)
                   }}
-                />
+                >
+                  <CopySVG />
+                  {/* <img src={copy} alt="wallet adress copy" /> */}
+                </Button>
               </Tooltip>
             </span>
             <Tooltip
               title={address.startsWith('0x') ? i18n.t('header.HexAddressTooltip') : i18n.t('header.ckbAddressTooltip')}
               placement="bottom"
             >
-              <img src={questionMark} className="questionMark" alt="question about wallet address" />
+              <Button type="text" className="question-btn">
+                <QuesitonSVG />
+              </Button>
             </Tooltip>
           </div>
         ))}
@@ -137,7 +140,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                 <div className="divider" />
                 <ul>
                   {balancesListWapper.map(item => (
-                    <li key={item.name}>
+                    <li key={item.name} className="balance-list">
                       <div
                         className="logo"
                         style={{
@@ -153,7 +156,9 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                           size="small"
                           onClick={() => window.open(`https://explorer.nervos.org/aggron/address/${item.address}`)}
                         >
-                          <img src={toExplorer} alt="explorer" />
+                          <div className="explorer-svg">
+                            <ExplorerSVG />
+                          </div>
                         </Button>
                       </div>
                     </li>

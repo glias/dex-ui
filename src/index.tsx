@@ -14,6 +14,7 @@ import { OrderContainer } from './containers/order'
 const AppDiv = styled.div`
   width: 100%;
   height: 100%;
+  background-color: #fff;
 `
 
 ReactDOM.render(

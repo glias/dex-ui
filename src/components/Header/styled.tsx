@@ -1,10 +1,7 @@
 import styled from 'styled-components'
 
 export const HeaderBox = styled.div`
-  width: 100%;
-  overflow-x: scroll;
-  margin: 0 auto;
-  overflow: hidden;
+  padding: 0 120px;
   color: rgba(81, 119, 136, 1);
 `
 export const MenuLiText = styled.span`
@@ -16,11 +13,14 @@ export const HeaderPanel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 50px;
   box-size: border-box;
-  font-size: 20px;
+  margin: 0 auto;
+  max-width: 1440px;
   h1 {
     margin: 0 20px 0 0;
+  }
+  .ant-menu {
+    border-bottom: 1px solid transparent;
   }
   .ant-menu-item {
     color: rgba(0, 106, 151, 0.6);
@@ -55,10 +55,42 @@ export const HeaderNavgationBox = styled.ul`
 export const UserMeta = styled.div`
   display: inline-block;
   font-size: 12px;
+  margin-right: 10px;
   > img {
     width: 20px;
     height: 20px;
     margin-right: 10px;
+  }
+`
+export const ButtonSvgBox = styled.div`
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: ${props => props.color};
+    rect {
+      fill: ${props => props.color};
+    }
+    path {
+      fill: ${props => props.color};
+    }
+  }
+`
+export const ButtonWalletSvgBox = styled.div`
+  margin-left: -2px;
+  width: 16px;
+  height: 13px;
+  border-radius: 10px;
+  margin-top: -5px;
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: ${props => props.color};
+    rect {
+      fill: ${props => props.color};
+    }
+    path {
+      fill: ${props => props.color};
+    }
   }
 `
 
@@ -68,6 +100,15 @@ export const HeaderMeta = styled.div`
   align-items: center;
   .ant-popover-content {
     overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 106, 151, 1);
+  }
+  .btn-meta {
+    width: 28px;
+    height: 28px;
+    padding: 4px 7px;
+    background: rgba(0, 106, 151, 1);
+    color: #fff;
     border-radius: 10px;
     border: 1px solid rgba(0, 106, 151, 1);
   }

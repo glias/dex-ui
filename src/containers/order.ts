@@ -37,7 +37,6 @@ export function useOrder() {
 
   const togglePair = useCallback(
     (pairName?: string) => {
-      console.log(pairName)
       if (pairName) {
         setPair([pairName, 'CKB'])
         setOrderType(OrderType.Sell)

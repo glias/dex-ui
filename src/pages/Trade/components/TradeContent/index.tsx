@@ -4,10 +4,11 @@ import { useContainer } from 'unstated-next'
 import { Table, Button, Input, Spin } from 'antd'
 import PWCore, { Address, Amount, OutPoint, AddressType } from '@lay2/pw-core'
 import { TraceTableList } from '../../../../utils/const'
-import { TradeTableBox, FilterTablePire } from './styled'
-import toExplorer from '../../../../assets/img/toExplorer.png'
+import { TradeTableBox, FilterTablePire, TableBox } from './styled'
+// import toExplorer from '../../../../assets/img/toExplorer.png'
+import { ReactComponent as ExplorerSVG } from '../../../../assets/svg/toExplorer.svg'
+
 import { titleCase } from '../../../../lib/string'
-// import { useDidMount } from '../../../../hooks'
 import OrderContainer from '../../../../containers/order'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import WalletContainer from '../../../../containers/wallet'
@@ -156,13 +157,14 @@ export default () => {
                 rel="noreferrer noopener"
                 href={`https://explorer.nervos.org/aggron/transaction/${column.key}`}
               >
-                <img
+                <ExplorerSVG />
+                {/* <img
                   src={toExplorer}
                   alt="toExplorer"
                   style={{
                     width: '15px',
                   }}
-                />
+                /> */}
               </a>
             )
           default:
@@ -200,16 +202,18 @@ export default () => {
           ))}
         </FilterTablePire>
       </div>
-      <Table
-        dataSource={ordersList}
-        columns={columns}
-        size="small"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: false,
-        }}
-        rowKey={(record: any) => record.key}
-      />
+      <TableBox id="table-box">
+        <Table
+          dataSource={ordersList}
+          columns={columns}
+          size="small"
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: false,
+          }}
+          rowKey={(record: any) => record.key}
+        />
+      </TableBox>
     </TradeTableBox>
   )
 }
