@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import { useContainer } from 'unstated-next'
@@ -17,7 +17,6 @@ export default () => {
   const [visiblePopver, setVisiblePopver] = useState(false)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
-  const [disabled] = useState(false)
   const [buyer, seller] = Order.pair
 
   const changePair = () => {
@@ -25,6 +24,10 @@ export default () => {
     Order.togglePair()
     form.resetFields()
   }
+
+  const disabled = useMemo(() => {
+    return !Wallet.ckbWallet.address
+  }, [Wallet.ckbWallet.address])
 
   const setBestPrice = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
@@ -105,7 +108,7 @@ export default () => {
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <span className="form-label-meta-num">{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
-            <Tooltip title="todo">
+            <Tooltip title={i18n.t('trade.maxPay')}>
               <i className="ai-question-circle-o" />
             </Tooltip>
           </PayMeta>
@@ -132,7 +135,7 @@ export default () => {
                 payOnChange(e.target.value)
               }}
               max={Order.maxPay}
-              min={0}
+              min={0.0000001}
             />
           </Form.Item>
         </Form.Item>
@@ -165,7 +168,7 @@ export default () => {
               onChange={e => {
                 priceOnChange(e.target.value)
               }}
-              min={0}
+              min={0.0000000001}
             />
           </Form.Item>
         </Form.Item>
@@ -194,7 +197,7 @@ export default () => {
         <div className="dividing-line" />
         <Form.Item className="submit-item">
           <Button htmlType="submit" className="submitBtn" disabled={disabled} size="large" type="text">
-            {i18n.t(`trade.placeOrder`)}
+            {disabled ? i18n.t('header.connecting') : i18n.t(`trade.placeOrder`)}
           </Button>
         </Form.Item>
       </Form>

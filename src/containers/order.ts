@@ -58,13 +58,16 @@ export function useOrder() {
   const [pair, setPair] = useState(buyPair)
 
   const togglePair = useCallback(async () => {
-    const lockScript = PWCore.provider.address.toLockScript()
     if (orderType === OrderType.Buy) {
       setPair(sellPair)
       setOrderType(OrderType.Sell)
     } else {
       setPair(buyPair)
       setOrderType(OrderType.Buy)
+    }
+    const lockScript = PWCore.provider?.address?.toLockScript()
+    if (!lockScript) {
+      return
     }
     // todo: error handling
     const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
