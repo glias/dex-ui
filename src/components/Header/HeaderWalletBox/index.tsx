@@ -90,7 +90,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
       <HeaderWallet>
         <span>{i18n.t('header.testWallet')}</span>
         <Button onClick={disconnect} type="text">
-          <SignOutSVG />
+          <SignOutSVG className="full" />
         </Button>
       </HeaderWallet>
       <WalletList>
@@ -110,8 +110,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                     setClipboardTooltip(copied)
                   }}
                 >
-                  <CopySVG />
-                  {/* <img src={copy} alt="wallet adress copy" /> */}
+                  <CopySVG className="full" />
                 </Button>
               </Tooltip>
             </span>
@@ -120,7 +119,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
               placement="bottom"
             >
               <Button type="text" className="question-btn">
-                <QuesitonSVG />
+                <QuesitonSVG className="full" />
               </Button>
             </Tooltip>
           </div>
@@ -158,7 +157,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                           onClick={() => window.open(`https://explorer.nervos.org/aggron/address/${item.address}`)}
                         >
                           <div className="explorer-svg">
-                            <ExplorerSVG />
+                            <ExplorerSVG className="full" />
                           </div>
                         </Button>
                       </div>
