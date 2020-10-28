@@ -9,7 +9,7 @@ import PWCore, {
   OutPoint,
   AmountUnit,
 } from '@lay2/pw-core'
-import { ORDER_BOOK_LOOK_DEP, SUDT_DEP, CKB_NODE_URL } from '../utils/const'
+import { ORDER_BOOK_LOCK_DEP, SUDT_DEP, CKB_NODE_URL } from '../utils/const'
 
 export class CancelOrderBuilder extends Builder {
   address: Address
@@ -38,7 +38,7 @@ export class CancelOrderBuilder extends Builder {
 
     const tx = new Transaction(new RawTransaction(inputCells, outputCells), [Builder.WITNESS_ARGS.Secp256k1])
 
-    tx.raw.cellDeps.push(ORDER_BOOK_LOOK_DEP)
+    tx.raw.cellDeps.push(ORDER_BOOK_LOCK_DEP)
     tx.raw.cellDeps.push(SUDT_DEP)
 
     outputCells[1].lock = this.address.toLockScript()
