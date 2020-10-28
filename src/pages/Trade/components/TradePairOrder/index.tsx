@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Form, Input, Button, Tooltip, Select, Divider } from 'antd'
+import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { useDispatch } from 'react-redux'
 import { FormInstance } from 'antd/lib/form'
 import { useContainer } from 'unstated-next'
@@ -15,7 +15,6 @@ import WalletContainer from '../../../../containers/wallet'
 export default () => {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
-  const { Option } = Select
   const Order = useContainer(OrderContainer)
   const [visiblePopver, setVisiblePopver] = useState(false)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
@@ -151,7 +150,7 @@ export default () => {
         <Form.Item label={i18n.t('trade.price')} className="price-box">
           <PayMeta>
             <Button type="text" className="form-label-meta-num" onClick={setBestPrice}>
-              {`${i18n.t('trade.suggestion')}:${Order.bestPrice}`}
+              {`${i18n.t('trade.suggestion')}: ${Order.bestPrice}`}
             </Button>
             <Tooltip title={i18n.t(`trade.suggestionTooltip`)}>
               <i className="ai-question-circle-o" />

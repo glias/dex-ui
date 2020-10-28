@@ -114,6 +114,9 @@ export const PayMeta = styled.div`
     color: rgba(102, 102, 102, 1);
     padding: 0;
     text-decoration: underline;
+    span {
+      text-decoration: underline;
+    }
   }
 `
 

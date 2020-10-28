@@ -260,6 +260,12 @@ export const HeaderMeta = styled.div`
     font-weight: 500;
     border-color: #006a97;
     border-radius: 10px;
+    &: disabled {
+      background-color: #006a97;
+      &: hover {
+        color: #fff;
+      }
+    }
   }
   .account-btn {
     width: 15px;

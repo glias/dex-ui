@@ -9,6 +9,9 @@
       "account": "Account",
       "testWallet": "Test Wallet",
       "balances": "Balances",
+      "connecting": "Connecting...",
+      "inUse": "In Use",
+      "free": "Free",
       "HexAddressTooltip": "Current Eth Address. others can send CKB to this address using wallets that support pw-lock.",
       "ckbAddressTooltip": "A Transit Address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
     },

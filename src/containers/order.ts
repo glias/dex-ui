@@ -44,27 +44,36 @@ export function useOrder() {
 
   const [pair, setPair] = useState(buyPair)
 
-  const togglePair = useCallback(async () => {
-    const lockScript = PWCore.provider.address.toLockScript()
-    if (orderType === OrderType.Buy) {
-      setPair(sellPair)
-      setOrderType(OrderType.Sell)
-    } else {
-      setPair(buyPair)
-      setOrderType(OrderType.Buy)
-    }
-    // todo: error handling
-    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
-    setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
+  const togglePair = useCallback(
+    async (pairName?: string) => {
+      const lockScript = PWCore.provider?.address.toLockScript()
 
-    if (orderType === OrderType.Buy) {
-      const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
-      setMaxPay((BigInt(balance) / SUDT_DECIMAL).toString())
-    } else {
-      const { balance } = (await getCkbBalance(lockScript)).data
-      setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
-    }
-  }, [orderType, sellPair, buyPair])
+      if (pairName) {
+        setPair([pairName, 'CKB'])
+        setOrderType(OrderType.Sell)
+        return
+      }
+      if (orderType === OrderType.Buy) {
+        setPair(sellPair)
+        setOrderType(OrderType.Sell)
+      } else {
+        setPair(buyPair)
+        setOrderType(OrderType.Buy)
+      }
+      // todo: error handling
+      const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
+      setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
+
+      if (orderType === OrderType.Buy) {
+        const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
+        setMaxPay((BigInt(balance) / SUDT_DECIMAL).toString())
+      } else {
+        const { balance } = (await getCkbBalance(lockScript)).data
+        setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
+      }
+    },
+    [orderType, sellPair, buyPair],
+  )
 
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()

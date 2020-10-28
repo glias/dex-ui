@@ -49,7 +49,8 @@ export default function WalletBox({ disconnect, addresses }: Props) {
   const [clipboardTooltip, setClipboardTooltip] = useState(copyToClipboard)
 
   const validityText = (value: number) => (value >= 0 ? (value / 10 ** 8).toString() : '--')
-
+  const fractionText = (value: number, matrixing: number) =>
+    value && value >= 0 ? (value / 10 ** 3).toFixed(matrixing) : '--'
   const walletFlexBox = (item: any) => {
     return (
       <>
@@ -71,12 +72,12 @@ export default function WalletBox({ disconnect, addresses }: Props) {
         {item.name === 'CKB' ? (
           <div className="balance-ckb">
             <div className="ckb-item">
-              <span>In Use</span>
+              <span>{i18n.t('header.inUse')}</span>
               <span>{item.inuse?.amount}</span>
             </div>
             <div className="ckb-item">
-              <span>Free</span>
-              <span>{item.free?.amount}</span>
+              <span>{i18n.t('header.free')}</span>
+              <span>{fractionText(item.free?.amount, 2)}</span>
             </div>
           </div>
         ) : null}

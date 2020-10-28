@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const TradePage = styled.div`
   background-color: #ecf2f4;
-  min-height: calc(100% - 90px);
+  min-height: calc(100% - 93px);
   padding: 10px 120px;
   box-sizing: border-box;
   .asider {

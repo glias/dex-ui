@@ -15,7 +15,6 @@ import { ReactComponent as HeaderMetaSVG } from '../../assets/svg/Component12.sv
 import i18n from '../../utils/i18n'
 import { CKB_NODE_URL, thirdPartyLinks } from '../../utils/const'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
-import outlined from '../../assets/img/outlined.png'
 import {
   HeaderBox,
   HeaderPanel,
@@ -39,6 +38,7 @@ const Header = () => {
   const { ckbWallet, ethWallet } = Wallet
   const ckbAddress = ckbWallet.address
   const ethAddress = ethWallet.address
+  const [hasLogin, setHasLogin] = useState(false)
 
   const truncatureStr = (str: string): string => {
     return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
@@ -81,6 +81,7 @@ const Header = () => {
     })
 
     if (web3Modal.current.cachedProvider) {
+      setHasLogin(true)
       connectWallet()
     }
   })
@@ -113,13 +114,13 @@ const Header = () => {
         </Menu>
         <HeaderMeta id="header-meta">
           {ckbAddress === '' ? (
-            <Button className="collect-btn" onClick={connectWallet}>
-              {i18n.t('header.wallet')}
+            <Button className="collect-btn" onClick={connectWallet} disabled={hasLogin}>
+              {hasLogin ? i18n.t('header.connecting') : i18n.t('header.wallet')}
             </Button>
           ) : (
             <>
               <UserMeta>
-                <img src={metaMaskPng} alt="metaMask" />
+                <img src={MetaMaskpng} alt="metaMask" />
                 {truncatureStr(ethAddress)}
               </UserMeta>
               <Popover
