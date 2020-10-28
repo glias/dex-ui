@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { PRICE_DECIMAL, SUDT_DECIMAL, CKB_DECIMAL } from './const'
+import { PRICE_DECIMAL, SUDT_DECIMAL, CKB_DECIMAL, COMMISSION_FEE } from './const'
 
 export type RawOrder = Record<'is_bid' | 'claimable', boolean> &
   Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {
@@ -38,7 +38,9 @@ export const parseOrderRecord = ({
   const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
   const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
   const priceInNum = new BigNumber(price).dividedBy(PRICE_DECIMAL)
-  const payAmount = isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)
+  const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum))
+    .multipliedBy(1 + +COMMISSION_FEE)
+    .toFixed(8)
 
   return {
     key,
