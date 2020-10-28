@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
 import { CKB_DECIMAL, PRICE_DECIMAL, SUDT_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils/const'
-import calcReceive from '../utils/fee'
+import calcBuyReceive, { calcSellReceive } from '../utils/fee'
 import WalletContainer from './wallet'
 
 // eslint-disable-next-line no-shadow
@@ -78,11 +78,14 @@ export function useOrder() {
 
   const receive = useMemo(() => {
     if (price && pay) {
-      return calcReceive(parseFloat(pay), parseFloat(price))
+      if (orderType === OrderType.Buy) {
+        return calcBuyReceive(parseFloat(pay), parseFloat(price))
+      }
+      return calcSellReceive(parseFloat(pay), parseFloat(price))
     }
 
     return '0.00'
-  }, [price, pay])
+  }, [price, pay, orderType])
 
   const setLoading = useCallback(
     (key: string) => {
