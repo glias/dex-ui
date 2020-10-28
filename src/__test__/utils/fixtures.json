@@ -4,11 +4,11 @@
       "params": [
         {
           "is_bid": true,
-          "order_amount": "12345678901234567890",
-          "traded_amount": "234567890234567890",
-          "turnover_rate": "0.0189",
+          "order_amount": "5000000000000",
+          "traded_amount": "3000000000000",
           "paid_amount": "12345678901234567890",
-          "price": "12345678901234567890",
+          "turnover_rate": "0.6",
+          "price": "50000000000",
           "claimable": false,
           "status": "aborted",
           "last_order_cell_outpoint": {
@@ -19,12 +19,13 @@
       ],
       "expected": {
         "key": "0xf466000e74566297067bcfdc59158d4391e0728c0e8bfecb9e075b501bf34179:0x0",
-        "pay": "123456789012.3456789",
-        "receive": "23456789.023456789",
+        "paidAmount": "123456789012.3456789",
+        "tradedAmount": "300",
         "isBid": true,
-        "orderAmount": "1234567890.123456789",
-        "executed": "1.89%",
-        "price": "1234567890.123456789",
+        "pay": "100",
+        "receive": "500",
+        "executed": "60%",
+        "price": "5",
         "status": "aborted",
         "action": null
       }
@@ -33,11 +34,11 @@
       "params": [
         {
           "is_bid": false,
-          "order_amount": "12345678901234567890",
-          "traded_amount": "234567890234567890",
-          "turnover_rate": "0.0189",
+          "order_amount": "10000000000",
+          "traded_amount": "50000000",
+          "turnover_rate": "0.005",
           "paid_amount": "12345678901234567890",
-          "price": "12345678901234567890",
+          "price": "50000000000",
           "claimable": false,
           "status": "aborted",
           "last_order_cell_outpoint": {
@@ -48,12 +49,13 @@
       ],
       "expected": {
         "key": "0xf466000e74566297067bcfdc59158d4391e0728c0e8bfecb9e075b501bf34179:0x0",
-        "pay": "1234567890.123456789",
-        "receive": "2345678902.3456789",
+        "paidAmount": "1234567890.123456789",
+        "tradedAmount": "0.5",
         "isBid": false,
-        "orderAmount": "123456789012.3456789",
-        "executed": "1.89%",
-        "price": "1234567890.123456789",
+        "receive": "100",
+        "pay": "500",
+        "executed": "0.5%",
+        "price": "5",
         "status": "aborted",
         "action": null
       }
