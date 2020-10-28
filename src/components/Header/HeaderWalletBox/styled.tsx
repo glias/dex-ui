@@ -13,16 +13,34 @@ export const HeaderWalletBox = styled.div`
     img {
       width: 15px;
       height: 15px;
+      cursor: pointer;
     }
   }
 `
 export const WalletList = styled.li`
+  padding: 10px 0;
   .wallet {
     padding: 5px 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: rgba(136, 136, 136, 1);
+    button {
+      padding: 0;
+      margin-left: 5px;
+      position: relative;
+      top: 1px;
+      svg {
+        width: 14px;
+        height: 14px;
+        path {
+          fill: rgba(136, 136, 136, 1);
+        }
+      }
+      &.question-btn {
+        padding-top: 3px;
+      }
+    }
     .address {
       font-size: 14px;
     }
@@ -44,8 +62,17 @@ export const HeaderWallet = styled.div`
   background: rgba(0, 106, 151, 1);
   color: #fff;
   text-align: center;
-  span {
+  button {
     float: right;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    margin-top: 12px;
+    padding: 0;
+    background: transparent;
+    color: #fff;
+  }
+  span {
     height: 100%;
     color: #fff;
     line-height: 40px;
@@ -80,8 +107,9 @@ export const HeaderPanel = styled.div`
       margin: 0 20px 0 0;
     }
   }
-  .ant-menu-horizontal 
-    color: rgba(0,106,151,0.6);
+  .ant-menu-horizontal {
+    color: rgba(0, 106, 151, 0.6);
+    border-bottom: 1px solid transparent;
     .ant-menu-item-selected {
       color: rgba(0, 106, 151, 1);
     }
@@ -169,7 +197,7 @@ export const HeaderMeta = styled.div`
         wodth: 100%;
         border-top: 1px solid rgba(171, 209, 225, 1);
       }
-      ul > li {
+      .balance-list {
         margin: 10px 0 0 10px;
         display: flex;
         justify-content: center;
@@ -187,7 +215,7 @@ export const HeaderMeta = styled.div`
             margin-bottom: 5px;
             padding-bottom: 5px;
             .ckb-name {
-              font-weight: 600;
+              font-weight: 500;
             }
             .ckb-price {
               text-align: right;
@@ -198,6 +226,21 @@ export const HeaderMeta = styled.div`
             justify-content: space-between;
             font-size: 12px;
           }
+          .balance-ckb {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 1);
+            border-top: 1px solid rgba(171, 209, 225, 1);
+            padding-top: 4px;
+            margin-top: 4px;
+            .ckb-item {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              &:first-child {
+                margin-top: 1px solid red;
+              }
+            }
+          }
           .balance-item {
             display: flex;
             justify-content: space-between;
@@ -205,7 +248,7 @@ export const HeaderMeta = styled.div`
             .balance-name {
               color: rgba(0, 0, 0, 1);
               font-size: 14px;
-              font-weight: 600;
+              font-weight: 500;
             }
             .balance-price {
               display: flex;
@@ -222,8 +265,11 @@ export const HeaderMeta = styled.div`
             }
           }
         }
-        .explorer img {
-          width: 15px;
+        .explorer {
+          width: 30px;
+          button {
+            color: rgba(136, 136, 136, 1);
+          }
         }
       }
     }

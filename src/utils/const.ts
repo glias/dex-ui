@@ -86,7 +86,7 @@ export const ORDER_BOOK_LOCK_DEP = new CellDep(
   new OutPoint('0xcdfd397823f6a130294c72fbe397c469d459b83db401296c291db7b170b15839', '0x0'),
 )
 
-export const CKB_NODE_URL = 'http://localhost:8224'
+export const CKB_NODE_URL = 'https://aggron.ckb.dev'
 export const CKB_INDEXER_URL = 'https://prototype.ckbapp.dev/testnet/indexer'
 
 export const COMMISSION_FEE = 0.003

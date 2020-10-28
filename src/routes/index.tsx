@@ -28,6 +28,13 @@ const Containers: CustomRouter.Route[] = [
     showHeader: true,
     component: Pool,
   },
+  // {
+  //   name: 'Match',
+  //   path: '/match',
+  //   exact: true,
+  //   showHeader: true,
+  //   component: Match,
+  // },
   {
     name: '404',
     path: '/404',

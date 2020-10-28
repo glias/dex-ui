@@ -25,6 +25,8 @@ export function useOrder() {
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
+  const [maximumPayable, setMaximumPayable] = useState('-')
+  const [suggestionPrice, setSuggestionPrice] = useState(0)
   const [txHash, setTxHash] = useState('')
   const [orderType, setOrderType] = useState(OrderType.Buy)
   const sellPair = ['DAI', 'CKB']
@@ -100,6 +102,10 @@ export function useOrder() {
   }
 
   return {
+    suggestionPrice,
+    setSuggestionPrice,
+    maximumPayable,
+    setMaximumPayable,
     step,
     setStep,
     pay,

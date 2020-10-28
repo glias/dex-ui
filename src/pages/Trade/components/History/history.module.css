@@ -27,7 +27,7 @@
   color: #fff;
   opacity: 0.6;
   text-transform: capitalize;
-  padding: 0 15px;
+  padding: 0 6px;
 }
 
 .navItem[data-is-active='true'] {

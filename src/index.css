@@ -91,3 +91,17 @@ input::-webkit-input-placeholder {
 .no-arrorPoint .ant-popover-inner-content {
   padding: 0;
 }
+
+/* svg all config */
+svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+svg rect {
+  fill: currentColor;
+}
+svg path {
+  fill: currentColor;
+}
