@@ -82,7 +82,7 @@ export const ORDER_BOOK_LOCK_SCRIPT = new Script(
 )
 
 export const ORDER_BOOK_LOCK_DEP = new CellDep(
-  DepType.depGroup,
+  DepType.code,
   new OutPoint('0xcdfd397823f6a130294c72fbe397c469d459b83db401296c291db7b170b15839', '0x0'),
 )
 
