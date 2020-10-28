@@ -14,7 +14,7 @@ import { getSudtLiveCels } from '../APIs'
 import { OrderType } from '../containers/order'
 import { buildSellData, getAmountFromCellData, buildChangeData, buildBuyData } from '../utils/buffer'
 import { ORDER_BOOK_LOCK_SCRIPT, ORDER_CELL_CAPACITY, SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
-import calcReceive from '../utils/fee'
+import calcBuyReceive, { calcSellReceive } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -88,7 +88,7 @@ export class PlaceOrderBuilder extends Builder {
       })
     }
 
-    const orderOutputData = buildSellData(this.pay, calcReceive(pay, price), price.toString())
+    const orderOutputData = buildSellData(this.pay, calcSellReceive(pay, price), price.toString())
     orderOutput.setHexData(orderOutputData)
 
     const ckbChangeCell = new Cell(inputSum.sub(neededAmount), this.address.toLockScript())
@@ -137,7 +137,7 @@ export class PlaceOrderBuilder extends Builder {
 
     const orderOutput = new Cell(this.amount, orderLock, SUDT_TYPE_SCRIPT)
     orderOutput.setHexData(
-      buildBuyData(calcReceive(parseFloat(this.pay), parseFloat(this.price)).toString(), this.price),
+      buildBuyData(calcBuyReceive(parseFloat(this.pay), parseFloat(this.price)).toString(), this.price),
     )
     // fill the inputs
     const cells = await this.collector.collect(PWCore.provider.address, neededAmount, { withData: true })
