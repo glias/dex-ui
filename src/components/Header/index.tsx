@@ -61,10 +61,10 @@ const Header = () => {
     Wallet.setPw(pw)
     setHasLogin(true)
 
-    await Wallet.reloadCkbWallet(ckbAddr)
     const ethBalance = await web3.eth.getBalance(ethAddr)
     Wallet.setEthBalance(new Amount(ethBalance))
     Wallet.setEthAddress(ethAddr.toLowerCase())
+    await Wallet.reloadCkbWallet(ckbAddr)
   }
 
   const disconnectWallet = async () => {

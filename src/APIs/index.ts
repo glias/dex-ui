@@ -82,7 +82,7 @@ export function getBestPrice(type: Script, orderType: OrderType) {
     type_code_hash: type.codeHash,
     type_hash_type: type.hashType,
     type_args: type.args,
-    is_bid: orderType === OrderType.Buy,
+    is_bid: orderType === OrderType.Sell,
   }
 
   return axios.get(`${SERVER_URL}/best-price`, {

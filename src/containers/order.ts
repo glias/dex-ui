@@ -83,10 +83,10 @@ export function useOrder() {
     const lockScript = PWCore.provider.address.toLockScript()
     const { balance } = (await getCkbBalance(lockScript)).data
     setMaxPay(new BigNumber(balance).div(new BigNumber(CKB_DECIMAL.toString())).toString())
-    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
+    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, OrderType.Sell)
     // eslint-disable-next-line no-debugger
     setBestPrice(new BigNumber(data.price).div(new BigNumber(PRICE_DECIMAL.toString())).toString())
-  }, [orderType])
+  }, [])
 
   const receive = useMemo(() => {
     if (price && pay) {
