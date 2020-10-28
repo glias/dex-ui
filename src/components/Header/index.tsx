@@ -104,7 +104,7 @@ const Header = () => {
     <HeaderBox className="header-box">
       <HeaderPanel>
         <HeaderLogoBox>CKB DEX</HeaderLogoBox>
-        <Menu mode="horizontal" className="menuBox" onClick={e => history.push(`/${e.key}`)}>
+        <Menu mode="horizontal" onClick={e => history.push(`/${e.key}`)}>
           <Menu.Item key="trade">
             <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
           </Menu.Item>

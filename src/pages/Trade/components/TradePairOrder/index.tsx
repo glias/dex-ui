@@ -120,7 +120,7 @@ export default () => {
       />
       {PairList.slice(1).map(item => (
         <PairBlock key={item.name} onClick={() => changePair()}>
-          <Button className="pairTraceList" type="text">
+          <Button className="pair-trace-box" type="text">
             <TradeCoinBox pair={item.name} />
             <div className="decollect">/</div>
             <TradeCoinBox pair="CKB" />
@@ -143,7 +143,7 @@ export default () => {
         <OrderSelectBox id="trace-form-select">
           <PairBlock>
             <span className="pair">{i18n.t('trade.pair')}</span>
-            <Button className="pairTraceList" type="text">
+            <Button className="pair-trace-box" type="text">
               <TradeCoinBox pair={Order.pair[0]} />
               <div className="decollect">/</div>
               <TradeCoinBox pair={Order.pair[1]} />
@@ -246,7 +246,7 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button htmlType="submit" className="submitBtn" disabled={disabled} size="large" type="text">
+          <Button htmlType="submit" className="submit-btn" disabled={disabled} size="large" type="text">
             {i18n.t(`trade.placeOrder`)}
           </Button>
         </Form.Item>
