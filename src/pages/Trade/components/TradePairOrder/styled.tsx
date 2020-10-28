@@ -18,8 +18,9 @@ export const PairOrderFormBox = styled.div`
     padding-top: 10px;
     border-radius: 10px;
     border: 1px solid rgba(171, 209, 225, 1);
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
     .ant-form-item {
-      padding: 0 10px;
+      padding: 0 20px;
       label {
         font-size: 16px;
       }

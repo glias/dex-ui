@@ -10,6 +10,12 @@ export const TracePairLine = styled.div`
   background-color: #fff;
   border: 1px solid rgba(171, 209, 225, 1);
   border-radius: 10px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
+  button {
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+  }
   span {
     text-align: center;
     font-size: 16px;

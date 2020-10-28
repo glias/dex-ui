@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { FormInstance } from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
 import { useContainer } from 'unstated-next'
 import { PairList } from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
@@ -20,33 +21,38 @@ export default () => {
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
   const [disabled, setDisabled] = useState(false)
-  const [submitText, setSubmitText] = useState(i18n.t(`trade.placeOrder`))
+  const MIN_PRICE = 1 / 10 ** 10
+  const MIN_VAL = 1 / 10 ** (Order.orderType === OrderType.Buy ? 8 : 10)
+  const MIN_ORDER = Order.orderType === OrderType.Buy ? 147 : 289
 
   const changePair = () => {
     setVisiblePopver(false)
     Order.togglePair()
     form.resetFields()
   }
-  // dai -> ckb 卖单
+
   const checkPay = (_: any, value: string): Promise<void> => {
-    const val = parseFloat(value)
-    const MIN_VAL = 1 / 10 ** (Order.orderType === OrderType.Buy ? 8 : 10)
+    const val = new BigNumber(value)
 
-    if (Number.isNaN(val)) {
+    if (Number.isNaN(parseFloat(value))) {
       setDisabled(true)
-      return Promise.reject('please input the number')
+      return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
     }
 
-    if (val < MIN_VAL) {
+    if (val.comparedTo(MIN_VAL) === -1) {
       setDisabled(true)
-      return Promise.reject('the value is too small')
+      return Promise.reject(i18n.t(`trade.tooSmallNumber`))
     }
 
-    if (val > parseFloat(Order.maxPay)) {
+    if (val.comparedTo(Order.maxPay) === 1) {
       setDisabled(true)
-      setSubmitText(i18n.t(`trade.insuffcientBalance`))
 
-      return Promise.reject('the value should be less than MAX')
+      return Promise.reject(i18n.t(`trade.lessThanMaxNumber`))
+    }
+
+    if (new BigNumber(Order.maxPay).minus(val).lt(MIN_ORDER)) {
+      setDisabled(true)
+      return Promise.reject(i18n.t(`trade.insuffcientCKBBalance`))
     }
 
     setDisabled(false)
@@ -55,15 +61,18 @@ export default () => {
   }
 
   const checkPrice = (_: any, value: string): Promise<void> => {
-    const val = parseFloat(value)
-    const MIN_VAL = 1 / 10 ** 10
+    const val = new BigNumber(value)
 
-    if (Number.isNaN(val)) {
-      return Promise.reject('please input the effective number')
+    if (Number.isNaN(parseFloat(value))) {
+      return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
     }
 
-    if (val < MIN_VAL) {
-      return Promise.reject('the value is too small')
+    if (!new BigNumber(val).decimalPlaces(10).isEqualTo(val)) {
+      return Promise.reject(i18n.t(`trade.tooMaxprecision`))
+    }
+
+    if (val.comparedTo(MIN_PRICE) === -1) {
+      return Promise.reject(i18n.t(`trade.tooSmallNumber`))
     }
     return Promise.resolve()
   }
@@ -164,6 +173,7 @@ export default () => {
               placeholder="0"
               suffix={buyer}
               type="number"
+              size="large"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
                 width: '100%',
@@ -197,7 +207,8 @@ export default () => {
           >
             <Input
               placeholder="0"
-              suffix={`${seller} per ${buyer}`}
+              suffix="CKB per DAI"
+              size="large"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
@@ -236,7 +247,7 @@ export default () => {
         <div className="dividing-line" />
         <Form.Item className="submit-item">
           <Button htmlType="submit" className="submitBtn" disabled={disabled} size="large" type="text">
-            {submitText}
+            {i18n.t(`trade.placeOrder`)}
           </Button>
         </Form.Item>
       </Form>

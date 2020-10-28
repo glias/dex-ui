@@ -34,6 +34,7 @@ export default function TradePairConfirm() {
     )
 
     const txHash = await Wallet.pw?.sendTransaction(builder)
+
     if (txHash) {
       const isBid = Order.orderType === OrderType.Buy
       const submittedOrder: SubmittedOrder = {

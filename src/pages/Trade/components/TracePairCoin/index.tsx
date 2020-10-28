@@ -19,7 +19,7 @@ const TracePairCoin = ({ resetFields }: { resetFields: Function }) => {
   return (
     <TracePairLine>
       <span>{buyer}</span>
-      <Button type="text" onClick={() => togglePair()}>
+      <Button type="text" onClick={() => togglePair()} size="large">
         <i
           className="ai-right-circle"
           style={{
