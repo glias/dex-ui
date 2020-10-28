@@ -109,9 +109,9 @@ const History = () => {
   const { address } = wallet.ckbWallet
   const handleWithdraw = useHandleWithdrawOrder(address, dispatch)
 
-  const lockArgs = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().args : ''), [address])
+  const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
-  usePollOrderList({ lockArgs, fetchListRef, dispatch })
+  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch })
 
   const actionColumn = {
     title: 'action',
