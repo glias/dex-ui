@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
-import { useDispatch } from 'react-redux'
 import { FormInstance } from 'antd/lib/form'
 import { useContainer } from 'unstated-next'
 import { PairList } from '../../../../utils/const'
-import { SELECTED_TRADE } from '../../../../context/actions/types'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
@@ -18,21 +16,14 @@ export default () => {
   const Order = useContainer(OrderContainer)
   const [visiblePopver, setVisiblePopver] = useState(false)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
-  const dispatch = useDispatch()
   const formRef = React.createRef<FormInstance>()
   const [disabled] = useState(false)
   const [buyer, seller] = Order.pair
 
-  const changePair = (value: any) => {
+  const changePair = () => {
     setVisiblePopver(false)
-    Order.togglePair(value)
+    Order.togglePair()
     form.resetFields()
-    dispatch({
-      type: SELECTED_TRADE,
-      payload: {
-        currentPair: value,
-      },
-    })
   }
 
   const setBestPrice = useCallback(() => {
@@ -80,7 +71,7 @@ export default () => {
         }}
       />
       {PairList.slice(1).map(item => (
-        <PairBlock key={item.name} onClick={() => changePair(item.name)}>
+        <PairBlock key={item.name} onClick={() => changePair()}>
           <Button className="pairTraceList" type="text">
             <TradeCoinBox pair={item.name} />
             <div className="decollect">/</div>
@@ -171,6 +162,7 @@ export default () => {
                 color: 'rgba(81, 119, 136, 1)',
               }}
               type="number"
+              step="any"
               value={price}
               onChange={e => {
                 priceOnChange(e.target.value)
