@@ -58,17 +58,24 @@ export const PairOrderFormBox = styled.div`
     }
   }
   .submit-item {
-    padding: 0;
+    padding: 0 !important;
     margin: 0;
     height: 60px;
     text-align: center;
     .submitBtn {
+      padding: 0;
       font-size: 17px;
       font-weight: 500;
       height: 60px;
       width: 100%;
       color: rgba(0, 106, 151, 1);
       text-align: center;
+    }
+    .submitBtn[disabled] {
+      background: rgba(241, 241, 241, 1);
+      border-bottom-right-radius: 10px;
+      overflow: hidden;
+      border-bottom-left-radius: 10px;
     }
   }
 `

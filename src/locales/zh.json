@@ -10,6 +10,7 @@
       "testWallet": "钱包测试",
       "balances": "余额",
       "connecting": "正在连接钱包...",
+      "insuffcientBalance": "sUDT余额不足",
       "inUse": "已使用",
       "free": "余额",
       "HexAddressTooltip": "当前以太坊地址。其他人可以发送CKB到这个地址使用钱包支持密码锁。",

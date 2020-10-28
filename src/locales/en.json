@@ -19,6 +19,7 @@
       "pair": "Pair",
       "pay": "Pay",
       "max": "MAX",
+      "insuffcientBalance": "insuffcient sUDT balance",
       "filterToken": "Filter Token",
       "price": "Price",
       "executed": "Executed",

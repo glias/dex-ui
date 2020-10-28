@@ -6,12 +6,14 @@ import { useContainer } from 'unstated-next'
 import OrderContainer from '../../../../containers/order'
 import { TracePairLine } from './styled'
 
-const TracePairCoin = () => {
+const TracePairCoin = ({ resetFields }: { resetFields: Function }) => {
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
 
   const togglePair = () => {
     Order.togglePair()
+    Order.reset()
+    resetFields()
   }
 
   return (

@@ -1,3 +1,4 @@
+/* eslint-disable prefer-promise-reject-errors */
 import React, { useState, useEffect, useCallback } from 'react'
 import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { FormInstance } from 'antd/lib/form'
@@ -7,7 +8,7 @@ import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PayMeta, OrderSelectBox, OrderSelectPopver, PairBlock } from './styled'
-import OrderContainer, { OrderStep } from '../../../../containers/order'
+import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 
 export default () => {
@@ -17,13 +18,54 @@ export default () => {
   const [visiblePopver, setVisiblePopver] = useState(false)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
-  const [disabled] = useState(false)
   const [buyer, seller] = Order.pair
+  const [disabled, setDisabled] = useState(false)
+  const [submitText, setSubmitText] = useState(i18n.t(`trade.placeOrder`))
 
   const changePair = () => {
     setVisiblePopver(false)
     Order.togglePair()
     form.resetFields()
+  }
+  // dai -> ckb 卖单
+  const checkPay = (_: any, value: string): Promise<void> => {
+    const val = parseFloat(value)
+    const MIN_VAL = 1 / 10 ** (Order.orderType === OrderType.Buy ? 8 : 10)
+
+    if (Number.isNaN(val)) {
+      setDisabled(true)
+      return Promise.reject('please input the number')
+    }
+
+    if (val < MIN_VAL) {
+      setDisabled(true)
+      return Promise.reject('the value is too small')
+    }
+
+    if (val > parseFloat(Order.maxPay)) {
+      setDisabled(true)
+      setSubmitText(i18n.t(`trade.insuffcientBalance`))
+
+      return Promise.reject('the value should be less than MAX')
+    }
+
+    setDisabled(false)
+
+    return Promise.resolve()
+  }
+
+  const checkPrice = (_: any, value: string): Promise<void> => {
+    const val = parseFloat(value)
+    const MIN_VAL = 1 / 10 ** 10
+
+    if (Number.isNaN(val)) {
+      return Promise.reject('please input the effective number')
+    }
+
+    if (val < MIN_VAL) {
+      return Promise.reject('the value is too small')
+    }
+    return Promise.resolve()
   }
 
   const setBestPrice = useCallback(() => {
@@ -100,7 +142,7 @@ export default () => {
           </PairBlock>
         </OrderSelectBox>
       </Popover>
-      <TracePairCoin />
+      <TracePairCoin resetFields={() => form.resetFields()} />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
@@ -112,11 +154,11 @@ export default () => {
           <Form.Item
             name="pay"
             noStyle
-            // rules={[
-            //   {
-            //     validator: checkPay,
-            //   },
-            // ]}
+            rules={[
+              {
+                validator: checkPay,
+              },
+            ]}
           >
             <Input
               placeholder="0"
@@ -147,11 +189,11 @@ export default () => {
           </PayMeta>
           <Form.Item
             name="price"
-            // rules={[
-            //   {
-            //     validator: checkPrice,
-            //   },
-            // ]}
+            rules={[
+              {
+                validator: checkPrice,
+              },
+            ]}
           >
             <Input
               placeholder="0"
@@ -194,7 +236,7 @@ export default () => {
         <div className="dividing-line" />
         <Form.Item className="submit-item">
           <Button htmlType="submit" className="submitBtn" disabled={disabled} size="large" type="text">
-            {i18n.t(`trade.placeOrder`)}
+            {submitText}
           </Button>
         </Form.Item>
       </Form>
