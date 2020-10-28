@@ -15,7 +15,7 @@ import OrderContainer, { OrderStep, OrderType } from '../../../../containers/ord
 import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
-import { calcBuyAmount } from '../../../../utils/fee'
+import { calcBuyAmount, calcBuyReceive, calcSellReceive } from '../../../../utils/fee'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
@@ -36,12 +36,14 @@ export default function TradePairConfirm() {
     const txHash = await Wallet.pw?.sendTransaction(builder)
     if (txHash) {
       const isBid = Order.orderType === OrderType.Buy
+      const receiveCalc = isBid ? calcBuyReceive : calcSellReceive
+
       const submittedOrder: SubmittedOrder = {
         key: `${txHash}:0x0`,
         isBid,
         status: 'pending',
         pay: Order.pay,
-        receive: buyAmount,
+        receive: receiveCalc(parseFloat(Order.pay), parseFloat(Order.price)),
         price: Order.price,
       }
       Order.setAndCacheSubmittedOrders(orders => [...orders, submittedOrder])

@@ -13,7 +13,7 @@ import { reducer, usePollOrderList, useHandleWithdrawOrder } from './hooks'
 import styles from './history.module.css'
 
 type OrderInList = OrderRecord | SubmittedOrder
-const SUDT_SYMBOL = 'SUDT'
+const SUDT_SYMBOL = 'DAI'
 
 const routes = [
   {
