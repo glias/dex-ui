@@ -9,9 +9,11 @@ export const TracePairLine = styled.div`
   margin-top: 10px;
   background-color: #fff;
   border: 1px solid rgba(171, 209, 225, 1);
+  border-radius: 10px;
   span {
     text-align: center;
     font-size: 16px;
+    width: 40%;
   }
 `
 

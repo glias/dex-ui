@@ -1,12 +1,15 @@
 import styled from 'styled-components'
 
 export const TracePairResultBox = styled.div`
-  height: 540px;
+  height: 400px;
   background: #fff;
   display: flex;
   flex-direction: column;
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
   border: 1px solid #abd1e1;
+  box-sizing: border-box;
+  overflow: hidden;
 `
 
 export const TradePairConfirmBox = styled.div`

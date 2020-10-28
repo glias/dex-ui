@@ -9,6 +9,9 @@
       "account": "账 号",
       "testWallet": "钱包测试",
       "balances": "余额",
+      "connecting": "正在连接钱包...",
+      "inUse": "已使用",
+      "free": "余额",
       "HexAddressTooltip": "当前以太坊地址。其他人可以发送CKB到这个地址使用钱包支持密码锁。",
       "ckbAddressTooltip": "这是一个中转地址。当您从交易所或没有完整地址支持的CKB钱包收到CKB时，请使用此地址。"
     },
@@ -22,6 +25,7 @@
       "myOrder": "我的交易",
       "receive": "接收值",
       "executionFee": "交易费",
+      "filterToken": "Token 查询",
       "reviewOrder": "检查交易",
       "searchPairPlaceHolder": "查询币名或者Type ID",
       "TradeSuccess": "新建交易",
