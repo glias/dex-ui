@@ -50,7 +50,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
 
   const validityText = (value: number) => (value >= 0 ? (value / 10 ** 8).toString() : '--')
   const fractionText = (value: number, matrixing: number) =>
-    value && value >= 0 ? (value / 10 ** 3).toFixed(matrixing) : '--'
+    value && value >= 0 ? (value / 10 ** 8).toFixed(matrixing) : '--'
   const walletFlexBox = (item: any) => {
     return (
       <>
