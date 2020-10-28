@@ -36,6 +36,10 @@ export class CancelOrderBuilder extends Builder {
     const inputCells: Cell[] = [cells[0], orderCell]
     const outputCells: Cell[] = [cells[0], orderCell.clone()]
 
+    if (outputCells[1].type) {
+      outputCells[1].setHexData(outputCells[1].getHexData().slice(0, 34))
+    }
+
     const tx = new Transaction(new RawTransaction(inputCells, outputCells), [Builder.WITNESS_ARGS.Secp256k1])
 
     tx.raw.cellDeps.push(ORDER_BOOK_LOCK_DEP)
@@ -53,9 +57,18 @@ export class CancelOrderBuilder extends Builder {
 
   #getOrderCell = async () => {
     const res = await this.core.rpc.get_transaction(this.orderOutPoint.txHash)
-    const cell = res.transaction.outputs[+this.orderOutPoint.index]
+    const index = +this.orderOutPoint.index
+    const cell = res.transaction.outputs[index]
+    const outputData = res.transaction.outputs_data[index]
     const lockScript = new Script(cell.lock.code_hash, cell.lock.args, cell.lock.hash_type)
-    const orderCell = new Cell(new Amount(cell.capacity, AmountUnit.shannon), lockScript, undefined, this.orderOutPoint)
+    const typeScript = cell.type ? new Script(cell.type.code_hash, cell.type.args, cell.type.hash_type) : undefined
+    const orderCell = new Cell(
+      new Amount(cell.capacity, AmountUnit.shannon),
+      lockScript,
+      typeScript,
+      this.orderOutPoint,
+      outputData,
+    )
     return orderCell
   }
 }
