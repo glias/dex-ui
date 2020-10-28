@@ -91,9 +91,9 @@ export function useOrder() {
   const receive = useMemo(() => {
     if (price && pay) {
       if (orderType === OrderType.Buy) {
-        return calcBuyReceive(parseFloat(pay), parseFloat(price))
+        return calcBuyReceive(pay, price)
       }
-      return calcSellReceive(parseFloat(pay), parseFloat(price))
+      return calcSellReceive(pay, price)
     }
 
     return '0.00'

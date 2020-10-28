@@ -53,8 +53,7 @@ export class PlaceOrderBuilder extends Builder {
     )
 
     const orderOutput = new Cell(orderLockAmount, orderLock, SUDT_TYPE_SCRIPT)
-    const pay = parseFloat(this.amount.toString())
-    const price = parseFloat(this.price)
+    const pay = this.amount.toString()
 
     // eslint-disable-next-line no-debugger
 
@@ -79,16 +78,16 @@ export class PlaceOrderBuilder extends Builder {
     })
 
     if (inputSum.lte(neededAmount)) {
-      const extraCells = await this.collector.collect(this.address, neededAmount.sub(neededAmount))
+      const extraCells = await this.collector.collect(this.address, neededAmount.sub(inputSum).add(Builder.MIN_CHANGE))
       extraCells.forEach(cell => {
-        if (inputSum.lte(neededAmount.add(Builder.MIN_CHANGE))) {
+        if (inputSum.lte(neededAmount)) {
           inputCells.push(cell)
           inputSum = inputSum.add(cell.capacity)
         }
       })
     }
 
-    const orderOutputData = buildSellData(this.pay, calcSellReceive(pay, price), price.toString())
+    const orderOutputData = buildSellData(this.pay, calcSellReceive(pay, this.price), this.price)
     orderOutput.setHexData(orderOutputData)
 
     const ckbChangeCell = new Cell(inputSum.sub(neededAmount), this.address.toLockScript())
@@ -136,9 +135,7 @@ export class PlaceOrderBuilder extends Builder {
     )
 
     const orderOutput = new Cell(this.amount, orderLock, SUDT_TYPE_SCRIPT)
-    orderOutput.setHexData(
-      buildBuyData(calcBuyReceive(parseFloat(this.pay), parseFloat(this.price)).toString(), this.price),
-    )
+    orderOutput.setHexData(buildBuyData(calcBuyReceive(this.pay, this.price).toString(), this.price))
     // fill the inputs
     const cells = await this.collector.collect(PWCore.provider.address, neededAmount, { withData: true })
     cells.forEach(cell => {
