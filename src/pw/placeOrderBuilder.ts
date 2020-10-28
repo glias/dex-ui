@@ -9,11 +9,12 @@ import PWCore, {
   Script,
   OutPoint,
 } from '@lay2/pw-core'
+import BigNumber from 'bignumber.js'
 import { getSudtLiveCels } from '../APIs'
 import { OrderType } from '../containers/order'
 import { buildSellData, getAmountFromCellData, buildChangeData, buildBuyData } from '../utils/buffer'
-import { ORDER_BOOK_LOOK_SCRIPT, ORDER_CELL_CAPACITY, SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
-import calcReceive from '../utils/fee'
+import { ORDER_BOOK_LOCK_SCRIPT, ORDER_CELL_CAPACITY, SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
+import calcBuyReceive, { calcSellReceive } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -36,7 +37,7 @@ export class PlaceOrderBuilder extends Builder {
   }
 
   async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
-    let sudtSum = BigInt(0)
+    let sudtSum = new BigNumber(0)
     let inputSum = Amount.ZERO
     const orderLockAmount = new Amount(ORDER_CELL_CAPACITY.toString())
     const lockScript = PWCore.provider.address.toLockScript()
@@ -46,9 +47,9 @@ export class PlaceOrderBuilder extends Builder {
     const inputCells: Cell[] = []
 
     const orderLock = new Script(
-      ORDER_BOOK_LOOK_SCRIPT.codeHash,
-      this.address.toLockScript().args,
-      ORDER_BOOK_LOOK_SCRIPT.hashType,
+      ORDER_BOOK_LOCK_SCRIPT.codeHash,
+      this.address.toLockScript().toHash(),
+      ORDER_BOOK_LOCK_SCRIPT.hashType,
     )
 
     const orderOutput = new Cell(orderLockAmount, orderLock, SUDT_TYPE_SCRIPT)
@@ -60,8 +61,9 @@ export class PlaceOrderBuilder extends Builder {
     const { data: cells } = await getSudtLiveCels(SUDT_TYPE_SCRIPT, lockScript, this.amount.toString())
 
     cells.forEach((cell: any) => {
-      const sudtToken = BigInt(getAmountFromCellData(cell.data))
-      sudtSum += sudtToken
+      // eslint-disable-next-line no-debugger
+      const sudtToken = new BigNumber(getAmountFromCellData(cell.data))
+      sudtSum = sudtSum.plus(sudtToken)
       const cellOutput = cell.cell_output
       inputCells.push(
         new Cell(
@@ -76,9 +78,6 @@ export class PlaceOrderBuilder extends Builder {
       inputSum = inputSum.add(new Amount(cellOutput.capacity, AmountUnit.shannon))
     })
 
-    const orderOutputData = buildSellData(this.pay, calcReceive(pay, price), price.toString())
-    orderOutput.setHexData(orderOutputData)
-
     if (inputSum.lte(neededAmount)) {
       const extraCells = await this.collector.collect(this.address, neededAmount.sub(neededAmount))
       extraCells.forEach(cell => {
@@ -89,6 +88,9 @@ export class PlaceOrderBuilder extends Builder {
       })
     }
 
+    const orderOutputData = buildSellData(this.pay, calcSellReceive(pay, price), price.toString())
+    orderOutput.setHexData(orderOutputData)
+
     const ckbChangeCell = new Cell(inputSum.sub(neededAmount), this.address.toLockScript())
 
     const sudtChangeCell = new Cell(
@@ -97,8 +99,8 @@ export class PlaceOrderBuilder extends Builder {
       new Script(SUDT_TYPE_SCRIPT.codeHash, SUDT_TYPE_SCRIPT.args, SUDT_TYPE_SCRIPT.hashType),
     )
 
-    const sudtChange = sudtSum - BigInt(this.pay)
-    sudtChangeCell.setHexData(buildChangeData(sudtChange.toString()))
+    const sudtChange = new BigNumber(sudtSum.toString()).minus(new BigNumber(this.pay)).toString()
+    sudtChangeCell.setHexData(buildChangeData(sudtChange))
 
     const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, sudtChangeCell, ckbChangeCell]), [
       Builder.WITNESS_ARGS.Secp256k1,
@@ -128,14 +130,14 @@ export class PlaceOrderBuilder extends Builder {
     const inputCells: Cell[] = []
 
     const orderLock = new Script(
-      ORDER_BOOK_LOOK_SCRIPT.codeHash,
-      this.address.toLockScript().args,
-      ORDER_BOOK_LOOK_SCRIPT.hashType,
+      ORDER_BOOK_LOCK_SCRIPT.codeHash,
+      this.address.toLockScript().toHash(),
+      ORDER_BOOK_LOCK_SCRIPT.hashType,
     )
 
     const orderOutput = new Cell(this.amount, orderLock, SUDT_TYPE_SCRIPT)
     orderOutput.setHexData(
-      buildBuyData(calcReceive(parseFloat(this.pay), parseFloat(this.price)).toString(), this.price),
+      buildBuyData(calcBuyReceive(parseFloat(this.pay), parseFloat(this.price)).toString(), this.price),
     )
     // fill the inputs
     const cells = await this.collector.collect(PWCore.provider.address, neededAmount, { withData: true })

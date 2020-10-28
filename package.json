@@ -84,6 +84,7 @@
       "pre-commit": "yarn lint"
     }
   },
+  "homepage": "https://ckb-dex.netlify.app/dex-ui",
   "browserslist": {
     "production": [
       ">0.2%",

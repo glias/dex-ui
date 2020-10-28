@@ -1,9 +1,10 @@
 import PWCore from '@lay2/pw-core'
+import BigNumber from 'bignumber.js'
 import { useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
 import { CKB_DECIMAL, PRICE_DECIMAL, SUDT_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils/const'
-import calcReceive from '../utils/fee'
+import calcBuyReceive, { calcSellReceive } from '../utils/fee'
 import WalletContainer from './wallet'
 
 // eslint-disable-next-line no-shadow
@@ -44,52 +45,47 @@ export function useOrder() {
 
   const [pair, setPair] = useState(buyPair)
 
-  const togglePair = useCallback(
-    async (pairName?: string) => {
-      const lockScript = PWCore.provider?.address.toLockScript()
+  const togglePair = useCallback(async () => {
+    const lockScript = PWCore.provider.address.toLockScript()
+    if (orderType === OrderType.Buy) {
+      setPair(sellPair)
+      setOrderType(OrderType.Sell)
+    } else {
+      setPair(buyPair)
+      setOrderType(OrderType.Buy)
+    }
+    // todo: error handling
+    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
+    setBestPrice(new BigNumber(data.price).div(PRICE_DECIMAL).toString())
 
-      if (pairName) {
-        setPair([pairName, 'CKB'])
-        setOrderType(OrderType.Sell)
-        return
-      }
-      if (orderType === OrderType.Buy) {
-        setPair(sellPair)
-        setOrderType(OrderType.Sell)
-      } else {
-        setPair(buyPair)
-        setOrderType(OrderType.Buy)
-      }
-      // todo: error handling
-      const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
-      setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
-
-      if (orderType === OrderType.Buy) {
-        const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
-        setMaxPay((BigInt(balance) / SUDT_DECIMAL).toString())
-      } else {
-        const { balance } = (await getCkbBalance(lockScript)).data
-        setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
-      }
-    },
-    [orderType, sellPair, buyPair],
-  )
+    if (orderType === OrderType.Buy) {
+      const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
+      setMaxPay(new BigNumber(balance).div(SUDT_DECIMAL).toString())
+    } else {
+      const { balance } = (await getCkbBalance(lockScript)).data
+      setMaxPay(new BigNumber(balance).div(SUDT_DECIMAL).toString())
+    }
+  }, [orderType, sellPair, buyPair])
 
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()
     const { balance } = (await getCkbBalance(lockScript)).data
-    setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
+    setMaxPay(new BigNumber(balance).div(new BigNumber(CKB_DECIMAL.toString())).toString())
     const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
-    setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
+    // eslint-disable-next-line no-debugger
+    setBestPrice(new BigNumber(data.price).div(new BigNumber(PRICE_DECIMAL.toString())).toString())
   }, [orderType])
 
   const receive = useMemo(() => {
     if (price && pay) {
-      return calcReceive(parseFloat(pay), parseFloat(price))
+      if (orderType === OrderType.Buy) {
+        return calcBuyReceive(parseFloat(pay), parseFloat(price))
+      }
+      return calcSellReceive(parseFloat(pay), parseFloat(price))
     }
 
     return '0.00'
-  }, [price, pay])
+  }, [price, pay, orderType])
 
   const setLoading = useCallback(
     (key: string) => {

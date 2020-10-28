@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import { CellDep, DepType, HashType, OutPoint, Script } from '@lay2/pw-core'
 import metaMask from '../assets/img/wallet/metamask.png'
 import dai from '../assets/img/token/dai.png'
@@ -74,13 +75,13 @@ export const SUDT_DEP = new CellDep(
   new OutPoint('0xe12877ebd2c3c364dc46c5c992bcfaf4fee33fa13eebdf82c591fc9825aab769', '0x0'),
 )
 
-export const ORDER_BOOK_LOOK_SCRIPT = new Script(
+export const ORDER_BOOK_LOCK_SCRIPT = new Script(
   '0x9c833b9ebd4259ca044d2c47c5e51b7fc25380b07291e54b248d3808f08ed7fd',
   '0xb74a976e3ceab91f27690b27473731d7ccdff45302bb082394a03cb97641edaa',
   HashType.type,
 )
 
-export const ORDER_BOOK_LOOK_DEP = new CellDep(
+export const ORDER_BOOK_LOCK_DEP = new CellDep(
   DepType.depGroup,
   new OutPoint('0xcdfd397823f6a130294c72fbe397c469d459b83db401296c291db7b170b15839', '0x0'),
 )
@@ -89,12 +90,12 @@ export const CKB_NODE_URL = 'https://aggron.ckb.dev'
 export const CKB_INDEXER_URL = 'https://prototype.ckbapp.dev/testnet/indexer'
 
 export const COMMISSION_FEE = 0.003
-export const PRICE_DECIMAL = BigInt(10) ** BigInt(10)
-export const SUDT_DECIMAL = BigInt(10) ** BigInt(8)
-export const CKB_DECIMAL = BigInt(10) ** BigInt(8)
+export const PRICE_DECIMAL = new BigNumber(10).pow(new BigNumber(10))
+export const SUDT_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
+export const CKB_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
 
 //  @TODO: comments
-export const ORDER_CELL_CAPACITY = 167
+export const ORDER_CELL_CAPACITY = 179
 
 export const HISTORY_PARAMS = {
   typeCodeHash: '0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
