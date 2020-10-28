@@ -5,11 +5,14 @@ import { SyncOutlined } from '@ant-design/icons'
 import { useContainer } from 'unstated-next'
 import PWCore from '@lay2/pw-core'
 import WalletContainer from '../../../../containers/wallet'
-import { parseOrderRecord, pendingOrders, HISTORY_QUERY_KEY } from '../../../../utils'
-import type { getAction } from '../../../../utils'
+import OrderContainer from '../../../../containers/order'
+import type { SubmittedOrder } from '../../../../containers/order'
+import { pendingOrders, HISTORY_QUERY_KEY } from '../../../../utils'
+import type { OrderRecordAction, OrderRecord } from '../../../../utils'
 import { reducer, usePollOrderList, useHandleWithdrawOrder } from './hooks'
 import styles from './history.module.css'
 
+type OrderInList = OrderRecord | SubmittedOrder
 const SUDT_SYMBOL = 'SUDT'
 
 const routes = [
@@ -47,7 +50,7 @@ const columns = [
     ellipsis: {
       showTitle: false,
     },
-    render: (amount: string, order: Order) => {
+    render: (amount: string, order: OrderInList) => {
       const text = `${amount} ${order.isBid ? 'CKB' : SUDT_SYMBOL}`
       return <Tooltip title={text}>{text}</Tooltip>
     },
@@ -59,7 +62,7 @@ const columns = [
     ellipsis: {
       showTitle: false,
     },
-    render: (amount: string, order: Order) => {
+    render: (amount: string, order: OrderInList) => {
       const text = `${amount} ${order.isBid ? SUDT_SYMBOL : 'CKB'}`
       return <Tooltip title={text}>{text}</Tooltip>
     },
@@ -80,7 +83,7 @@ const columns = [
     title: 'status',
     dataIndex: 'status',
     key: 'status',
-    render: (status: Order['status']) => <span data-status={status}>{status}</span>,
+    render: (status: OrderInList['status']) => <span data-status={status}>{status}</span>,
   },
   {
     title: 'executed',
@@ -88,8 +91,6 @@ const columns = [
     key: 'executed',
   },
 ]
-
-type Order = ReturnType<typeof parseOrderRecord>
 
 const History = () => {
   const [state, dispatch] = useReducer(reducer, {
@@ -103,6 +104,7 @@ const History = () => {
   const query = new URLSearchParams(location.search)
   const type = query.get(HISTORY_QUERY_KEY.type) || 'all'
   const wallet = useContainer(WalletContainer)
+  const { submittedOrders: submittedOrderList } = useContainer(OrderContainer)
 
   const { address } = wallet.ckbWallet
   const handleWithdraw = useHandleWithdrawOrder(address, dispatch)
@@ -115,7 +117,7 @@ const History = () => {
     title: 'action',
     dataIndex: 'action',
     key: 'action',
-    render: (action: ReturnType<typeof getAction>, order: Order) => {
+    render: (action: OrderRecordAction | undefined, order: OrderInList) => {
       const handleClick = () => {
         handleWithdraw(order.key)
       }
@@ -135,6 +137,11 @@ const History = () => {
       }
     },
   }
+
+  const orderList: Array<OrderInList> = [
+    ...submittedOrderList,
+    ...state.orderList.filter(order => !submittedOrderList.some(submitted => submitted.key === order.key)),
+  ]
 
   return (
     <div className={styles.container}>
@@ -156,7 +163,7 @@ const History = () => {
         loading={state.isLoading}
         className={styles.orders}
         columns={[...columns, actionColumn]}
-        dataSource={state.orderList}
+        dataSource={orderList}
       />
     </div>
   )

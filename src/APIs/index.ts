@@ -3,7 +3,9 @@ import axios from 'axios'
 import { OrderType } from '../containers/order'
 import { SUDT_TYPE_SCRIPT } from '../utils'
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://18.162.80.155:8201'
+export * from './checkSubmittedTxs'
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:9090'
 
 export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHash: string, lockArgs: string) {
   return axios.get(`${SERVER_URL}/cells`, {

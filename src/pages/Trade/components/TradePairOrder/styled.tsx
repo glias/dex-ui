@@ -79,6 +79,7 @@ export const OrderSelectPopver = styled.div`
 `
 
 export const OrderSelectBox = styled.div`
+  position: relative !important;
   display: flex;
   justify-content: space-between;
   align-items: center;

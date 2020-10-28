@@ -3,8 +3,15 @@ import BigNumber from 'bignumber.js'
 import { useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
-import { CKB_DECIMAL, PRICE_DECIMAL, SUDT_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils/const'
-import calcReceive from '../utils/fee'
+import {
+  CKB_DECIMAL,
+  PRICE_DECIMAL,
+  SUDT_DECIMAL,
+  SUDT_TYPE_SCRIPT,
+  submittedOrders as submittedOrdersCache,
+} from '../utils'
+import type { OrderRecord } from '../utils'
+import calcBuyReceive, { calcSellReceive } from '../utils/fee'
 import WalletContainer from './wallet'
 
 // eslint-disable-next-line no-shadow
@@ -20,6 +27,10 @@ export enum OrderType {
   Sell,
 }
 
+export interface SubmittedOrder extends Pick<OrderRecord, 'isBid' | 'pay' | 'receive' | 'price' | 'key'> {
+  status: 'pending'
+}
+
 export function useOrder() {
   const Wallet = useContainer(WalletContainer)
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
@@ -32,6 +43,7 @@ export function useOrder() {
   const sellPair = ['DAI', 'CKB']
   const buyPair = ['CKB', 'DAI']
   const [historyOrders, setHisotryOrders] = useState<any[]>([])
+  const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get())
   const ckbBalance = Wallet.ckbWallet.free.toString()
   const [maxPay, setMaxPay] = useState(ckbBalance)
   const [bestPrice, setBestPrice] = useState('0.00')
@@ -78,11 +90,14 @@ export function useOrder() {
 
   const receive = useMemo(() => {
     if (price && pay) {
-      return calcReceive(parseFloat(pay), parseFloat(price))
+      if (orderType === OrderType.Buy) {
+        return calcBuyReceive(parseFloat(pay), parseFloat(price))
+      }
+      return calcSellReceive(parseFloat(pay), parseFloat(price))
     }
 
     return '0.00'
-  }, [price, pay])
+  }, [price, pay, orderType])
 
   const setLoading = useCallback(
     (key: string) => {
@@ -94,6 +109,21 @@ export function useOrder() {
       }
     },
     [historyOrders],
+  )
+
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  type SubmittedOrdersUpdateFn<T = Array<SubmittedOrder>> = (_: T) => T
+
+  const setAndCacheSubmittedOrders = useCallback(
+    (updateFn: SubmittedOrdersUpdateFn) => {
+      setSubmittedOrders(orders => {
+        const newOrders = updateFn(orders)
+        submittedOrdersCache.set(newOrders)
+        return newOrders
+      })
+    },
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    [setSubmittedOrders],
   )
 
   function reset() {
@@ -123,6 +153,8 @@ export function useOrder() {
     concatHistoryOrders,
     historyOrders,
     setHisotryOrders,
+    submittedOrders,
+    setAndCacheSubmittedOrders,
     setLoading,
     maxPay,
     bestPrice,
