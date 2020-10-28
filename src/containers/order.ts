@@ -1,4 +1,5 @@
 import PWCore from '@lay2/pw-core'
+import BigNumber from 'bignumber.js'
 import { useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
@@ -53,23 +54,24 @@ export function useOrder() {
     }
     // todo: error handling
     const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
-    setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
+    setBestPrice(new BigNumber(data.price).div(PRICE_DECIMAL).toString())
 
     if (orderType === OrderType.Buy) {
       const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
-      setMaxPay((BigInt(balance) / SUDT_DECIMAL).toString())
+      setMaxPay(new BigNumber(balance).div(SUDT_DECIMAL).toString())
     } else {
       const { balance } = (await getCkbBalance(lockScript)).data
-      setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
+      setMaxPay(new BigNumber(balance).div(SUDT_DECIMAL).toString())
     }
   }, [orderType, sellPair, buyPair])
 
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()
     const { balance } = (await getCkbBalance(lockScript)).data
-    setMaxPay((BigInt(balance) / CKB_DECIMAL).toString())
+    setMaxPay(new BigNumber(balance).div(new BigNumber(CKB_DECIMAL.toString())).toString())
     const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
-    setBestPrice((BigInt(data.price) / PRICE_DECIMAL).toString())
+    // eslint-disable-next-line no-debugger
+    setBestPrice(new BigNumber(data.price).div(new BigNumber(PRICE_DECIMAL.toString())).toString())
   }, [orderType])
 
   const receive = useMemo(() => {
