@@ -1,8 +1,6 @@
 import BigNumber from 'bignumber.js'
+import { PRICE_DECIMAL, SUDT_DECIMAL, CKB_DECIMAL } from './const'
 
-const CKB_UNIT = 100_000_000
-const SUDT_UNIT = 10_000_000_000
-const PRICE_UNIT = 10_000_000_000
 export type RawOrder = Record<'is_bid' | 'claimable', boolean> &
   Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {
     status: 'open' | 'completed' | 'aborted' | null
@@ -36,10 +34,10 @@ export const parseOrderRecord = ({
 }: RawOrder) => {
   const key = `${last_order_cell_outpoint.tx_hash}:${last_order_cell_outpoint.index}`
 
-  const paidAmount = new BigNumber(paid_amount).dividedBy(isBid ? CKB_UNIT : SUDT_UNIT)
-  const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? SUDT_UNIT : CKB_UNIT)
-  const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? SUDT_UNIT : CKB_UNIT)
-  const priceInNum = new BigNumber(price).dividedBy(PRICE_UNIT)
+  const paidAmount = new BigNumber(paid_amount).dividedBy(isBid ? CKB_DECIMAL : SUDT_DECIMAL)
+  const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
+  const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
+  const priceInNum = new BigNumber(price).dividedBy(PRICE_DECIMAL)
   const payAmount = isBid ? orderAmount.dividedBy(priceInNum) : orderAmount.multipliedBy(priceInNum)
 
   return {

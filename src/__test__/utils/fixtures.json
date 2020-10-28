@@ -4,8 +4,8 @@
       "params": [
         {
           "is_bid": true,
-          "order_amount": "5000000000000",
-          "traded_amount": "3000000000000",
+          "order_amount": "50000000000",
+          "traded_amount": "30000000000",
           "paid_amount": "12345678901234567890",
           "turnover_rate": "0.6",
           "price": "50000000000",
@@ -49,7 +49,7 @@
       ],
       "expected": {
         "key": "0xf466000e74566297067bcfdc59158d4391e0728c0e8bfecb9e075b501bf34179:0x0",
-        "paidAmount": "1234567890.123456789",
+        "paidAmount": "123456789012.3456789",
         "tradedAmount": "0.5",
         "isBid": false,
         "receive": "100",
