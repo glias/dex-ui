@@ -38,7 +38,7 @@ export const parseOrderRecord = ({
   const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
   const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
   const priceInNum = new BigNumber(price).dividedBy(PRICE_DECIMAL)
-  const payAmount = isBid ? orderAmount.dividedBy(priceInNum) : orderAmount.multipliedBy(priceInNum)
+  const payAmount = isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)
 
   return {
     key,
