@@ -1,11 +1,10 @@
-import React, { lazy, Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
-
-const NotFound = lazy(() => import('../pages/404'))
-const Trade = lazy(() => import('../pages/Trade'))
-const Header = lazy(() => import('../components/Header'))
-const Footer = lazy(() => import('../components/Footer'))
-const Pool = lazy(() => import('../pages/Pool'))
+import NotFound from '../pages/404'
+import Trade from '../pages/Trade'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
+import Pool from '../pages/Pool'
 
 const Containers: CustomRouter.Route[] = [
   {

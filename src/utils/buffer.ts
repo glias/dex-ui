@@ -24,8 +24,6 @@ export const buildSellData = (amount: string, orderAmount: string, price: string
   const amountData = new Amount(amount).toUInt128LE()
   const orderAmountData = new Amount(orderAmount).toUInt128LE().slice(2)
   const priceData = buildPriceData(price)
-  // eslint-disable-next-line no-debugger
-  debugger
   return `${amountData}${orderAmountData}${priceData}01`
 }
 
