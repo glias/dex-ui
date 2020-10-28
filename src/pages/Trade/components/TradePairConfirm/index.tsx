@@ -12,6 +12,7 @@ import {
 } from './styled'
 import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
+import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import { calcBuyAmount } from '../../../../utils/fee'
@@ -34,6 +35,16 @@ export default function TradePairConfirm() {
 
     const txHash = await Wallet.pw?.sendTransaction(builder)
     if (txHash) {
+      const isBid = Order.orderType === OrderType.Buy
+      const submittedOrder: SubmittedOrder = {
+        key: `${txHash}:0x0`,
+        isBid,
+        status: 'pending',
+        pay: Order.pay,
+        receive: buyAmount,
+        price: Order.price,
+      }
+      Order.setAndCacheSubmittedOrders(orders => [...orders, submittedOrder])
       Order.setTxHash(txHash)
       Order.setStep(OrderStep.Result)
     }
