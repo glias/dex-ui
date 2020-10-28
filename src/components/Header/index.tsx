@@ -14,8 +14,6 @@ import { ReactComponent as HeaderMoreSVG } from '../../assets/svg/more.svg'
 import { ReactComponent as HeaderMetaSVG } from '../../assets/svg/Component12.svg'
 import i18n from '../../utils/i18n'
 import { CKB_NODE_URL, thirdPartyLinks } from '../../utils/const'
-import MetaMaskpng from '../../assets/img/wallet/metamask.png'
-import outlined from '../../assets/img/outlined.png'
 import {
   HeaderBox,
   HeaderPanel,
@@ -119,7 +117,7 @@ const Header = () => {
           ) : (
             <>
               <UserMeta>
-                <img src={metaMaskPng} alt="metaMask" />
+                {/* <img src={metaMaskPng} alt="metaMask" /> */}
                 {truncatureStr(ethAddress)}
               </UserMeta>
               <Popover
