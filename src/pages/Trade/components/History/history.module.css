@@ -57,6 +57,12 @@
   cursor: default;
 }
 
+.container td {
+  padding: 10px 16px !important;
+  height: 53px !important;
+  box-sizing: border-box !important;
+}
+
 .container span[data-status='aborted'],
 .container span[data-status='completed'] {
   color: #888;

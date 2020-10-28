@@ -19,6 +19,9 @@ export const getAction = (isClaimed: boolean, isOpen: boolean) => {
   return null
 }
 
+/**
+ * key: tx_hash:index
+ */
 export const parseOrderRecord = ({
   is_bid: isBid,
   order_amount,
@@ -49,5 +52,7 @@ export const parseOrderRecord = ({
     ...rest,
   }
 }
+export type OrderRecord = ReturnType<typeof parseOrderRecord>
+export type OrderRecordAction = ReturnType<typeof getAction>
 
 export default { parseOrderRecord }
