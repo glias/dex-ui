@@ -5,7 +5,7 @@ import { SUDT_TYPE_SCRIPT } from '../utils'
 
 export * from './checkSubmittedTxs'
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://18.162.80.155:8201/'
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://18.162.80.155:8201'
 
 export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHash: string, lockArgs: string) {
   return axios.get(`${SERVER_URL}/cells`, {
