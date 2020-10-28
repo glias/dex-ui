@@ -59,6 +59,7 @@ const Header = () => {
 
     Wallet.setWeb3(web3)
     Wallet.setPw(pw)
+    setHasLogin(true)
 
     await Wallet.reloadCkbWallet(ckbAddr)
     const ethBalance = await web3.eth.getBalance(ethAddr)
@@ -71,6 +72,8 @@ const Header = () => {
     await web3Modal.current!.clearCachedProvider()
     Wallet.setCkbAddress('')
     Wallet.setEthAddress('')
+    setHasLogin(false)
+    setVisibleWallet(false)
   }
 
   useDidMount(() => {
