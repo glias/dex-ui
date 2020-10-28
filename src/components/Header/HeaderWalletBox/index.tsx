@@ -31,8 +31,6 @@ function clipboard(content: string) {
 export default function WalletBox({ disconnect, addresses }: Props) {
   const Wallet = useContainer(WalletContainer)
   const { ckbWallet, ethWallet } = Wallet
-  // eslint-disable-next-line no-console
-  console.log(addresses, 'fuckyou')
 
   const truncatureStr = (str: string): string => {
     return str.length > 10 ? `${str.slice(0, 10)}...${str.slice(-10)}` : str
