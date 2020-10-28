@@ -30,20 +30,20 @@ function clipboard(content: string) {
 
 export default function WalletBox({ disconnect, addresses }: Props) {
   const Wallet = useContainer(WalletContainer)
-  const { ckbWallet, ethWallet } = Wallet
+  const { ckbWallet, sudtWallet } = Wallet
 
   const truncatureStr = (str: string): string => {
     return str.length > 10 ? `${str.slice(0, 10)}...${str.slice(-10)}` : str
   }
 
-  const balancesListWapper = [
+  const balanceList = [
     {
       ...ckbWallet,
       name: 'CKB',
     },
     {
-      ...ethWallet,
-      name: 'ETH',
+      ...sudtWallet,
+      name: 'DAI',
     },
   ].map(item => {
     const index: number = PairList.findIndex(pair => pair.name === item.name)
@@ -54,14 +54,14 @@ export default function WalletBox({ disconnect, addresses }: Props) {
     }
   })
 
+  // @TODO: i18n
   const copyToClipboard = 'Copy'
   const copied = 'Copied!'
 
   const [clipboardTooltip, setClipboardTooltip] = useState(copyToClipboard)
 
   const validityText = (value: number) => (value >= 0 ? (value / 10 ** 8).toString() : '--')
-  const fractionText = (value: number, matrixing: number) =>
-    value && value >= 0 ? (value / 10 ** 8).toFixed(matrixing) : '--'
+
   const walletFlexBox = (item: any) => {
     return (
       <>
@@ -80,18 +80,22 @@ export default function WalletBox({ disconnect, addresses }: Props) {
             </div>
           </div>
         </div>
-        {item.name === 'CKB' ? (
-          <div className="balance-ckb">
+        <div className="balance-ckb">
+          {item.name === 'CKB' ? (
             <div className="ckb-item">
               <span>{i18n.t('header.inUse')}</span>
-              <span>{item.inuse?.amount}</span>
+              <span>{item.inuse?.toString()}</span>
             </div>
-            <div className="ckb-item">
-              <span>{i18n.t('header.free')}</span>
-              <span>{fractionText(item.free?.amount, 2)}</span>
-            </div>
+          ) : null}
+          <div className="ckb-item">
+            <span>Lock index</span>
+            <span>{item.lockedOrder?.toString()}</span>
           </div>
-        ) : null}
+          <div className="ckb-item">
+            <span>{i18n.t('header.free')}</span>
+            <span>{item.balance?.toString()}</span>
+          </div>
+        </div>
       </>
     )
   }
@@ -151,7 +155,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                 </h4>
                 <div className="divider" />
                 <ul>
-                  {balancesListWapper.map(item => (
+                  {balanceList.map(item => (
                     <li key={item.name} className="balance-list">
                       <div
                         className="logo"
@@ -166,7 +170,14 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                         <Button
                           type="text"
                           size="small"
-                          onClick={() => window.open(`https://explorer.nervos.org/aggron/address/${item.address}`)}
+                          onClick={() => {
+                            // @TODO: achor link
+                            if (item.name === 'CKB') {
+                              window.open(`https://explorer.nervos.org/aggron/address/${(item as any).address}`)
+                            } else {
+                              window.open(`https://explorer.nervos.org/aggron/address/${(item as any).address}`)
+                            }
+                          }}
                         >
                           <div className="explorer-svg">
                             <ExplorerSVG className="full" />

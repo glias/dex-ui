@@ -155,7 +155,7 @@ export default () => {
           >
             <Input
               placeholder="0"
-              suffix={`${seller} per ${buyer}`}
+              suffix="CKB per DAI"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
