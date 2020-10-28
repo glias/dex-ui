@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js'
-import { PRICE_DECIMAL, SUDT_DECIMAL, CKB_DECIMAL } from './const'
+import { PRICE_DECIMAL, SUDT_DECIMAL, CKB_DECIMAL, COMMISSION_FEE } from './const'
 
 export type RawOrder = Record<'is_bid' | 'claimable', boolean> &
   Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {
-    status: 'open' | 'completed' | 'aborted' | null
+    status: 'opening' | 'completed' | 'aborted' | null
     last_order_cell_outpoint: Record<'tx_hash' | 'index', string>
   }
 
@@ -12,7 +12,7 @@ export const getAction = (isClaimed: boolean, isOpen: boolean) => {
     return 'claim'
   }
   if (isOpen) {
-    return 'open'
+    return 'opening'
   }
   return null
 }
@@ -38,7 +38,9 @@ export const parseOrderRecord = ({
   const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
   const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
   const priceInNum = new BigNumber(price).dividedBy(PRICE_DECIMAL)
-  const payAmount = isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)
+  const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum))
+    .multipliedBy(1 + +COMMISSION_FEE)
+    .toFixed(8)
 
   return {
     key,
@@ -50,7 +52,7 @@ export const parseOrderRecord = ({
     executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
     price: `${priceInNum}`,
     status,
-    action: getAction(claimable, status === 'open'),
+    action: getAction(claimable, status === 'opening'),
     ...rest,
   }
 }

@@ -109,3 +109,5 @@ export const HISTORY_QUERY_KEY = {
 
 // TODO: use enum
 export const REJECT_ERROR_CODE = 4001
+
+export const EXPLORER_URL = 'https://explorer.nervos.org/aggron/'
