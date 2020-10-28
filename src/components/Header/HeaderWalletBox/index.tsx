@@ -17,9 +17,22 @@ interface Props {
   addresses: [string, string]
 }
 
+function clipboard(content: string) {
+  const input = document.createElement('input')
+  input.style.opacity = '0'
+  document.body.appendChild(input)
+  input.value = content
+  input.select()
+  input.setSelectionRange(0, 99999)
+  document.execCommand('copy')
+  document.body.removeChild(input)
+}
+
 export default function WalletBox({ disconnect, addresses }: Props) {
   const Wallet = useContainer(WalletContainer)
   const { ckbWallet, ethWallet } = Wallet
+  // eslint-disable-next-line no-console
+  console.log(addresses, 'fuckyou')
 
   const truncatureStr = (str: string): string => {
     return str.length > 10 ? `${str.slice(0, 10)}...${str.slice(-10)}` : str
@@ -106,7 +119,8 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                 <Button
                   type="text"
                   onClick={() => {
-                    navigator.clipboard.writeText(address)
+                    // eslint-disable-next-line no-debugger
+                    clipboard(address)
                     setClipboardTooltip(copied)
                   }}
                 >
