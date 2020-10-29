@@ -58,7 +58,7 @@ export function useOrder() {
   const [pair, setPair] = useState(buyPair)
 
   const togglePair = useCallback(async () => {
-    const lockScript = PWCore.provider?.address?.toLockScript()
+    const lockScript = PWCore.provider.address.toLockScript()
     if (orderType === OrderType.Buy) {
       setPair(sellPair)
       setOrderType(OrderType.Sell)
