@@ -69,6 +69,7 @@ export default () => {
     } else {
       setStep(OrderStep.Comfirm)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setStep, walletNotConnected, Wallet.connectWallet])
 
   const SelectContent = (
