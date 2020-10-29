@@ -17,10 +17,14 @@ export default () => {
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
   const [visiblePopver, setVisiblePopver] = useState(false)
-  const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
+  const { price, pay, setPrice, setPay, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
-  const [disabled, setDisabled] = useState(false)
+
+  // disabled button
+  const [fieldPay, setFieldPay] = useState(false)
+  const [fieldPrice, setFieldPrice] = useState(false)
+
   const MIN_PRICE = 1 / 10 ** 10
   const MIN_VAL = 1 / 10 ** (Order.orderType === OrderType.Buy ? 8 : 10)
   const MIN_ORDER = Order.orderType === OrderType.Buy ? 147 : 289
@@ -35,27 +39,26 @@ export default () => {
     const val = new BigNumber(value)
 
     if (Number.isNaN(parseFloat(value))) {
-      setDisabled(true)
+      setFieldPay(false)
       return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
     }
 
     if (val.comparedTo(MIN_VAL) === -1) {
-      setDisabled(true)
+      setFieldPay(false)
       return Promise.reject(i18n.t(`trade.tooSmallNumber`))
     }
 
     if (val.comparedTo(Order.maxPay) === 1) {
-      setDisabled(true)
-
+      setFieldPay(false)
       return Promise.reject(i18n.t(`trade.lessThanMaxNumber`))
     }
 
     if (new BigNumber(Order.maxPay).minus(val).lt(MIN_ORDER)) {
-      setDisabled(true)
+      setFieldPay(false)
       return Promise.reject(i18n.t(`trade.insuffcientCKBBalance`))
     }
 
-    setDisabled(false)
+    setFieldPay(true)
 
     return Promise.resolve()
   }
@@ -64,16 +67,20 @@ export default () => {
     const val = new BigNumber(value)
 
     if (Number.isNaN(parseFloat(value))) {
+      setFieldPrice(false)
       return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
     }
 
     if (!new BigNumber(val).decimalPlaces(10).isEqualTo(val)) {
+      setFieldPrice(false)
       return Promise.reject(i18n.t(`trade.tooMaxprecision`))
     }
 
     if (val.comparedTo(MIN_PRICE) === -1) {
+      setFieldPrice(false)
       return Promise.reject(i18n.t(`trade.tooSmallNumber`))
     }
+    setFieldPrice(true)
     return Promise.resolve()
   }
 
@@ -82,8 +89,7 @@ export default () => {
     formRef.current?.setFieldsValue({
       price: Order.bestPrice,
     })
-    priceOnChange(Order.bestPrice)
-  }, [Order.bestPrice, formRef, priceOnChange])
+  }, [Order.bestPrice, formRef])
 
   useEffect(() => {
     if (Wallet.ckbWallet.address === '') {
@@ -100,6 +106,11 @@ export default () => {
   }, [Order.step])
 
   const onFinish = async () => {
+    // eslint-disable-next-line no-console
+    const formFieldsValue = formRef.current?.getFieldsValue()
+
+    setPrice(formFieldsValue.price)
+    setPay(formFieldsValue.pay)
     setStep(OrderStep.Comfirm)
   }
 
@@ -156,7 +167,7 @@ export default () => {
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <span className="form-label-meta-num">{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
-            <Tooltip title="todo">
+            <Tooltip title={i18n.t('trade.maxIntro')}>
               <i className="ai-question-circle-o" />
             </Tooltip>
           </PayMeta>
@@ -180,9 +191,6 @@ export default () => {
               }}
               step="any"
               value={pay}
-              onChange={e => {
-                payOnChange(e.target.value)
-              }}
               max={Order.maxPay}
               min={0}
             />
@@ -215,9 +223,6 @@ export default () => {
               type="number"
               step="any"
               value={price}
-              onChange={e => {
-                priceOnChange(e.target.value)
-              }}
               min={0}
             />
           </Form.Item>
@@ -246,7 +251,7 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button htmlType="submit" className="submit-btn" disabled={disabled} size="large" type="text">
+          <Button htmlType="submit" className="submit-btn" disabled={!fieldPay || !fieldPrice} size="large" type="text">
             {i18n.t(`trade.placeOrder`)}
           </Button>
         </Form.Item>

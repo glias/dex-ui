@@ -24,6 +24,7 @@
     "trade": {
       "pay": "支付",
       "max": "最大输入值",
+      "maxIntro": "您的当前账户的可用容量",
       "price": "价格",
       "pair": "交易队",
       "placeOrder": "撮合交易",
