@@ -73,9 +73,9 @@ export default function TradePairConfirm() {
       <TradePairConfirmContent>
         <PairOrder>
           <div>{buyer}</div>
-          <Button type="text" size="large" className="circle-icon">
+          <span className="circle-icon">
             <i className="ai-right-circle" />
-          </Button>
+          </span>
           <div>{seller}</div>
         </PairOrder>
         <OrderBox>
