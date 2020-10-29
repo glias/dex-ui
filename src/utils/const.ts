@@ -97,6 +97,9 @@ export const CKB_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
 //  @TODO: comments
 export const ORDER_CELL_CAPACITY = 179
 
+export const MIN_ORDER_DAI = 147
+export const MIN_ORDER_CKB = 289
+
 export const HISTORY_PARAMS = {
   typeCodeHash: '0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
   typeHashType: 'type',

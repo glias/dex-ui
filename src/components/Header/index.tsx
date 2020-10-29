@@ -54,11 +54,6 @@ const Header = () => {
     }
   })
 
-  const disconnect = useCallback(() => {
-    disconnectWallet(() => setVisibleWallet(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disconnectWallet])
-
   const sideBarContent = (
     <div className="sidebar-content">
       <div className="sidebar-title">{i18n.t('header.more')}</div>
@@ -70,11 +65,21 @@ const Header = () => {
     </div>
   )
 
+  const disconnect = useCallback(() => {
+    disconnectWallet(() => setVisibleWallet(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disconnectWallet])
+
   return (
     <HeaderBox className="header-box">
       <HeaderPanel>
         <HeaderLogoBox>CKB DEX</HeaderLogoBox>
-        <Menu mode="horizontal" className="menuBox" onClick={e => history.push(`/${e.key}`)}>
+        <Menu
+          defaultSelectedKeys={['trade', '']}
+          mode="horizontal"
+          className="menuBox"
+          onClick={e => history.push(`/${e.key}`)}
+        >
           <Menu.Item key="trade">
             <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
           </Menu.Item>

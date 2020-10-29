@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PWCore, { Address, AddressType, Amount } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import { Button, Divider } from 'antd'
@@ -21,9 +21,10 @@ export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
+  const [disabled, setDisabled] = useState(false)
 
   const onConfirm = async () => {
-    // eslint-disable-next-line no-debugger
+    setDisabled(true)
     const buyAmount = calcBuyAmount(Order.pay)
     const builder = new PlaceOrderBuilder(
       new Address(Wallet.ckbWallet.address, AddressType.ckb),
@@ -34,6 +35,7 @@ export default function TradePairConfirm() {
     )
 
     const txHash = await Wallet.pw?.sendTransaction(builder)
+
     if (txHash) {
       const isBid = Order.orderType === OrderType.Buy
       const receiveCalc = isBid ? calcBuyReceive : calcSellReceive
@@ -46,6 +48,7 @@ export default function TradePairConfirm() {
         receive: receiveCalc(Order.pay, Order.price),
         price: Order.price,
       }
+      setDisabled(true)
       Order.setAndCacheSubmittedOrders(orders => [...orders, submittedOrder])
       Order.setTxHash(txHash)
       Order.setStep(OrderStep.Result)
@@ -116,6 +119,8 @@ export default function TradePairConfirm() {
             type="text"
             size="large"
             onClick={onConfirm}
+            disabled={disabled}
+            loading={disabled}
             style={{
               color: 'rgba(0, 106, 151, 1)',
             }}

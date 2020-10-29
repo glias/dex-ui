@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { FormInstance } from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
 import { useContainer } from 'unstated-next'
-import { PairList } from '../../../../utils/const'
+import { PairList, PRICE_DECIMAL, SUDT_DECIMAL, MIN_ORDER_DAI, MIN_ORDER_CKB } from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PayMeta, OrderSelectBox, OrderSelectPopver, PairBlock } from './styled'
-import OrderContainer, { OrderStep } from '../../../../containers/order'
+import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 
 export default () => {
@@ -15,9 +16,19 @@ export default () => {
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
   const [visiblePopver, setVisiblePopver] = useState(false)
-  const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
+  const { price, pay, setPrice, setPay, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
+
+  // disabled button
+  const [fieldPay, setFieldPay] = useState(false)
+  const [fieldPrice, setFieldPrice] = useState(false)
+  // @TODO: for demo quick resolove conflict
+  // eslint-disable-next-line no-console
+  console.log(fieldPay, fieldPrice)
+
+  const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
+  const MIN_ORDER = Order.orderType === OrderType.Buy ? MIN_ORDER_DAI : MIN_ORDER_CKB
 
   const changePair = () => {
     setVisiblePopver(false)
@@ -29,13 +40,60 @@ export default () => {
     return !Wallet.ckbWallet.address
   }, [Wallet.ckbWallet.address])
 
+  const checkPay = (_: any, value: string): Promise<void> => {
+    const val = new BigNumber(value)
+
+    if (Number.isNaN(parseFloat(value))) {
+      setFieldPay(false)
+      return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
+    }
+
+    if (!val.multipliedBy(`${MIN_VAL}`).isGreaterThan(0.1)) {
+      setFieldPay(false)
+      return Promise.reject(i18n.t(`trade.tooSmallNumber`))
+    }
+
+    if (val.comparedTo(Order.maxPay) === 1) {
+      setFieldPay(false)
+      return Promise.reject(i18n.t(`trade.lessThanMaxNumber`))
+    }
+
+    if (new BigNumber(Order.maxPay).minus(val).lt(MIN_ORDER)) {
+      setFieldPay(false)
+      return Promise.reject(i18n.t(`trade.insuffcientCKBBalance`))
+    }
+
+    setFieldPay(true)
+
+    return Promise.resolve()
+  }
+
+  const checkPrice = (_: any, value: string): Promise<void> => {
+    const val = new BigNumber(value)
+
+    if (Number.isNaN(parseFloat(value))) {
+      setFieldPrice(false)
+      return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
+    }
+
+    if (!new BigNumber(val).decimalPlaces(10).isEqualTo(val)) {
+      setFieldPrice(false)
+      return Promise.reject(i18n.t(`trade.tooMaxprecision`))
+    }
+    if (!val.multipliedBy(`${PRICE_DECIMAL}`).isGreaterThan(0.1)) {
+      setFieldPrice(false)
+      return Promise.reject(i18n.t(`trade.tooSmallNumber`))
+    }
+    setFieldPrice(true)
+    return Promise.resolve()
+  }
+
   const setBestPrice = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
       price: Order.bestPrice,
     })
-    priceOnChange(Order.bestPrice)
-  }, [Order.bestPrice, formRef, priceOnChange])
+  }, [Order.bestPrice, formRef])
 
   const submitStatus = useMemo(() => {
     if (Wallet.connecting) {
@@ -89,7 +147,7 @@ export default () => {
       />
       {PairList.slice(1).map(item => (
         <PairBlock key={item.name} onClick={() => changePair()}>
-          <Button className="pairTraceList" type="text">
+          <Button className="pair-trace-box" type="text">
             <TradeCoinBox pair={item.name} />
             <div className="decollect">/</div>
             <TradeCoinBox pair="CKB" />
@@ -112,7 +170,7 @@ export default () => {
         <OrderSelectBox id="trace-form-select">
           <PairBlock>
             <span className="pair">{i18n.t('trade.pair')}</span>
-            <Button className="pairTraceList" type="text">
+            <Button className="pair-trace-box" type="text">
               <TradeCoinBox pair={Order.pair[0]} />
               <div className="decollect">/</div>
               <TradeCoinBox pair={Order.pair[1]} />
@@ -120,7 +178,7 @@ export default () => {
           </PairBlock>
         </OrderSelectBox>
       </Popover>
-      <TracePairCoin />
+      <TracePairCoin resetFields={() => form.resetFields()} />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
@@ -132,28 +190,26 @@ export default () => {
           <Form.Item
             name="pay"
             noStyle
-            // rules={[
-            //   {
-            //     validator: checkPay,
-            //   },
-            // ]}
+            rules={[
+              {
+                validator: checkPay,
+              },
+            ]}
           >
             <Input
               placeholder="0"
               suffix={buyer}
               type="number"
               required
+              size="large"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
                 width: '100%',
               }}
               step="any"
               value={pay}
-              onChange={e => {
-                payOnChange(e.target.value)
-              }}
+              onChange={e => setPay(e.target.value)}
               max={Order.maxPay}
-              min={0.0000001}
             />
           </Form.Item>
         </Form.Item>
@@ -168,26 +224,24 @@ export default () => {
           </PayMeta>
           <Form.Item
             name="price"
-            // rules={[
-            //   {
-            //     validator: checkPrice,
-            //   },
-            // ]}
+            rules={[
+              {
+                validator: checkPrice,
+              },
+            ]}
           >
             <Input
               placeholder="0"
               suffix="CKB per DAI"
+              size="large"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
               required
               type="number"
               step="any"
+              onChange={e => setPrice(e.target.value)}
               value={price}
-              onChange={e => {
-                priceOnChange(e.target.value)
-              }}
-              min={0.0000000001}
             />
           </Form.Item>
         </Form.Item>
@@ -215,7 +269,7 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button htmlType="submit" className="submitBtn" disabled={Wallet.connecting} size="large" type="text">
+          <Button htmlType="submit" className="submit-btn" disabled={Wallet.connecting} size="large" type="text">
             {submitStatus}
           </Button>
         </Form.Item>

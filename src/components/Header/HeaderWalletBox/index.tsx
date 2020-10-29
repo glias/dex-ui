@@ -85,7 +85,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
             </div>
           ) : null}
           <div className="ckb-item">
-            <span>Lock index</span>
+            <span>{i18n.t('header.lockIndex')}</span>
             <span>{item.lockedOrder?.toString()}</span>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
           </div>
         ))}
       </WalletList>
-      <HeaderBox className="header-box">
+      <HeaderBox>
         <HeaderPanel>
           <HeaderMeta id="header-meta">
             <div className="popover-wallet-box">
@@ -153,7 +153,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                       <div
                         className="logo"
                         style={{
-                          marginTop: item.name === 'CKB' ? '10px' : 0,
+                          marginTop: '8px',
                         }}
                       >
                         {item.logo ? <img src={item.logo} alt="logo" /> : ''}

@@ -83,7 +83,7 @@ const columns = [
     title: 'status',
     dataIndex: 'status',
     key: 'status',
-    width: 90,
+    width: 100,
     render: (status: OrderInList['status'], order: OrderInList) => {
       const [txHash, index] = order.key.split(':')
 
@@ -107,6 +107,25 @@ const columns = [
     width: 90,
   },
 ]
+
+const orderFilter = (type: string, order: OrderInList) => {
+  switch (type) {
+    case 'pending':
+    case 'opening':
+    case 'aborted': {
+      return order.status === type
+    }
+    case 'completed': {
+      return order.status === 'completed' && order.isClaimable
+    }
+    case 'claimed': {
+      return order.status === 'completed' && !order.isClaimable
+    }
+    default: {
+      return true
+    }
+  }
+}
 
 const History = () => {
   const [state, dispatch] = useReducer(reducer, {
@@ -158,7 +177,7 @@ const History = () => {
   const orderList: Array<OrderInList> = [
     ...submittedOrderList,
     ...state.orderList.filter(order => !submittedOrderList.some(submitted => submitted.key === order.key)),
-  ]
+  ].filter(order => orderFilter(type, order))
 
   return (
     <div className={styles.container}>
