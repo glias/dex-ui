@@ -69,6 +69,8 @@ export const TradePairConfirmContent = styled.div`
   .circle-icon {
     width: 100px;
     color: rgba(136, 136, 136, 1);
+    display: block;
+    text-align: center;
   }
 `
 
