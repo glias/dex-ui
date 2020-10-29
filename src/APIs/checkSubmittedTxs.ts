@@ -7,7 +7,7 @@ export const checkSubmittedTxs = (hashes: Array<string>) => {
   return ckb.rpc
     .createBatchRequest(requests)
     .exec()
-    .then(resList => resList.map(res => res.txStatus.status === 'committed'))
+    .then(resList => resList.map(res => res?.txStatus?.status === 'committed'))
     .catch(() => {
       return new Array<boolean>(requests.length).fill(false)
     })

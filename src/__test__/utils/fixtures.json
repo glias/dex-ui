@@ -58,6 +58,7 @@
         "executed": "0.5%",
         "isClaimable": false,
         "price": "5",
+        "isClaimable": false,
         "status": "aborted",
         "action": null
       }

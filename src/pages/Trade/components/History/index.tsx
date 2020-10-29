@@ -83,7 +83,7 @@ const columns = [
     title: 'status',
     dataIndex: 'status',
     key: 'status',
-    width: 90,
+    width: 100,
     render: (status: OrderInList['status'], order: OrderInList) => {
       const [txHash, index] = order.key.split(':')
 
