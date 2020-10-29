@@ -90,6 +90,8 @@ export const usePollOrderList = ({
       fetchData()
       /* eslint-disable-next-line no-param-reassign */
       fetchListRef.current = setInterval(fetchData, TIMER)
+    } else {
+      dispatch({ type: ActionType.UpdateOrderList, value: [] })
     }
 
     return () => {

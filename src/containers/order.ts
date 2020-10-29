@@ -1,6 +1,6 @@
 import PWCore from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
-import { useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
 import {
@@ -44,10 +44,19 @@ export function useOrder() {
   const sellPair = ['DAI', 'CKB']
   const buyPair = ['CKB', 'DAI']
   const [historyOrders, setHisotryOrders] = useState<any[]>([])
-  const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get())
+  const { address } = Wallet.ckbWallet
+  const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
   const ckbBalance = Wallet.ckbWallet.free.toString()
   const [maxPay, setMaxPay] = useState(ckbBalance)
   const [bestPrice, setBestPrice] = useState('0.00')
+
+  useEffect(() => {
+    if (!address) {
+      setSubmittedOrders([])
+    } else {
+      setSubmittedOrders(submittedOrdersCache.get(address))
+    }
+  }, [address, setSubmittedOrders])
 
   const concatHistoryOrders = useCallback(
     (arr: any[]) => {
@@ -122,12 +131,12 @@ export function useOrder() {
     (updateFn: SubmittedOrdersUpdateFn) => {
       setSubmittedOrders(orders => {
         const newOrders = updateFn(orders)
-        submittedOrdersCache.set(newOrders)
+        submittedOrdersCache.set(address, newOrders)
         return newOrders
       })
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [setSubmittedOrders],
+    [address, setSubmittedOrders],
   )
 
   function reset() {
