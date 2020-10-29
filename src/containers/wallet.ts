@@ -54,7 +54,7 @@ export function useWallet() {
         balance,
       })
     },
-    [ethWallet],
+    [ethWallet, setEthWallet],
   )
 
   const setEthAddress = useCallback(
@@ -64,7 +64,7 @@ export function useWallet() {
         address,
       })
     },
-    [ethWallet],
+    [ethWallet, setEthWallet],
   )
 
   const setCkbAddress = useCallback(
@@ -74,7 +74,7 @@ export function useWallet() {
         address,
       })
     },
-    [ckbWallet],
+    [ckbWallet, setCkbWallet],
   )
 
   const setCkbBalance = useCallback(
