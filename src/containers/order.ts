@@ -71,29 +71,29 @@ export function useOrder() {
     setBestPrice(new BigNumber(data.price).div(PRICE_DECIMAL).toString())
 
     if (orderType === OrderType.Buy) {
-      const { balance } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
-      setMaxPay(new BigNumber(balance).div(SUDT_DECIMAL).toString())
+      const { free } = (await getSudtBalance(SUDT_TYPE_SCRIPT, lockScript)).data
+      setMaxPay(new BigNumber(free).div(SUDT_DECIMAL).toString())
     } else {
-      const { balance } = (await getCkbBalance(lockScript)).data
-      setMaxPay(new BigNumber(balance).div(SUDT_DECIMAL).toString())
+      const { free } = (await getCkbBalance(lockScript)).data
+      setMaxPay(new BigNumber(free).div(SUDT_DECIMAL).toString())
     }
   }, [orderType, sellPair, buyPair])
 
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()
-    const { balance } = (await getCkbBalance(lockScript)).data
-    setMaxPay(new BigNumber(balance).div(new BigNumber(CKB_DECIMAL.toString())).toString())
-    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
+    const { free } = (await getCkbBalance(lockScript)).data
+    setMaxPay(new BigNumber(free).div(new BigNumber(CKB_DECIMAL.toString())).toString())
+    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, OrderType.Sell)
     // eslint-disable-next-line no-debugger
     setBestPrice(new BigNumber(data.price).div(new BigNumber(PRICE_DECIMAL.toString())).toString())
-  }, [orderType])
+  }, [])
 
   const receive = useMemo(() => {
     if (price && pay) {
       if (orderType === OrderType.Buy) {
-        return calcBuyReceive(parseFloat(pay), parseFloat(price))
+        return calcBuyReceive(pay, price)
       }
-      return calcSellReceive(parseFloat(pay), parseFloat(price))
+      return calcSellReceive(pay, price)
     }
 
     return '0.00'

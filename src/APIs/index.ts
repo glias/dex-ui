@@ -5,7 +5,7 @@ import { SUDT_TYPE_SCRIPT } from '../utils'
 
 export * from './checkSubmittedTxs'
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://18.162.80.155:8201'
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'https://dex-api.yuche.me'
 
 export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHash: string, lockArgs: string) {
   return axios.get(`${SERVER_URL}/cells`, {
@@ -82,7 +82,7 @@ export function getBestPrice(type: Script, orderType: OrderType) {
     type_code_hash: type.codeHash,
     type_hash_type: type.hashType,
     type_args: type.args,
-    is_bid: orderType === OrderType.Buy,
+    is_bid: orderType === OrderType.Sell,
   }
 
   return axios.get(`${SERVER_URL}/best-price`, {

@@ -7,7 +7,7 @@ import PWCore from '@lay2/pw-core'
 import WalletContainer from '../../../../containers/wallet'
 import OrderContainer from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
-import { pendingOrders, HISTORY_QUERY_KEY } from '../../../../utils'
+import { pendingOrders, HISTORY_QUERY_KEY, EXPLORER_URL } from '../../../../utils'
 import type { OrderRecordAction, OrderRecord } from '../../../../utils'
 import { reducer, usePollOrderList, useHandleWithdrawOrder } from './hooks'
 import styles from './history.module.css'
@@ -75,7 +75,7 @@ const columns = [
       showTitle: false,
     },
     render: (price: string) => {
-      const text = `${price} CKB per ${SUDT_SYMBOL}`
+      const text = `${price} CKB/${SUDT_SYMBOL}`
       return <Tooltip title={text}>{text}</Tooltip>
     },
   },
@@ -83,12 +83,28 @@ const columns = [
     title: 'status',
     dataIndex: 'status',
     key: 'status',
-    render: (status: OrderInList['status']) => <span data-status={status}>{status}</span>,
+    width: 90,
+    render: (status: OrderInList['status'], order: OrderInList) => {
+      const [txHash, index] = order.key.split(':')
+
+      return (
+        <a
+          className={styles.status}
+          data-status={status}
+          href={`${EXPLORER_URL}transaction/${txHash}#${+index}`}
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          {status}
+        </a>
+      )
+    },
   },
   {
     title: 'executed',
     dataIndex: 'executed',
     key: 'executed',
+    width: 90,
   },
 ]
 
@@ -117,6 +133,7 @@ const History = () => {
     title: 'action',
     dataIndex: 'action',
     key: 'action',
+    width: 100,
     render: (action: OrderRecordAction | undefined, order: OrderInList) => {
       const handleClick = () => {
         handleWithdraw(order.key)
@@ -128,7 +145,7 @@ const History = () => {
         case 'claim': {
           return <Button onClick={handleClick}>Claim</Button>
         }
-        case 'open': {
+        case 'opening': {
           return <Button onClick={handleClick}>Cancel</Button>
         }
         default: {

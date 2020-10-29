@@ -44,7 +44,7 @@ export default function TradePairConfirm() {
         isBid,
         status: 'pending',
         pay: Order.pay,
-        receive: receiveCalc(parseFloat(Order.pay), parseFloat(Order.price)),
+        receive: receiveCalc(Order.pay, Order.price),
         price: Order.price,
       }
       Order.setAndCacheSubmittedOrders(orders => [...orders, submittedOrder])
