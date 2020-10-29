@@ -27,6 +27,15 @@ export const OrderButton = styled.div`
   text-align: center;
   button {
     width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    &[disabled],
+    &[disabled]:active,
+    &[disabled]:focus,
+    &[disabled]:hover {
+      background: rgba(241, 241, 241, 1);
+    }
   }
 `
 

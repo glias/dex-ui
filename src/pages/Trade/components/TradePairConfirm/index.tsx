@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Address, AddressType, Amount } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
-import { Button, Divider } from 'antd'
+import { Button, Divider, Tooltip } from 'antd'
 import {
   TradePairConfirmBox,
   OrderBox,
@@ -20,10 +20,10 @@ import { calcBuyAmount, calcBuyReceive, calcSellReceive } from '../../../../util
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
+  const [disabled, setDisabled] = useState(false)
   const [buyer, seller] = Order.pair
 
   const onConfirm = async () => {
-    // eslint-disable-next-line no-debugger
     const buyAmount = calcBuyAmount(Order.pay)
     const builder = new PlaceOrderBuilder(
       new Address(Wallet.ckbWallet.address, AddressType.ckb),
@@ -48,6 +48,7 @@ export default function TradePairConfirm() {
       }
       Order.setAndCacheSubmittedOrders(orders => [...orders, submittedOrder])
       Order.setTxHash(txHash)
+      setDisabled(false)
       Order.setStep(OrderStep.Result)
     }
   }
@@ -100,8 +101,21 @@ export default function TradePairConfirm() {
             </li>
             <li className="execution-fee">
               <div>
-                {i18n.t(`trade.executionFee`)}
-                <i className="ai-question-circle-o" />
+                {Order.orderType === OrderType.Buy ? (
+                  <>
+                    {i18n.t(`trade.executionFee`)}
+                    <Tooltip placement="top" title={i18n.t('trade.executionFeeIntro')}>
+                      <i className="ai-question-circle-o" />
+                    </Tooltip>
+                  </>
+                ) : (
+                  <>
+                    {i18n.t(`trade.transactionFee`)}
+                    <Tooltip placement="top" title={i18n.t('trade.transactionFeeIntro')}>
+                      <i className="ai-question-circle-o" />
+                    </Tooltip>
+                  </>
+                )}
               </div>
               <div>
                 <span>--</span>
@@ -115,6 +129,8 @@ export default function TradePairConfirm() {
             type="text"
             size="large"
             onClick={onConfirm}
+            disabled={disabled}
+            loading={disabled}
             style={{
               color: 'rgba(0, 106, 151, 1)',
             }}

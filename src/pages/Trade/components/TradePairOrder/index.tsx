@@ -105,7 +105,7 @@ export default () => {
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <span className="form-label-meta-num">{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
-            <Tooltip title="todo">
+            <Tooltip title={i18n.t('trade.maxIntro')}>
               <i className="ai-question-circle-o" />
             </Tooltip>
           </PayMeta>

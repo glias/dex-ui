@@ -5,6 +5,21 @@ export const PairOrderFormBox = styled.div`
   position: relative;
   color: rgba(102, 102, 102, 1);
   box-sizing: border-box;
+
+  // remove form input[type=number] default style
+  input[type='number'] {
+    appearance: textfield;
+  }
+  input::-webkit-textfield-decoration-container {
+    background-color: #ecf2f4;
+  }
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+  input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+
   .popver-overlay {
     width: 100%;
     .ant-popover-content {
@@ -58,7 +73,7 @@ export const PairOrderFormBox = styled.div`
     }
   }
   .submit-item {
-    padding: 0;
+    padding: 0 !important;
     margin: 0;
     height: 60px;
     text-align: center;
