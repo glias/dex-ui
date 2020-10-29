@@ -26,6 +26,7 @@
         "receive": "500",
         "executed": "60%",
         "price": "5",
+        "isClaimable": false,
         "status": "aborted",
         "action": null
       }
@@ -55,7 +56,9 @@
         "receive": "100",
         "pay": "20.06000000",
         "executed": "0.5%",
+        "isClaimable": false,
         "price": "5",
+        "isClaimable": false,
         "status": "aborted",
         "action": null
       }
