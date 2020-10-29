@@ -53,6 +53,7 @@ export const parseOrderRecord = ({
     price: `${priceInNum}`,
     status,
     action: getAction(claimable, status === 'opening'),
+    isClaimable: claimable,
     ...rest,
   }
 }

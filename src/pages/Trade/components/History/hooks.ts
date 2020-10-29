@@ -58,6 +58,10 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
 
 type Order = ReturnType<typeof parseOrderRecord>
 
+const isOrderAbortedOrClaimed = (order: Order) => {
+  return order.status === 'aborted' || (order.status === 'completed' && !order.isClaimable)
+}
+
 export const usePollOrderList = ({
   lockArgs,
   dispatch,
@@ -76,7 +80,7 @@ export const usePollOrderList = ({
           .then(res => {
             const parsed = res.data.reverse().map((item: RawOrder) => {
               const order = parseOrderRecord(item)
-              if (order.status !== 'opening') {
+              if (isOrderAbortedOrClaimed(order)) {
                 pendingOrders.remove(order.key)
               }
               return order
