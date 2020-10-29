@@ -9,7 +9,6 @@
           "paid_amount": "12345678901234567890",
           "turnover_rate": "0.6",
           "price": "50000000000",
-          "claimable": false,
           "status": "aborted",
           "last_order_cell_outpoint": {
             "tx_hash": "0xf466000e74566297067bcfdc59158d4391e0728c0e8bfecb9e075b501bf34179",
@@ -26,9 +25,7 @@
         "receive": "500",
         "executed": "60%",
         "price": "5",
-        "isClaimable": false,
-        "status": "aborted",
-        "action": null
+        "status": "aborted"
       }
     },
     "ask": {
@@ -40,7 +37,6 @@
           "turnover_rate": "0.005",
           "paid_amount": "12345678901234567890",
           "price": "50000000000",
-          "claimable": false,
           "status": "aborted",
           "last_order_cell_outpoint": {
             "tx_hash": "0xf466000e74566297067bcfdc59158d4391e0728c0e8bfecb9e075b501bf34179",
@@ -56,11 +52,8 @@
         "receive": "100",
         "pay": "20.06000000",
         "executed": "0.5%",
-        "isClaimable": false,
         "price": "5",
-        "isClaimable": false,
-        "status": "aborted",
-        "action": null
+        "status": "aborted"
       }
     }
   }

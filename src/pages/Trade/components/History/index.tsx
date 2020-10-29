@@ -8,7 +8,7 @@ import WalletContainer from '../../../../containers/wallet'
 import OrderContainer from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import { pendingOrders, HISTORY_QUERY_KEY, EXPLORER_URL } from '../../../../utils'
-import type { OrderRecordAction, OrderRecord } from '../../../../utils'
+import type { OrderRecord } from '../../../../utils'
 import { reducer, usePollOrderList, useHandleWithdrawOrder } from './hooks'
 import styles from './history.module.css'
 
@@ -149,15 +149,15 @@ const History = () => {
     dataIndex: 'action',
     key: 'action',
     width: 100,
-    render: (action: OrderRecordAction | undefined, order: OrderInList) => {
+    render: (_: unknown, order: OrderInList) => {
       const handleClick = () => {
         handleWithdraw(order.key)
       }
       if (state.pendingIdList.includes(order.key)) {
         return <Spin indicator={<SyncOutlined spin translate="loadaing" />} />
       }
-      switch (action) {
-        case 'claim': {
+      switch (order.status) {
+        case 'completed': {
           return <Button onClick={handleClick}>Claim</Button>
         }
         case 'opening': {
