@@ -28,12 +28,7 @@ export type HistoryAction =
 export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, action) => {
   switch (action.type) {
     case ActionType.UpdateOrderList: {
-      const completedIds = action.value.filter(o => o.status !== 'opening').map(o => o.key)
-      return {
-        ...state,
-        orderList: action.value,
-        pendingIdList: state.pendingIdList.filter(id => !completedIds.includes(id)),
-      }
+      return { ...state, orderList: action.value }
     }
     case ActionType.AddPendingId: {
       if (!state.pendingIdList.includes(action.value)) {
@@ -58,10 +53,6 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
 
 type Order = ReturnType<typeof parseOrderRecord>
 
-const isOrderAbortedOrClaimed = (order: Order) => {
-  return order.status === 'aborted' || (order.status === 'completed' && !order.isClaimable)
-}
-
 export const usePollOrderList = ({
   lockArgs,
   dispatch,
@@ -80,7 +71,7 @@ export const usePollOrderList = ({
           .then(res => {
             const parsed = res.data.reverse().map((item: RawOrder) => {
               const order = parseOrderRecord(item)
-              if (isOrderAbortedOrClaimed(order)) {
+              if (['aborted', 'claimed'].includes(order.status ?? '')) {
                 pendingOrders.remove(order.key)
               }
               return order
