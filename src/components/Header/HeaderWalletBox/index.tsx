@@ -136,7 +136,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
       </WalletList>
       <HeaderBox>
         <HeaderPanel>
-          <HeaderMeta id="header-meta">
+          <HeaderMeta>
             <div className="popover-wallet-box">
               <div className="balances">
                 <h4

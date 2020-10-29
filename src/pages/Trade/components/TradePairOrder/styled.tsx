@@ -95,31 +95,6 @@ export const OrderSelectPopver = styled.div`
   padding: 10px 10px 30px;
 `
 
-export const OrderSelectBox = styled.div`
-  position: relative !important;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  height: 42px;
-  line-height: 42px;
-  background: #fff;
-  box-sizing: border-box;
-  border-radius: 10px;
-  border: 1px solid rgba(171, 209, 225, 1);
-  .pair {
-    padding-left: 10px;
-  }
-  .ant-select-selector {
-    border: 1px solid rgba(171, 209, 225, 1);
-  }
-  .pair-trace-box {
-    &: hover {
-      background: transparent !important;
-    }
-  }
-`
-
 export const PayMeta = styled.div`
   position: absolute;
   top: -30px;
