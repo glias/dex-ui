@@ -42,6 +42,15 @@
 
 .orders {
   text-transform: capitalize;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
+  border: 1px solid #abd1e1;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  overflow: hidden;
+}
+
+.container {
+  margin-left: 20px;
 }
 
 .container table {

@@ -7,7 +7,7 @@ export const FooterBox = styled.div`
   line-height: 40px;
   font-size: 13px;
   color: rgba(136, 136, 136, 1);
-  bordert-top: 1px solid #abd1e1;
+  border-top: 1px solid #abd1e1;
 `
 
 export default FooterBox

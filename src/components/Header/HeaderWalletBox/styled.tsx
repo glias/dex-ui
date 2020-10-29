@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 export const HeaderWalletBox = styled.div`
   width: 300px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   .wallet-title {
     display: flex;
@@ -84,6 +85,7 @@ export const HeaderBox = styled.div`
   overflow-x: scroll;
   margin: 0 auto;
   overflow: hidden;
+  border: none !important;
   color: rgba(81, 119, 136, 1);
   border-bottom: 1px solid #abd1e1;
 `
@@ -147,7 +149,8 @@ export const HeaderMeta = styled.div`
     .ant-popover-content {
       overflow: hidden;
       border-radius: 10px;
-      border: 1px solid rgba(0, 106, 151, 1);
+      box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
+      border: 1px solid #006a97;
     }
     .ant-popover-inner-content {
       padding: 0;
@@ -198,12 +201,12 @@ export const HeaderMeta = styled.div`
         border-top: 1px solid rgba(171, 209, 225, 1);
       }
       .balance-list {
-        margin: 10px 0 0 10px;
+        margin: 10px 0 0 0;
         display: flex;
         justify-content: center;
         align-items: flex-start;
         .logo img {
-          width: 40px;
+          width: 35px;
         }
         .wallet-info {
           flex: 1;
@@ -267,6 +270,7 @@ export const HeaderMeta = styled.div`
         }
         .explorer {
           width: 30px;
+          margin-top: 7px;
           button {
             color: rgba(136, 136, 136, 1);
           }

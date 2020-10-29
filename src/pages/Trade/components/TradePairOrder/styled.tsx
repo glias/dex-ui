@@ -18,10 +18,20 @@ export const PairOrderFormBox = styled.div`
     padding-top: 10px;
     border-radius: 10px;
     border: 1px solid rgba(171, 209, 225, 1);
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
     .ant-form-item {
-      padding: 0 10px;
+      padding: 0 20px;
       label {
         font-size: 16px;
+      }
+      input[type='number'] {
+        appearance: textfield;
+      }
+      input[type='number']::-webkit-inner-spin-button {
+        appearance: none;
+      }
+      input[type='number']::-webkit-outer-spin-button {
+        margin: 0;
       }
     }
   }
@@ -58,17 +68,24 @@ export const PairOrderFormBox = styled.div`
     }
   }
   .submit-item {
-    padding: 0;
+    padding: 0 !important;
     margin: 0;
     height: 60px;
     text-align: center;
-    .submitBtn {
+    .submit-btn {
+      padding: 0;
       font-size: 17px;
       font-weight: 500;
       height: 60px;
       width: 100%;
       color: rgba(0, 106, 151, 1);
       text-align: center;
+    }
+    .submit-btn[disabled] {
+      background: rgba(241, 241, 241, 1);
+      border-bottom-right-radius: 10px;
+      overflow: hidden;
+      border-bottom-left-radius: 10px;
     }
   }
 `
@@ -96,8 +113,7 @@ export const OrderSelectBox = styled.div`
   .ant-select-selector {
     border: 1px solid rgba(171, 209, 225, 1);
   }
-  .pairTraceList {
-    color: red;
+  .pair-trace-box {
     &: hover {
       background: transparent !important;
     }
@@ -124,7 +140,7 @@ export const PayMeta = styled.div`
 export const PairBlock = styled.div`
   font-size: 16px;
   display: flex;
-  .pairTraceList {
+  .pair-trace-box {
     display: flex;
     padding: 0 10px;
     height: 40px;
