@@ -1,15 +1,22 @@
+import BigNumber from 'bignumber.js'
 import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from './const'
 
-export function calcBuyReceive(pay: number, price: number) {
-  return (pay / (1 + COMMISSION_FEE) / price).toFixed(10)
+export function calcBuyReceive(pay: string, price: string) {
+  return new BigNumber(pay)
+    .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
+    .div(new BigNumber(price))
+    .toFixed(10)
 }
 
-export function calcSellReceive(pay: number, price: number) {
-  return ((pay / (1 + COMMISSION_FEE)) * price).toFixed(10)
+export function calcSellReceive(pay: string, price: string) {
+  return new BigNumber(pay)
+    .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
+    .times(new BigNumber(price))
+    .toFixed(10)
 }
 
 export function calcBuyAmount(pay: string) {
-  return (parseFloat(pay) + ORDER_CELL_CAPACITY).toString()
+  return new BigNumber(pay).plus(new BigNumber(ORDER_CELL_CAPACITY)).toString()
 }
 
 export default calcBuyReceive

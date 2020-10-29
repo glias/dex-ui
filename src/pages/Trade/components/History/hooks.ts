@@ -28,7 +28,7 @@ export type HistoryAction =
 export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, action) => {
   switch (action.type) {
     case ActionType.UpdateOrderList: {
-      const completedIds = action.value.filter(o => o.status !== 'open').map(o => o.key)
+      const completedIds = action.value.filter(o => o.status !== 'opening').map(o => o.key)
       return {
         ...state,
         orderList: action.value,
@@ -76,7 +76,7 @@ export const usePollOrderList = ({
           .then(res => {
             const parsed = res.data.reverse().map((item: RawOrder) => {
               const order = parseOrderRecord(item)
-              if (order.status !== 'open') {
+              if (order.status !== 'opening') {
                 pendingOrders.remove(order.key)
               }
               return order

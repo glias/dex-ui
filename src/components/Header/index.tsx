@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react'
 import PWCore, {
-  Amount,
   Web3ModalProvider,
   // EthSigner,
 } from '@lay2/pw-core'
@@ -61,10 +60,8 @@ const Header = () => {
     Wallet.setPw(pw)
     setHasLogin(true)
 
-    await Wallet.reloadCkbWallet(ckbAddr)
-    const ethBalance = await web3.eth.getBalance(ethAddr)
-    Wallet.setEthBalance(new Amount(ethBalance))
     Wallet.setEthAddress(ethAddr.toLowerCase())
+    Wallet.reloadWallet(ckbAddr)
   }
 
   const disconnectWallet = async () => {
@@ -124,7 +121,7 @@ const Header = () => {
             <>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
-                {truncatureStr(ethAddress)}
+                {truncatureStr(ckbAddress)}
               </UserMeta>
               <Popover
                 placement="bottomRight"
