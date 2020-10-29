@@ -1,9 +1,12 @@
-import PWCore, { Amount, AmountUnit } from '@lay2/pw-core'
-import { useCallback, useState } from 'react'
+import PWCore, { Amount, AmountUnit, Web3ModalProvider } from '@lay2/pw-core'
+import { useCallback, useState, useRef } from 'react'
 import { createContainer } from 'unstated-next'
 import Web3 from 'web3'
+import Web3Modal from 'web3modal'
 import { getCkbBalance, getSudtBalance } from '../APIs'
-import { SUDT_TYPE_SCRIPT } from '../utils'
+import { CKB_NODE_URL, SUDT_TYPE_SCRIPT } from '../utils'
+
+const { SDCollector } = require('./sd-collector')
 
 interface Wallet {
   balance: Amount
@@ -23,6 +26,7 @@ interface SudtWallet extends Wallet {
 export function useWallet() {
   const [pw, setPw] = useState<null | PWCore>(null)
   const [web3, setWeb3] = useState<null | Web3>(null)
+  const web3ModalRef = useRef<Web3Modal | null>(null)
   const [ckbWallet, setCkbWallet] = useState<CkbWallet>({
     balance: Amount.ZERO,
     inuse: Amount.ZERO,
@@ -30,6 +34,7 @@ export function useWallet() {
     lockedOrder: Amount.ZERO,
     address: '',
   })
+  const [connecting, setConnecting] = useState(false)
   const [ethWallet, setEthWallet] = useState<Wallet>({
     balance: Amount.ZERO,
     lockedOrder: Amount.ZERO,
@@ -42,33 +47,45 @@ export function useWallet() {
     address: '',
   })
 
-  const setEthBalance = (balance: Amount) => {
-    setEthWallet({
-      ...ethWallet,
-      balance,
-    })
-  }
+  const setEthBalance = useCallback(
+    (balance: Amount) => {
+      setEthWallet({
+        ...ethWallet,
+        balance,
+      })
+    },
+    [ethWallet, setEthWallet],
+  )
 
-  const setEthAddress = (address: string) => {
-    setEthWallet({
-      ...ethWallet,
-      address,
-    })
-  }
+  const setEthAddress = useCallback(
+    (address: string) => {
+      setEthWallet({
+        ...ethWallet,
+        address,
+      })
+    },
+    [ethWallet],
+  )
 
-  const setCkbAddress = (address: string) => {
-    setCkbWallet({
-      ...ckbWallet,
-      address,
-    })
-  }
+  const setCkbAddress = useCallback(
+    (address: string) => {
+      setCkbWallet({
+        ...ckbWallet,
+        address,
+      })
+    },
+    [ckbWallet],
+  )
 
-  const setCkbBalance = (balance: Amount) => {
-    setCkbWallet({
-      ...ckbWallet,
-      balance,
-    })
-  }
+  const setCkbBalance = useCallback(
+    (balance: Amount) => {
+      setCkbWallet({
+        ...ckbWallet,
+        balance,
+      })
+    },
+    [ckbWallet],
+  )
 
   const reloadCkbWallet = useCallback(async (address: string) => {
     const res = (await getCkbBalance(PWCore.provider.address.toLockScript())).data
@@ -104,6 +121,42 @@ export function useWallet() {
     [reloadCkbWallet, reloadSudtWallet],
   )
 
+  const connectWallet = useCallback(async () => {
+    setConnecting(true)
+    try {
+      const provider = await web3ModalRef.current?.connect()
+      const newWeb3 = new Web3(provider)
+      const newPw = await new PWCore(CKB_NODE_URL).init(new Web3ModalProvider(newWeb3), new SDCollector() as any)
+      const [ethAddr] = await newWeb3.eth.getAccounts()
+      const ckbAddr = PWCore.provider.address.toCKBAddress()
+
+      setWeb3(newWeb3)
+      setPw(newPw)
+
+      setEthAddress(ethAddr.toLowerCase())
+      setCkbAddress(ckbAddr)
+      reloadWallet(ckbAddr)
+    } catch (error) {
+      // @TODO: error handling
+      // eslint-disable-next-line no-console
+      console.error(error)
+    } finally {
+      setConnecting(false)
+    }
+  }, [reloadWallet, setEthAddress, setCkbAddress])
+
+  const disconnectWallet = useCallback(
+    async (cb: Function) => {
+      await PWCore.provider.close()
+      await web3ModalRef.current?.clearCachedProvider()
+      setCkbAddress('')
+      setEthAddress('')
+      setConnecting(false)
+      cb()
+    },
+    [setCkbAddress, setEthAddress],
+  )
+
   return {
     pw,
     web3,
@@ -120,6 +173,11 @@ export function useWallet() {
     reloadCkbWallet,
     reloadSudtWallet,
     reloadWallet,
+    connecting,
+    setConnecting,
+    connectWallet,
+    disconnectWallet,
+    web3ModalRef,
   }
 }
 

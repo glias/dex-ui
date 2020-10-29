@@ -75,9 +75,6 @@ export default function WalletBox({ disconnect, addresses }: Props) {
             }}
           >
             <div className="total-num">{validityText(item.balance?.amount)}</div>
-            <div className="price">
-              <span>$ 0.00</span>
-            </div>
           </div>
         </div>
         <div className="balance-ckb">
@@ -90,10 +87,6 @@ export default function WalletBox({ disconnect, addresses }: Props) {
           <div className="ckb-item">
             <span>{i18n.t('header.lockIndex')}</span>
             <span>{item.lockedOrder?.toString()}</span>
-          </div>
-          <div className="ckb-item">
-            <span>{i18n.t('header.free')}</span>
-            <span>{item.balance?.toString()}</span>
           </div>
         </div>
       </>
@@ -141,7 +134,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
           </div>
         ))}
       </WalletList>
-      <HeaderBox className="header-box">
+      <HeaderBox>
         <HeaderPanel>
           <HeaderMeta id="header-meta">
             <div className="popover-wallet-box">
