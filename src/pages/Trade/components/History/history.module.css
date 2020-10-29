@@ -89,6 +89,7 @@
 }
 
 a.status[data-status='aborted'],
-a.status[data-status='completed'] {
+a.status[data-status='completed'],
+a.status[data-status='claimed'] {
   color: #888;
 }
