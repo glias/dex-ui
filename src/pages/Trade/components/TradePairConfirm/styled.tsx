@@ -88,7 +88,7 @@ export const PairOrder = styled.div`
 
 export const OrderBox = styled.div`
   background: #fff;
-  padding: 10px 0;
+  padding: 10px;
   ul {
     .ant-divider {
       min-width: 80%;

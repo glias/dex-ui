@@ -4,7 +4,7 @@ export const PoolContainer = styled.div`
   font-size: 20px;
   text-align: center;
   background-color: #ecf2f4;
-  min-height: calc(100% - 90px);
+  min-height: calc(100% - 94px);
   max-width: 1440px;
   margin: 0 auto;
   padding: 10px 50px;
