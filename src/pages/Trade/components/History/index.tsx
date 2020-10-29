@@ -108,6 +108,25 @@ const columns = [
   },
 ]
 
+const orderFilter = (type: string, order: OrderInList) => {
+  switch (type) {
+    case 'pending':
+    case 'opening':
+    case 'aborted': {
+      return order.status === type
+    }
+    case 'completed': {
+      return order.status === 'completed' && order.isClaimable
+    }
+    case 'claimed': {
+      return order.status === 'completed' && !order.isClaimable
+    }
+    default: {
+      return true
+    }
+  }
+}
+
 const History = () => {
   const [state, dispatch] = useReducer(reducer, {
     orderList: [],
@@ -158,7 +177,7 @@ const History = () => {
   const orderList: Array<OrderInList> = [
     ...submittedOrderList,
     ...state.orderList.filter(order => !submittedOrderList.some(submitted => submitted.key === order.key)),
-  ]
+  ].filter(order => orderFilter(type, order))
 
   return (
     <div className={styles.container}>
