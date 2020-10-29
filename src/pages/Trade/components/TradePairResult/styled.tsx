@@ -77,6 +77,22 @@ export const TradePairConfirmContent = styled.div`
     justify-content: center;
     align-items: center;
     height: 100%;
+    .order-tip {
+      padding: 10px 0 14px;
+    }
+    a {
+      display: flex;
+      justify-content: center;
+      text-decoration: underline;
+      color: rgba(102, 102, 102, 1);
+      .explorer-svg {
+        display: inline;
+        width: 15px;
+        float: right;
+        color: rgba(136, 136, 136, 1);
+        margin-left: 4px;
+      }
+    }
   }
 `
 
