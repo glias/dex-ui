@@ -1,0 +1,21 @@
+.OrderSelectBox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  height: 42px;
+  line-height: 42px;
+  background: #fff;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid rgba(171, 209, 225, 1);
+}
+.OrderSelectBox .pair {
+  padding-left: 10px;
+}
+.OrderSelectBox .ant-select-selector {
+  border: 1px solid rgba(171, 209, 225, 1);
+}
+.OrderSelectBox .pair-trace-box:hover {
+  background: transparent !important;
+}

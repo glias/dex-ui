@@ -7,9 +7,10 @@ import { PairList, PRICE_DECIMAL, SUDT_DECIMAL, MIN_ORDER_DAI, MIN_ORDER_CKB } f
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
-import { PairOrderFormBox, PayMeta, OrderSelectBox, OrderSelectPopver, PairBlock } from './styled'
+import { PairOrderFormBox, PayMeta, OrderSelectPopver, PairBlock } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
+import styles from './tradePairOrder.module.css'
 
 export default () => {
   const [form] = Form.useForm()
@@ -167,7 +168,7 @@ export default () => {
         content={SelectContent}
         onVisibleChange={(visible: boolean) => setVisiblePopver(visible)}
       >
-        <OrderSelectBox id="trace-form-select">
+        <div className={styles.OrderSelectBox}>
           <PairBlock>
             <span className="pair">{i18n.t('trade.pair')}</span>
             <Button className="pair-trace-box" type="text">
@@ -176,7 +177,7 @@ export default () => {
               <TradeCoinBox pair={Order.pair[1]} />
             </Button>
           </PairBlock>
-        </OrderSelectBox>
+        </div>
       </Popover>
       <TracePairCoin resetFields={() => form.resetFields()} />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
