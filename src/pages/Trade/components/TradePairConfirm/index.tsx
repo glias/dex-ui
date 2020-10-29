@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PWCore, { Address, AddressType, Amount } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import { Button, Divider, Modal } from 'antd'
@@ -22,6 +22,16 @@ export default function TradePairConfirm() {
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
   const [disabled, setDisabled] = useState(false)
+  const { address } = Wallet.ckbWallet
+
+  useEffect(() => {
+    if (address === '') {
+      setDisabled(false)
+      Order.reset()
+      Order.setStep(OrderStep.Order)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address])
 
   const onConfirm = async () => {
     try {

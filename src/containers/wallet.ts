@@ -92,7 +92,6 @@ export function useWallet() {
     const free = new Amount(res.free, AmountUnit.shannon)
     const occupied = new Amount(res.occupied, AmountUnit.shannon)
     const lockedOrder = new Amount(res.locked_order, AmountUnit.shannon)
-    // eslint-disable-next-line no-debugger
     setCkbWallet({
       balance: free,
       inuse: occupied,
@@ -125,6 +124,12 @@ export function useWallet() {
     setConnecting(true)
     try {
       const provider = await web3ModalRef.current?.connect()
+
+      provider.on('accountsChanged', function reconnectWallet() {
+        provider.off('accountsChanged', reconnectWallet)
+        connectWallet()
+      })
+
       const newWeb3 = new Web3(provider)
       const newPw = await new PWCore(CKB_NODE_URL).init(new Web3ModalProvider(newWeb3), new SDCollector() as any)
       const [ethAddr] = await newWeb3.eth.getAccounts()
@@ -142,13 +147,14 @@ export function useWallet() {
   }, [reloadWallet, setEthAddress, setCkbAddress])
 
   const disconnectWallet = useCallback(
-    async (cb: Function) => {
+    async (cb?: Function) => {
       await PWCore.provider.close()
       await web3ModalRef.current?.clearCachedProvider()
       setCkbAddress('')
       setEthAddress('')
       setConnecting(false)
-      cb()
+      // eslint-disable-next-line no-unused-expressions
+      cb?.()
     },
     [setCkbAddress, setEthAddress],
   )
