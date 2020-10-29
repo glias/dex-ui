@@ -34,7 +34,7 @@ export const PairOrderFormBox = styled.div`
     border-radius: 10px;
     border: 1px solid rgba(171, 209, 225, 1);
     .ant-form-item {
-      padding: 0 10px;
+      padding: 0 20px;
       label {
         font-size: 16px;
       }
@@ -106,7 +106,7 @@ export const OrderSelectBox = styled.div`
   border-radius: 10px;
   border: 1px solid rgba(171, 209, 225, 1);
   .pair {
-    padding-left: 10px;
+    padding-left: 20px;
   }
   .ant-select-selector {
     border: 1px solid rgba(171, 209, 225, 1);

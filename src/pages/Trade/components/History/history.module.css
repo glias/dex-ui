@@ -44,6 +44,10 @@
   text-transform: capitalize;
 }
 
+.container {
+  margin-left: 20px;
+}
+
 .container table {
   padding: 0 24px;
 }

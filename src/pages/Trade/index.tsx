@@ -57,11 +57,7 @@ const Trade = () => {
             <TradeContent>{traceNavigation()}</TradeContent>
           </Col>
           <Col span={16}>
-            <Content
-              style={{
-                marginLeft: '2%',
-              }}
-            >
+            <Content>
               <History />
             </Content>
           </Col>
