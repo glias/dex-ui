@@ -8,6 +8,7 @@
       "more": "更多链接",
       "account": "账 号",
       "testWallet": "钱包测试",
+      "lockIndex": "锁索引",
       "balances": "余额",
       "connecting": "正在连接钱包...",
       "insuffcientSUDTBalance": "SUDT余额不足",

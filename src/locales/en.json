@@ -11,6 +11,7 @@
       "balances": "Balances",
       "connecting": "Connecting...",
       "inUse": "In Use",
+      "lockIndex": "Lock Index",
       "free": "Free",
       "HexAddressTooltip": "Current Eth Address. Others can send CKB to this address using wallets that support pw-lock.",
       "ckbAddressTooltip": "A Transit Address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
