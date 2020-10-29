@@ -1,13 +1,15 @@
+/* eslint-disable prefer-promise-reject-errors */
 import React, { useState, useEffect, useCallback } from 'react'
 import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { FormInstance } from 'antd/lib/form'
+import BigNumber from 'bignumber.js'
 import { useContainer } from 'unstated-next'
 import { PairList } from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
 import { PairOrderFormBox, PayMeta, OrderSelectBox, OrderSelectPopver, PairBlock } from './styled'
-import OrderContainer, { OrderStep } from '../../../../containers/order'
+import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 
 export default () => {
@@ -17,13 +19,62 @@ export default () => {
   const [visiblePopver, setVisiblePopver] = useState(false)
   const { price, setPrice: priceOnChange, pay, setPay: payOnChange, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
-  const [disabled] = useState(false)
   const [buyer, seller] = Order.pair
+  const [disabled, setDisabled] = useState(false)
+  const MIN_PRICE = 1 / 10 ** 10
+  const MIN_VAL = 1 / 10 ** (Order.orderType === OrderType.Buy ? 8 : 10)
+  const MIN_ORDER = Order.orderType === OrderType.Buy ? 147 : 289
 
   const changePair = () => {
     setVisiblePopver(false)
     Order.togglePair()
     form.resetFields()
+  }
+
+  const checkPay = (_: any, value: string): Promise<void> => {
+    const val = new BigNumber(value)
+
+    if (Number.isNaN(parseFloat(value))) {
+      setDisabled(true)
+      return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
+    }
+
+    if (val.comparedTo(MIN_VAL) === -1) {
+      setDisabled(true)
+      return Promise.reject(i18n.t(`trade.tooSmallNumber`))
+    }
+
+    if (val.comparedTo(Order.maxPay) === 1) {
+      setDisabled(true)
+
+      return Promise.reject(i18n.t(`trade.lessThanMaxNumber`))
+    }
+
+    if (new BigNumber(Order.maxPay).minus(val).lt(MIN_ORDER)) {
+      setDisabled(true)
+      return Promise.reject(i18n.t(`trade.insuffcientCKBBalance`))
+    }
+
+    setDisabled(false)
+
+    return Promise.resolve()
+  }
+
+  const checkPrice = (_: any, value: string): Promise<void> => {
+    const val = new BigNumber(value)
+
+    if (Number.isNaN(parseFloat(value))) {
+      return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
+    }
+
+    if (!new BigNumber(val).decimalPlaces(10).isEqualTo(val)) {
+      return Promise.reject(i18n.t(`trade.tooMaxprecision`))
+    }
+
+    if (val.comparedTo(MIN_PRICE) === -1) {
+      return Promise.reject(i18n.t(`trade.tooSmallNumber`))
+    }
+    return Promise.resolve()
   }
 
   const setBestPrice = useCallback(() => {
@@ -100,7 +151,7 @@ export default () => {
           </PairBlock>
         </OrderSelectBox>
       </Popover>
-      <TracePairCoin />
+      <TracePairCoin resetFields={() => form.resetFields()} />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
@@ -112,16 +163,17 @@ export default () => {
           <Form.Item
             name="pay"
             noStyle
-            // rules={[
-            //   {
-            //     validator: checkPay,
-            //   },
-            // ]}
+            rules={[
+              {
+                validator: checkPay,
+              },
+            ]}
           >
             <Input
               placeholder="0"
               suffix={buyer}
               type="number"
+              size="large"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
                 width: '100%',
@@ -147,11 +199,11 @@ export default () => {
           </PayMeta>
           <Form.Item
             name="price"
-            // rules={[
-            //   {
-            //     validator: checkPrice,
-            //   },
-            // ]}
+            rules={[
+              {
+                validator: checkPrice,
+              },
+            ]}
           >
             <Input
               placeholder="0"
