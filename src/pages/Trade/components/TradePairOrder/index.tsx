@@ -74,8 +74,7 @@ export default () => {
       setFieldPrice(false)
       return Promise.reject(i18n.t(`trade.tooMaxprecision`))
     }
-
-    if (val.comparedTo(1 / PRICE_DECIMAL) === -1) {
+    if (!val.multipliedBy(`${PRICE_DECIMAL}`).isGreaterThan(0.1)) {
       setFieldPrice(false)
       return Promise.reject(i18n.t(`trade.tooSmallNumber`))
     }
