@@ -3,7 +3,7 @@ import { PRICE_DECIMAL, SUDT_DECIMAL, CKB_DECIMAL, COMMISSION_FEE } from './cons
 
 export type RawOrder = Record<'is_bid' | 'claimable', boolean> &
   Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {
-    status: 'opening' | 'completed' | 'aborted' | null
+    status: 'opening' | 'completed' | 'aborted' | 'claimed' | null
     last_order_cell_outpoint: Record<'tx_hash' | 'index', string>
   }
 

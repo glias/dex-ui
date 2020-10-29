@@ -112,14 +112,10 @@ const orderFilter = (type: string, order: OrderInList) => {
   switch (type) {
     case 'pending':
     case 'opening':
-    case 'aborted': {
-      return order.status === type
-    }
-    case 'completed': {
-      return order.status === 'completed' && order.isClaimable
-    }
+    case 'aborted':
+    case 'completed':
     case 'claimed': {
-      return order.status === 'completed' && !order.isClaimable
+      return order.status === type
     }
     default: {
       return true
