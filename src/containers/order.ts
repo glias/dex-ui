@@ -29,6 +29,7 @@ export enum OrderType {
 
 export interface SubmittedOrder extends Pick<OrderRecord, 'isBid' | 'pay' | 'receive' | 'price' | 'key'> {
   status: 'pending'
+  createdAt: string
 }
 
 export function useOrder() {
