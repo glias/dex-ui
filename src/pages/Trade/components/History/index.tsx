@@ -175,7 +175,7 @@ const History = () => {
   }
 
   const orderList: Array<OrderInList> = [
-    ...submittedOrderList,
+    ...submittedOrderList.map(o => ({ ...o, key: `${o.key}:${o.createdAt}` })),
     ...state.orderList.filter(order => !submittedOrderList.some(submitted => submitted.key === order.key)),
   ].filter(order => orderFilter(type, order))
 
