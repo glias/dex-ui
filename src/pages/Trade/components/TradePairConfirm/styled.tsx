@@ -27,6 +27,16 @@ export const OrderButton = styled.div`
   text-align: center;
   button {
     width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  button[disabled],
+  button[disabled]:hover {
+    background: rgba(241, 241, 241, 1);
+    border-bottom-right-radius: 10px;
+    overflow: hidden;
+    border-bottom-left-radius: 10px;
   }
 `
 
