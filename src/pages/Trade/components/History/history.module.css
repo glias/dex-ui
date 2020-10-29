@@ -49,6 +49,10 @@
   overflow: hidden;
 }
 
+.container {
+  margin-left: 20px;
+}
+
 .container table {
   padding: 0 24px;
 }

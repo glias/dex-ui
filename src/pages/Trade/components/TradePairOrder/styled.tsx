@@ -24,6 +24,15 @@ export const PairOrderFormBox = styled.div`
       label {
         font-size: 16px;
       }
+      input[type='number'] {
+        appearance: textfield;
+      }
+      input[type='number']::-webkit-inner-spin-button {
+        appearance: none;
+      }
+      input[type='number']::-webkit-outer-spin-button {
+        margin: 0;
+      }
     }
   }
   .price-box {
