@@ -137,7 +137,7 @@ export class PlaceOrderBuilder extends Builder {
     const orderOutput = new Cell(this.amount, orderLock, SUDT_TYPE_SCRIPT)
     orderOutput.setHexData(buildBuyData(calcBuyReceive(this.pay, this.price).toString(), this.price))
     // fill the inputs
-    const cells = await this.collector.collect(PWCore.provider.address, neededAmount, { withData: true })
+    const cells = await this.collector.collect(PWCore.provider.address, neededAmount)
     cells.forEach(cell => {
       if (inputSum.lte(neededAmount.add(Builder.MIN_CHANGE))) {
         inputCells.push(cell)

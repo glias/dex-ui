@@ -31,9 +31,6 @@ const Header = () => {
   const ckbAddress = ckbWallet.address
   const ethAddress = ethWallet.address
 
-  const { web3ModalRef } = Wallet
-  const { connectWallet, disconnectWallet } = Wallet
-
   const truncatureStr = (str: string): string => {
     return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
   }
@@ -41,6 +38,9 @@ const Header = () => {
   // propver visible config
   const [visibleMore, setVisibleMore] = useState(false)
   const [visibleWallet, setVisibleWallet] = useState(false)
+
+  const { web3ModalRef } = Wallet
+  const { connectWallet, disconnectWallet } = Wallet
 
   useDidMount(() => {
     web3ModalRef.current = new Web3Modal({
@@ -99,7 +99,7 @@ const Header = () => {
             <>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
-                {truncatureStr(ckbAddress)}
+                {truncatureStr(ethAddress)}
               </UserMeta>
               <Popover
                 placement="bottomRight"

@@ -1,5 +1,4 @@
-/* eslint-disable prefer-promise-reject-errors */
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
@@ -24,6 +23,9 @@ export default () => {
   // disabled button
   const [fieldPay, setFieldPay] = useState(false)
   const [fieldPrice, setFieldPrice] = useState(false)
+  // @TODO: for demo quick resolove conflict
+  // eslint-disable-next-line no-console
+  console.log(fieldPay, fieldPrice)
 
   const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
   const MIN_ORDER = Order.orderType === OrderType.Buy ? MIN_ORDER_DAI : MIN_ORDER_CKB
@@ -33,6 +35,10 @@ export default () => {
     Order.togglePair()
     form.resetFields()
   }
+
+  const walletNotConnected = useMemo(() => {
+    return !Wallet.ckbWallet.address
+  }, [Wallet.ckbWallet.address])
 
   const checkPay = (_: any, value: string): Promise<void> => {
     const val = new BigNumber(value)
@@ -89,6 +95,18 @@ export default () => {
     })
   }, [Order.bestPrice, formRef])
 
+  const submitStatus = useMemo(() => {
+    if (Wallet.connecting) {
+      return i18n.t('header.connecting')
+    }
+
+    if (walletNotConnected) {
+      return i18n.t('header.wallet')
+    }
+
+    return i18n.t('trade.placeOrder')
+  }, [Wallet.connecting, walletNotConnected])
+
   useEffect(() => {
     if (Wallet.ckbWallet.address === '') {
       return
@@ -103,13 +121,14 @@ export default () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Order.step])
 
-  const onFinish = async () => {
-    const formFieldsValue = formRef.current?.getFieldsValue()
-
-    setPrice(formFieldsValue.price)
-    setPay(formFieldsValue.pay)
-    setStep(OrderStep.Comfirm)
-  }
+  const onSubmit = useCallback(() => {
+    if (walletNotConnected) {
+      Wallet.connectWallet()
+    } else {
+      setStep(OrderStep.Comfirm)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setStep, walletNotConnected, Wallet.connectWallet])
 
   const SelectContent = (
     <OrderSelectPopver>
@@ -160,11 +179,11 @@ export default () => {
         </OrderSelectBox>
       </Popover>
       <TracePairCoin resetFields={() => form.resetFields()} />
-      <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
+      <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <span className="form-label-meta-num">{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
-            <Tooltip title={i18n.t('trade.maxIntro')}>
+            <Tooltip title={i18n.t('trade.maxPay')}>
               <i className="ai-question-circle-o" />
             </Tooltip>
           </PayMeta>
@@ -181,6 +200,7 @@ export default () => {
               placeholder="0"
               suffix={buyer}
               type="number"
+              required
               size="large"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
@@ -188,8 +208,8 @@ export default () => {
               }}
               step="any"
               value={pay}
+              onChange={e => setPay(e.target.value)}
               max={Order.maxPay}
-              min={0}
             />
           </Form.Item>
         </Form.Item>
@@ -217,10 +237,11 @@ export default () => {
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
+              required
               type="number"
               step="any"
+              onChange={e => setPrice(e.target.value)}
               value={price}
-              min={0}
             />
           </Form.Item>
         </Form.Item>
@@ -248,8 +269,8 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button htmlType="submit" className="submit-btn" disabled={!fieldPay || !fieldPrice} size="large" type="text">
-            {i18n.t(`trade.placeOrder`)}
+          <Button htmlType="submit" className="submit-btn" disabled={Wallet.connecting} size="large" type="text">
+            {submitStatus}
           </Button>
         </Form.Item>
       </Form>

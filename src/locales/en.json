@@ -49,7 +49,8 @@
       "complete": "Completed",
       "aborted": "Aborted",
       "claimed": "Claimed",
-      "suggestionTooltip": "Market Price. With this price, orders are highly likely to be filled, but not guaranteed. Unfilled order will be opening on chain."
+      "suggestionTooltip": "Market Price. With this price, orders are highly likely to be filled, but not guaranteed. Unfilled order will be opening on chain.",
+      "maxPay": "Free capacity in your current account"
     },
     "pool": {}
   }
