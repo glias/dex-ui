@@ -25,7 +25,7 @@ export default () => {
     form.resetFields()
   }
 
-  const disabled = useMemo(() => {
+  const walletNotConnected = useMemo(() => {
     return !Wallet.ckbWallet.address
   }, [Wallet.ckbWallet.address])
 
@@ -36,6 +36,18 @@ export default () => {
     })
     priceOnChange(Order.bestPrice)
   }, [Order.bestPrice, formRef, priceOnChange])
+
+  const submitStatus = useMemo(() => {
+    if (Wallet.connecting) {
+      return i18n.t('header.connecting')
+    }
+
+    if (walletNotConnected) {
+      return i18n.t('header.wallet')
+    }
+
+    return i18n.t('trade.placeOrder')
+  }, [Wallet.connecting, walletNotConnected])
 
   useEffect(() => {
     if (Wallet.ckbWallet.address === '') {
@@ -51,9 +63,13 @@ export default () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Order.step])
 
-  const onFinish = async () => {
-    setStep(OrderStep.Comfirm)
-  }
+  const onSubmit = useCallback(() => {
+    if (walletNotConnected) {
+      Wallet.connectWallet()
+    } else {
+      setStep(OrderStep.Comfirm)
+    }
+  }, [setStep, walletNotConnected, Wallet.connectWallet])
 
   const SelectContent = (
     <OrderSelectPopver>
@@ -104,7 +120,7 @@ export default () => {
         </OrderSelectBox>
       </Popover>
       <TracePairCoin />
-      <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onFinish}>
+      <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <span className="form-label-meta-num">{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
@@ -125,6 +141,7 @@ export default () => {
               placeholder="0"
               suffix={buyer}
               type="number"
+              required
               style={{
                 color: 'rgba(81, 119, 136, 1)',
                 width: '100%',
@@ -162,6 +179,7 @@ export default () => {
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
+              required
               type="number"
               step="any"
               value={price}
@@ -196,8 +214,8 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button htmlType="submit" className="submitBtn" disabled={disabled} size="large" type="text">
-            {disabled ? i18n.t('header.connecting') : i18n.t(`trade.placeOrder`)}
+          <Button htmlType="submit" className="submitBtn" disabled={Wallet.connecting} size="large" type="text">
+            {submitStatus}
           </Button>
         </Form.Item>
       </Form>

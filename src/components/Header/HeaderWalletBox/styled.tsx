@@ -198,7 +198,7 @@ export const HeaderMeta = styled.div`
         border-top: 1px solid rgba(171, 209, 225, 1);
       }
       .balance-list {
-        margin: 10px 0 0 10px;
+        margin: 15px 0;
         display: flex;
         justify-content: center;
         align-items: flex-start;

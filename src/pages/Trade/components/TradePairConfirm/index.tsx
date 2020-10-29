@@ -1,5 +1,5 @@
 import React from 'react'
-import { Address, AddressType, Amount } from '@lay2/pw-core'
+import PWCore, { Address, AddressType, Amount } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import { Button, Divider } from 'antd'
 import {
@@ -49,6 +49,7 @@ export default function TradePairConfirm() {
       Order.setAndCacheSubmittedOrders(orders => [...orders, submittedOrder])
       Order.setTxHash(txHash)
       Order.setStep(OrderStep.Result)
+      Wallet.reloadWallet(PWCore.provider.address.toCKBAddress())
     }
   }
 
