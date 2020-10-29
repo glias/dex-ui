@@ -94,7 +94,7 @@ const Header = () => {
             <>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
-                {truncatureStr(ckbAddress)}
+                {truncatureStr(ethAddress)}
               </UserMeta>
               <Popover
                 placement="bottomRight"
