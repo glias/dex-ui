@@ -1,20 +1,10 @@
 import BigNumber from 'bignumber.js'
 import { PRICE_DECIMAL, SUDT_DECIMAL, CKB_DECIMAL, COMMISSION_FEE } from './const'
 
-export type RawOrder = Record<'is_bid' | 'claimable', boolean> &
-  Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {
-    status: 'opening' | 'completed' | 'aborted' | 'claimed' | null
-    last_order_cell_outpoint: Record<'tx_hash' | 'index', string>
-  }
-
-export const getAction = (isClaimed: boolean, isOpen: boolean) => {
-  if (isClaimed) {
-    return 'claim'
-  }
-  if (isOpen) {
-    return 'opening'
-  }
-  return null
+export type RawOrder = Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {
+  is_bid: boolean
+  status: 'opening' | 'completed' | 'aborted' | 'claimed' | 'claimable' | null
+  last_order_cell_outpoint: Record<'tx_hash' | 'index', string>
 }
 
 /**
@@ -27,7 +17,6 @@ export const parseOrderRecord = ({
   traded_amount,
   turnover_rate,
   price,
-  claimable,
   status,
   last_order_cell_outpoint,
   ...rest
@@ -51,13 +40,10 @@ export const parseOrderRecord = ({
     receive: `${orderAmount}`,
     executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
     price: `${priceInNum}`,
-    status,
-    action: getAction(claimable, status === 'opening'),
-    isClaimable: claimable,
+    status: status === 'claimable' ? 'completed' : status,
     ...rest,
   }
 }
 export type OrderRecord = ReturnType<typeof parseOrderRecord>
-export type OrderRecordAction = ReturnType<typeof getAction>
 
 export default { parseOrderRecord }
