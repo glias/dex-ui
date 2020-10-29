@@ -25,8 +25,6 @@ export default function TradePairConfirm() {
 
   const onConfirm = async () => {
     setDisabled(true)
-    // eslint-disable-next-line no-console
-    console.log(Order.pay)
     const buyAmount = calcBuyAmount(Order.pay)
     const builder = new PlaceOrderBuilder(
       new Address(Wallet.ckbWallet.address, AddressType.ckb),
@@ -47,7 +45,7 @@ export default function TradePairConfirm() {
         isBid,
         status: 'pending',
         pay: Order.pay,
-        receive: receiveCalc(`${Order.pay}`, Order.price),
+        receive: receiveCalc(Order.pay, Order.price),
         price: Order.price,
       }
       setDisabled(true)

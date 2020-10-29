@@ -4,7 +4,7 @@ import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useContainer } from 'unstated-next'
-import { PairList } from '../../../../utils/const'
+import { PairList, PRICE_DECIMAL, SUDT_DECIMAL, MIN_ORDER_DAI, MIN_ORDER_CKB } from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
@@ -25,9 +25,8 @@ export default () => {
   const [fieldPay, setFieldPay] = useState(false)
   const [fieldPrice, setFieldPrice] = useState(false)
 
-  const MIN_PRICE = 1 / 10 ** 10
-  const MIN_VAL = 1 / 10 ** (Order.orderType === OrderType.Buy ? 8 : 10)
-  const MIN_ORDER = Order.orderType === OrderType.Buy ? 147 : 289
+  const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
+  const MIN_ORDER = Order.orderType === OrderType.Buy ? MIN_ORDER_DAI : MIN_ORDER_CKB
 
   const changePair = () => {
     setVisiblePopver(false)
@@ -43,7 +42,7 @@ export default () => {
       return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
     }
 
-    if (val.comparedTo(MIN_VAL) === -1) {
+    if (!val.multipliedBy(`${MIN_VAL}`).isGreaterThan(0.1)) {
       setFieldPay(false)
       return Promise.reject(i18n.t(`trade.tooSmallNumber`))
     }
@@ -76,7 +75,7 @@ export default () => {
       return Promise.reject(i18n.t(`trade.tooMaxprecision`))
     }
 
-    if (val.comparedTo(MIN_PRICE) === -1) {
+    if (val.comparedTo(1 / PRICE_DECIMAL) === -1) {
       setFieldPrice(false)
       return Promise.reject(i18n.t(`trade.tooSmallNumber`))
     }
@@ -106,7 +105,6 @@ export default () => {
   }, [Order.step])
 
   const onFinish = async () => {
-    // eslint-disable-next-line no-console
     const formFieldsValue = formRef.current?.getFieldsValue()
 
     setPrice(formFieldsValue.price)
