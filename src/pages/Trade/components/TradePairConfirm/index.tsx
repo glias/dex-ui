@@ -25,11 +25,9 @@ export default function TradePairConfirm() {
 
   const onConfirm = async () => {
     setDisabled(true)
-    const buyAmount = calcBuyAmount(Order.pay)
     const builder = new PlaceOrderBuilder(
       new Address(Wallet.ckbWallet.address, AddressType.ckb),
-      Order.orderType === OrderType.Buy ? new Amount(buyAmount) : new Amount(Order.pay),
-      Order.pay,
+      Order.orderType === OrderType.Buy ? new Amount(calcBuyAmount(Order.pay)) : new Amount(Order.pay),
       Order.orderType,
       Order.price,
     )

@@ -15,7 +15,7 @@ export default () => {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
-  const [visiblePopver, setVisiblePopver] = useState(false)
+  const [visiblePopover, setVisiblePopover] = useState(false)
   const { price, pay, setPrice, setPay, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
@@ -23,7 +23,7 @@ export default () => {
   // disabled button
   const [fieldPay, setFieldPay] = useState(false)
   const [fieldPrice, setFieldPrice] = useState(false)
-  // @TODO: for demo quick resolove conflict
+  // @TODO: for demo quick resolve conflict
   // eslint-disable-next-line no-console
   console.log(fieldPay, fieldPrice)
 
@@ -31,7 +31,7 @@ export default () => {
   const MIN_ORDER = Order.orderType === OrderType.Buy ? MIN_ORDER_DAI : MIN_ORDER_CKB
 
   const changePair = () => {
-    setVisiblePopver(false)
+    setVisiblePopover(false)
     Order.togglePair()
     form.resetFields()
   }
@@ -162,10 +162,10 @@ export default () => {
       <Popover
         overlayClassName="no-arrorPoint popver-overlay"
         trigger="click"
-        visible={visiblePopver}
+        visible={visiblePopover}
         getPopupContainer={() => document.getElementById('order-box') as HTMLElement}
         content={SelectContent}
-        onVisibleChange={(visible: boolean) => setVisiblePopver(visible)}
+        onVisibleChange={(visible: boolean) => setVisiblePopover(visible)}
       >
         <OrderSelectBox id="trace-form-select">
           <PairBlock>

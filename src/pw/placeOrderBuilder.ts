@@ -1,4 +1,4 @@
-import PWCore, {
+import {
   Builder,
   Transaction,
   Cell,
@@ -9,110 +9,118 @@ import PWCore, {
   Script,
   OutPoint,
 } from '@lay2/pw-core'
-import BigNumber from 'bignumber.js'
-import { getSudtLiveCels } from '../APIs'
+import { getSudtLiveCels as getSudtLiveCells } from '../APIs'
 import { OrderType } from '../containers/order'
 import { buildSellData, getAmountFromCellData, buildChangeData, buildBuyData } from '../utils/buffer'
-import { ORDER_BOOK_LOCK_SCRIPT, ORDER_CELL_CAPACITY, SUDT_DEP, SUDT_TYPE_SCRIPT } from '../utils/const'
+import {
+  ORDER_BOOK_LOCK_SCRIPT,
+  ORDER_CELL_CAPACITY,
+  SUDT_DEP,
+  SUDT_TYPE_SCRIPT,
+  MIN_SUDT_CAPACITY,
+} from '../utils/const'
 import calcBuyReceive, { calcSellReceive } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
 
-  amount: Amount
-
   orderType: OrderType
 
   price: string
 
-  pay: string
+  pay: Amount
 
-  constructor(address: Address, amount: Amount, pay: string, orderType: OrderType, price: string, feeRate?: number) {
+  orderLock: Script
+
+  inputLock: Script
+
+  constructor(address: Address, pay: Amount, orderType: OrderType, price: string, feeRate?: number) {
     super(feeRate)
     this.address = address
-    this.amount = amount
     this.orderType = orderType
     this.price = price
     this.pay = pay
-  }
-
-  async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
-    let sudtSum = new BigNumber(0)
-    let inputSum = Amount.ZERO
-    const orderLockAmount = new Amount(ORDER_CELL_CAPACITY.toString())
-    const lockScript = PWCore.provider.address.toLockScript()
-    const sudtChangeAmount = new Amount('142')
-    const neededAmount = orderLockAmount.add(sudtChangeAmount).add(fee)
-
-    const inputCells: Cell[] = []
-
-    const orderLock = new Script(
+    this.orderLock = new Script(
       ORDER_BOOK_LOCK_SCRIPT.codeHash,
       this.address.toLockScript().toHash(),
       ORDER_BOOK_LOCK_SCRIPT.hashType,
     )
+    this.inputLock = this.address.toLockScript()
+  }
 
-    const orderOutput = new Cell(orderLockAmount, orderLock, SUDT_TYPE_SCRIPT)
-    const pay = this.amount.toString()
+  async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
+    let sudtSumAmount = Amount.ZERO
+    let inputCapacity = Amount.ZERO
+    const neededCapacity = new Amount(ORDER_CELL_CAPACITY.toString()).add(fee)
 
-    // eslint-disable-next-line no-debugger
+    const inputs: Cell[] = []
+    const outputs: Cell[] = []
 
-    const { data: cells } = await getSudtLiveCels(SUDT_TYPE_SCRIPT, lockScript, this.amount.toString())
+    const orderOutput = new Cell(neededCapacity, this.orderLock, SUDT_TYPE_SCRIPT)
+
+    const { data: cells } = await getSudtLiveCells(SUDT_TYPE_SCRIPT, this.inputLock, this.pay.toString())
 
     cells.forEach((cell: any) => {
-      // eslint-disable-next-line no-debugger
-      const sudtToken = new BigNumber(getAmountFromCellData(cell.data))
-      sudtSum = sudtSum.plus(sudtToken)
-      const cellOutput = cell.cell_output
-      inputCells.push(
+      const {
+        cell_output: { lock, type, capacity },
+        data,
+        out_point: { tx_hash, index },
+      } = cell
+      sudtSumAmount = sudtSumAmount.add(new Amount(getAmountFromCellData(data)))
+      inputs.push(
         new Cell(
-          new Amount(cellOutput.capacity),
-          new Script(cellOutput.lock.code_hash, cellOutput.lock.args, cellOutput.lock.hash_type),
-          new Script(cellOutput.type.code_hash, cellOutput.type.args, cellOutput.type.hash_type),
-          new OutPoint(cell.out_point.tx_hash, cell.out_point.index),
-          cell.data,
+          new Amount(capacity),
+          new Script(lock.code_hash, lock.args, lock.hash_type),
+          new Script(type.code_hash, type.args, type.hash_type),
+          new OutPoint(tx_hash, index),
+          data,
         ),
       )
-      // eslint-disable-next-line no-debugger
-      inputSum = inputSum.add(new Amount(cellOutput.capacity, AmountUnit.shannon))
+      inputCapacity = inputCapacity.add(new Amount(capacity, AmountUnit.shannon))
     })
 
-    if (inputSum.lte(neededAmount)) {
-      const extraCells = await this.collector.collect(this.address, neededAmount.sub(inputSum).add(Builder.MIN_CHANGE))
-      extraCells.forEach(cell => {
-        if (inputSum.lte(neededAmount)) {
-          inputCells.push(cell)
-          inputSum = inputSum.add(cell.capacity)
-        }
-      })
+    if (inputCapacity.lt(neededCapacity)) {
+      const extraCells = await this.collector.collect(
+        this.address,
+        neededCapacity.sub(inputCapacity).add(new Amount(MIN_SUDT_CAPACITY.toString())),
+      )
+      inputs.concat(extraCells)
+      inputCapacity = extraCells.map(cell => cell.capacity).reduce((prev, curr) => prev.add(curr), inputCapacity)
     }
 
-    const orderOutputData = buildSellData(this.pay, calcSellReceive(pay, this.price), this.price)
-    orderOutput.setHexData(orderOutputData)
+    if (inputCapacity < neededCapacity) {
+      throw new Error(
+        `Input capacity not enough, need ${neededCapacity.toString(AmountUnit.ckb)}, got ${inputCapacity.toString(
+          AmountUnit.ckb,
+        )}`,
+      )
+    } else if (inputCapacity < neededCapacity.add(new Amount(MIN_SUDT_CAPACITY.toString()))) {
+      orderOutput.capacity = inputCapacity
+      orderOutput.setHexData(
+        buildSellData(sudtSumAmount.toString(), calcSellReceive(this.pay.toString(), this.price), this.price),
+      )
+      outputs.push(orderOutput)
+    } else {
+      orderOutput.capacity = neededCapacity
+      orderOutput.setHexData(
+        buildSellData(this.pay.toString(), calcSellReceive(this.pay.toString(), this.price), this.price),
+      )
+      outputs.push(orderOutput)
+      const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, SUDT_TYPE_SCRIPT)
+      changeOutput.setHexData(buildChangeData(sudtSumAmount.sub(this.pay).toString()))
+      outputs.push(changeOutput)
+    }
 
-    const ckbChangeCell = new Cell(inputSum.sub(neededAmount), this.address.toLockScript())
-
-    const sudtChangeCell = new Cell(
-      sudtChangeAmount,
-      this.address.toLockScript(),
-      new Script(SUDT_TYPE_SCRIPT.codeHash, SUDT_TYPE_SCRIPT.args, SUDT_TYPE_SCRIPT.hashType),
-    )
-
-    const sudtChange = new BigNumber(sudtSum.toString()).minus(new BigNumber(this.pay)).toString()
-    sudtChangeCell.setHexData(buildChangeData(sudtChange))
-
-    const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, sudtChangeCell, ckbChangeCell]), [
-      Builder.WITNESS_ARGS.Secp256k1,
-    ])
+    const tx = new Transaction(new RawTransaction(inputs, outputs), [Builder.WITNESS_ARGS.Secp256k1])
 
     tx.raw.cellDeps.push(SUDT_DEP)
     this.fee = Builder.calcFee(tx)
 
-    if (ckbChangeCell.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
-      ckbChangeCell.capacity = ckbChangeCell.capacity.sub(this.fee)
+    const lastOutput = outputs[outputs.length - 1]
+    if (lastOutput.capacity.gte(new Amount(MIN_SUDT_CAPACITY.toString()).add(this.fee))) {
+      lastOutput.capacity = lastOutput.capacity.sub(this.fee)
       tx.raw.outputs.pop()
-      tx.raw.outputs.push(ckbChangeCell)
-      // eslint-disable-next-line no-debugger
+      tx.raw.outputs.push(lastOutput)
       return tx
     }
 
@@ -124,49 +132,54 @@ export class PlaceOrderBuilder extends Builder {
       return this.buildSellTx()
     }
 
-    const neededAmount = this.amount.add(fee)
-    let inputSum = Amount.ZERO
-    const inputCells: Cell[] = []
+    const neededCapacity = this.pay.add(fee)
+    let inputCapacity = Amount.ZERO
+    const inputs: Cell[] = []
 
     const orderLock = new Script(
       ORDER_BOOK_LOCK_SCRIPT.codeHash,
-      this.address.toLockScript().toHash(),
+      this.inputLock.toHash(),
       ORDER_BOOK_LOCK_SCRIPT.hashType,
     )
 
-    const orderOutput = new Cell(this.amount, orderLock, SUDT_TYPE_SCRIPT)
-    orderOutput.setHexData(buildBuyData(calcBuyReceive(this.pay, this.price).toString(), this.price))
+    const orderOutput = new Cell(this.pay, orderLock, SUDT_TYPE_SCRIPT)
+    const receive = calcBuyReceive(this.pay.toString(), this.price).toString()
+    orderOutput.setHexData(buildBuyData(receive, this.price))
     // fill the inputs
-    const cells = await this.collector.collect(PWCore.provider.address, neededAmount)
+    const cells = await this.collector.collect(this.address, neededCapacity)
     cells.forEach(cell => {
-      if (inputSum.lte(neededAmount.add(Builder.MIN_CHANGE))) {
-        inputCells.push(cell)
-        inputSum = inputSum.add(cell.capacity)
+      if (inputCapacity.lte(neededCapacity)) {
+        inputs.push(cell)
+        inputCapacity = inputCapacity.add(cell.capacity)
       }
     })
 
-    if (inputSum.lt(neededAmount)) {
+    const outputs = []
+    if (inputCapacity.lt(neededCapacity)) {
       throw new Error(
-        `input capacity not enough, need ${neededAmount.toString(AmountUnit.ckb)}, got ${inputSum.toString(
+        `Input capacity not enough, need ${neededCapacity.toString(AmountUnit.ckb)}, got ${inputCapacity.toString(
           AmountUnit.ckb,
         )}`,
       )
+    } else if (inputCapacity.lt(neededCapacity.add(Builder.MIN_CHANGE))) {
+      orderOutput.capacity = inputCapacity
+      outputs.push(orderOutput)
+    } else {
+      outputs.push(orderOutput)
+      outputs.push(new Cell(inputCapacity.sub(neededCapacity), this.address.toLockScript()))
     }
 
-    const changeCell = new Cell(inputSum.sub(neededAmount), PWCore.provider.address.toLockScript())
-
-    const tx = new Transaction(new RawTransaction(inputCells, [orderOutput, changeCell]), [
-      Builder.WITNESS_ARGS.Secp256k1,
-    ])
+    const tx = new Transaction(new RawTransaction(inputs, outputs), [Builder.WITNESS_ARGS.Secp256k1])
 
     tx.raw.cellDeps.push(SUDT_DEP)
 
     this.fee = Builder.calcFee(tx)
 
-    if (changeCell.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
-      changeCell.capacity = changeCell.capacity.sub(this.fee)
+    const lastOutput = outputs[outputs.length - 1]
+    if (lastOutput.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
+      lastOutput.capacity = lastOutput.capacity.sub(this.fee)
       tx.raw.outputs.pop()
-      tx.raw.outputs.push(changeCell)
+      tx.raw.outputs.push(lastOutput)
       return tx
     }
 
