@@ -1,8 +1,6 @@
 import BigNumber from 'bignumber.js'
+import { PRICE_DECIMAL, SUDT_DECIMAL, CKB_DECIMAL } from './const'
 
-const CKB_UNIT = 100_000_000
-const SUDT_UNIT = 10_000_000_000
-const PRICE_UNIT = 10_000_000_000
 export type RawOrder = Record<'is_bid' | 'claimable', boolean> &
   Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {
     status: 'open' | 'completed' | 'aborted' | null
@@ -25,7 +23,7 @@ export const getAction = (isClaimed: boolean, isOpen: boolean) => {
 export const parseOrderRecord = ({
   is_bid: isBid,
   order_amount,
-  paid_amount: pay,
+  paid_amount,
   traded_amount,
   turnover_rate,
   price,
@@ -35,18 +33,22 @@ export const parseOrderRecord = ({
   ...rest
 }: RawOrder) => {
   const key = `${last_order_cell_outpoint.tx_hash}:${last_order_cell_outpoint.index}`
-  const payUnit = isBid ? CKB_UNIT /* pay in ckb */ : SUDT_UNIT
-  const orderUnit = isBid ? SUDT_UNIT /* order in sudt */ : CKB_UNIT
-  const receiveUnit = isBid ? SUDT_UNIT /* receive in sudt */ : CKB_UNIT
+
+  const paidAmount = new BigNumber(paid_amount).dividedBy(isBid ? CKB_DECIMAL : SUDT_DECIMAL)
+  const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
+  const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
+  const priceInNum = new BigNumber(price).dividedBy(PRICE_DECIMAL)
+  const payAmount = isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)
 
   return {
     key,
-    pay: `${new BigNumber(pay).dividedBy(payUnit)}`,
-    receive: `${new BigNumber(traded_amount).dividedBy(receiveUnit)}`,
+    pay: `${payAmount}`,
+    paidAmount: `${paidAmount}`,
+    tradedAmount: `${tradedAmount}`,
     isBid,
-    orderAmount: `${new BigNumber(order_amount).dividedBy(orderUnit)}`,
+    receive: `${orderAmount}`,
     executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
-    price: `${new BigNumber(price).dividedBy(new BigNumber(PRICE_UNIT))}`,
+    price: `${priceInNum}`,
     status,
     action: getAction(claimable, status === 'open'),
     ...rest,
