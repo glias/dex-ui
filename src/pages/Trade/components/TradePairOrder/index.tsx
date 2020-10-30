@@ -155,11 +155,11 @@ export default () => {
       />
       {PairList.slice(1).map(item => (
         <PairBlock key={item.name} onClick={() => changePair()}>
-          <Button className="pair-trace-box" type="text">
+          <div className="pair-trace-box pair-line">
             <TradeCoinBox pair={item.name} />
             <div className="decollect">/</div>
             <TradeCoinBox pair="CKB" />
-          </Button>
+          </div>
         </PairBlock>
       ))}
     </OrderSelectPopver>
@@ -178,11 +178,11 @@ export default () => {
         <div className={styles.OrderSelectBox}>
           <PairBlock>
             <span className="pair">{i18n.t('trade.pair')}</span>
-            <Button className="pair-trace-box" type="text">
+            <div className="pair-trace-box">
               <TradeCoinBox pair={Order.pair[0]} />
               <div className="decollect">/</div>
               <TradeCoinBox pair={Order.pair[1]} />
-            </Button>
+            </div>
           </PairBlock>
         </div>
       </Popover>

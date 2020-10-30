@@ -115,6 +115,7 @@ export const PayMeta = styled.div`
 export const PairBlock = styled.div`
   font-size: 16px;
   display: flex;
+  padding-left: 20px;
   .pair-trace-box {
     display: flex;
     padding: 0 10px;
@@ -122,8 +123,12 @@ export const PairBlock = styled.div`
     width: 100%;
     line-height: 40px;
     cursor: pointer;
-    &: hover {
+    &.pair-line:hover {
       background: #f2f4f5;
+    }
+    &: hover {
+      background: transparent;
+      border: none;
     }
     .decollect {
       padding: 0 10px;
