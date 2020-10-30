@@ -19,7 +19,7 @@ import {
   SUDT_TYPE_SCRIPT,
   MIN_SUDT_CAPACITY,
 } from '../utils/const'
-import calcBuyReceive, { calcSellReceive } from '../utils/fee'
+import calcBuyReceive, { calcBuyAmount, calcSellReceive } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -131,7 +131,7 @@ export class PlaceOrderBuilder extends Builder {
       return this.buildSellTx()
     }
 
-    const neededCapacity = this.pay.add(fee)
+    const neededCapacity = new Amount(calcBuyAmount(this.pay.toString())).add(fee)
     let inputCapacity = Amount.ZERO
     const inputs: Cell[] = []
 
