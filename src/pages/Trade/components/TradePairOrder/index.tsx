@@ -49,6 +49,12 @@ export default () => {
       return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
     }
 
+    const PRECISION = 8
+    if (!new BigNumber(value).decimalPlaces(PRECISION).isEqualTo(val)) {
+      setFieldPay(false)
+      return Promise.reject(i18n.t(`trade.tooMaxprecision`, { precision: PRECISION }))
+    }
+
     if (!val.multipliedBy(`${MIN_VAL}`).isGreaterThan(0.1)) {
       setFieldPay(false)
       return Promise.reject(i18n.t(`trade.tooSmallNumber`))
@@ -77,9 +83,10 @@ export default () => {
       return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
     }
 
-    if (!new BigNumber(val).decimalPlaces(10).isEqualTo(val)) {
+    const PRECISION = 10
+    if (!new BigNumber(val).decimalPlaces(PRECISION).isEqualTo(val)) {
       setFieldPrice(false)
-      return Promise.reject(i18n.t(`trade.tooMaxprecision`))
+      return Promise.reject(i18n.t(`trade.tooMaxprecision`, { precision: PRECISION }))
     }
     if (!val.multipliedBy(`${PRICE_DECIMAL}`).isGreaterThan(0.1)) {
       setFieldPrice(false)

@@ -27,7 +27,7 @@
       "insuffcientCKBBalance": "Insufficient CKB balance",
       "unEffectiveNumber": "Please input the effective number",
       "lessThanMaxNumber": "The value should be less than MAX",
-      "tooMaxprecision": "The value up to 10 precision",
+      "tooMaxprecision": "The value up to {{precision}} precision",
       "tooSmallNumber": "The value is too small",
       "filterToken": "Filter Token",
       "price": "Price",
