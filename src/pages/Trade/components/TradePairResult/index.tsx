@@ -7,6 +7,7 @@ import orderPlace from '../../../../assets/img/orderPlaced.png'
 import declined from '../../../../assets/img/declined.png'
 import { OrderButton, TracePairResultBox, TradePairConfirmHeader, TradePairConfirmContent } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
+import { ReactComponent as ExplorerSVG } from '../../../../assets/svg/toExplorer.svg'
 
 export default function Trade() {
   const isOrderSuccess = useSelector((state: any) => state.trace.isOrderSuccess)
@@ -20,9 +21,12 @@ export default function Trade() {
       <div className="order-place">
         <img src={orderPlace} alt="Order Place" />
       </div>
-      <div>Order Place</div>
+      <div className="order-tip">{i18n.t('trade.orderSubmited')}</div>
       <a target="_blank" rel="noreferrer noopener" href={`https://explorer.nervos.org/aggron/transaction/${txHash}`}>
-        View you CKB Explorer
+        {i18n.t('trade.viewExplorer')}
+        <div className="explorer-svg">
+          <ExplorerSVG className="full" />
+        </div>
       </a>
     </div>
   )

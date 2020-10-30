@@ -24,15 +24,15 @@ export const pendingOrders = {
 }
 
 export const submittedOrders = {
-  get() {
+  get(address: string) {
     try {
-      return JSON.parse(localStorage.getItem(SUBMITTED_ORDERS_LABEL)!) || []
+      return JSON.parse(localStorage.getItem(`${SUBMITTED_ORDERS_LABEL}:${address}`)!) || []
     } catch (err) {
       return []
     }
   },
-  set(orders: Array<SubmittedOrder>) {
-    return localStorage.setItem(SUBMITTED_ORDERS_LABEL, JSON.stringify(orders))
+  set(address: string, orders: Array<SubmittedOrder>) {
+    return localStorage.setItem(`${SUBMITTED_ORDERS_LABEL}:${address}`, JSON.stringify(orders))
   },
 }
 

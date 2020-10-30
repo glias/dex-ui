@@ -47,9 +47,10 @@ export default function TradePairConfirm() {
         pay: Order.pay,
         receive: receiveCalc(Order.pay, Order.price),
         price: Order.price,
+        createdAt: `${Date.now()}`,
       }
       setDisabled(true)
-      Order.setAndCacheSubmittedOrders(orders => [...orders, submittedOrder])
+      Order.setAndCacheSubmittedOrders(orders => [submittedOrder, ...orders])
       Order.setTxHash(txHash)
       Order.setStep(OrderStep.Result)
       Wallet.reloadWallet(PWCore.provider.address.toCKBAddress())
@@ -73,9 +74,9 @@ export default function TradePairConfirm() {
       <TradePairConfirmContent>
         <PairOrder>
           <div>{buyer}</div>
-          <Button type="text" size="large" className="circle-icon">
+          <span className="circle-icon">
             <i className="ai-right-circle" />
-          </Button>
+          </span>
           <div>{seller}</div>
         </PairOrder>
         <OrderBox>
