@@ -23,15 +23,15 @@ export default () => {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
-  const [visiblePopver, setVisiblePopver] = useState(false)
+  const [visiblePopover, setVisiblePopover] = useState(false)
   const { price, pay, setPrice, setPay, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
-
+  
   const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
 
   const changePair = () => {
-    setVisiblePopver(false)
+    setVisiblePopover(false)
     Order.togglePair()
     form.resetFields()
   }
@@ -208,10 +208,10 @@ export default () => {
       <Popover
         overlayClassName="no-arrorPoint popver-overlay"
         trigger="click"
-        visible={visiblePopver}
+        visible={visiblePopover}
         getPopupContainer={() => document.getElementById('order-box') as HTMLElement}
         content={SelectContent}
-        onVisibleChange={(visible: boolean) => setVisiblePopver(visible)}
+        onVisibleChange={(visible: boolean) => setVisiblePopover(visible)}
       >
         <div className={styles.OrderSelectBox}>
           <PairBlock>

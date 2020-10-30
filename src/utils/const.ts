@@ -96,6 +96,7 @@ export const CKB_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
 
 //  @TODO: comments
 export const ORDER_CELL_CAPACITY = 179
+export const MIN_SUDT_CAPACITY = 142
 
 export const MIN_ORDER_DAI = 147
 export const MIN_ORDER_CKB = 289

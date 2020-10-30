@@ -11,7 +11,7 @@ import {
   submittedOrders as submittedOrdersCache,
 } from '../utils'
 import type { OrderRecord } from '../utils'
-import calcBuyReceive, { calcSellReceive } from '../utils/fee'
+import { calcBuyReceive, calcSellReceive } from '../utils/fee'
 import WalletContainer from './wallet'
 
 // eslint-disable-next-line no-shadow

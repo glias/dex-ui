@@ -15,7 +15,7 @@ import OrderContainer, { OrderStep, OrderType } from '../../../../containers/ord
 import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
-import { calcBuyAmount, calcBuyReceive, calcSellReceive } from '../../../../utils/fee'
+import { calcBuyReceive, calcSellReceive } from '../../../../utils/fee'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
@@ -25,11 +25,9 @@ export default function TradePairConfirm() {
 
   const onConfirm = async () => {
     setDisabled(true)
-    const buyAmount = calcBuyAmount(Order.pay)
     const builder = new PlaceOrderBuilder(
       new Address(Wallet.ckbWallet.address, AddressType.ckb),
-      Order.orderType === OrderType.Buy ? new Amount(buyAmount) : new Amount(Order.pay),
-      Order.pay,
+      new Amount(Order.pay),
       Order.orderType,
       Order.price,
     )
