@@ -27,17 +27,17 @@ export const parseOrderRecord = ({
   const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
   const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? SUDT_DECIMAL : CKB_DECIMAL)
   const priceInNum = new BigNumber(price).dividedBy(PRICE_DECIMAL)
-  const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum))
-    .multipliedBy(1 + +COMMISSION_FEE)
-    .toFixed(8)
+  const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)).multipliedBy(
+    1 + +COMMISSION_FEE,
+  )
 
   return {
     key,
-    pay: `${payAmount}`,
+    pay: `${payAmount.toFixed(4)}`,
     paidAmount: `${paidAmount}`,
     tradedAmount: `${tradedAmount}`,
     isBid,
-    receive: `${orderAmount}`,
+    receive: `${orderAmount.toFixed(4)}`,
     executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
     price: `${priceInNum}`,
     status: status === 'claimable' ? 'completed' : status,

@@ -5,7 +5,7 @@ export function calcBuyReceive(pay: string, price: string) {
   const value = new BigNumber(pay)
     .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
     .div(new BigNumber(price))
-    .toFixed(10)
+    .toFixed(8, 1)
 
   // show decimal abbreviations
   if (parseFloat(value) === 0) {
@@ -18,7 +18,7 @@ export function calcSellReceive(pay: string, price: string) {
   const value = new BigNumber(pay)
     .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
     .times(new BigNumber(price))
-    .toFixed(10)
+    .toFixed(8, 1)
 
   // show decimal abbreviations
   if (parseFloat(value) === 0) {

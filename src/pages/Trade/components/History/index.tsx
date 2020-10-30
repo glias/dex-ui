@@ -51,7 +51,7 @@ const columns = [
       showTitle: false,
     },
     render: (amount: string, order: OrderInList) => {
-      const text = `${amount} ${order.isBid ? 'CKB' : SUDT_SYMBOL}`
+      const text = `${+amount} ${order.isBid ? 'CKB' : SUDT_SYMBOL}`
       return <Tooltip title={text}>{text}</Tooltip>
     },
   },
@@ -63,7 +63,7 @@ const columns = [
       showTitle: false,
     },
     render: (amount: string, order: OrderInList) => {
-      const text = `${amount} ${order.isBid ? SUDT_SYMBOL : 'CKB'}`
+      const text = `${+amount} ${order.isBid ? SUDT_SYMBOL : 'CKB'}`
       return <Tooltip title={text}>{text}</Tooltip>
     },
   },

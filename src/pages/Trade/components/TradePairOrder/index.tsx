@@ -126,14 +126,11 @@ export default () => {
     })
   }, [Order.bestPrice, formRef])
 
-  const disabledFn = () => {
+  const disabledFn = (): boolean => {
     if (walletNotConnected) {
       return false
     }
-    if (Wallet.connecting) {
-      return true
-    }
-    if (!fieldPay || !fieldPrice) {
+    if (!fieldPay || !fieldPrice || Wallet.connecting) {
       return true
     }
     return false
