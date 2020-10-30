@@ -15,7 +15,7 @@ import {
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
-import { PairOrderFormBox, PayMeta, OrderSelectPopver, PairBlock } from './styled'
+import { PairOrderFormBox, PayMeta, OrderSelectPopover, PairBlock } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import styles from './tradePairOrder.module.css'
@@ -47,7 +47,7 @@ export default () => {
     return Wallet.ckbWallet.balance.toString()
   }, [Wallet.ckbWallet.balance])
 
-  const insuffcientCKB = useMemo(() => {
+  const insufficientCKB = useMemo(() => {
     return new BigNumber(ckbBalance).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE).isLessThanOrEqualTo(0)
   }, [ckbBalance])
 
@@ -156,7 +156,7 @@ export default () => {
         setCollectingCells(true)
         const tx = await builder.build()
         Order.setTx(tx)
-        setStep(OrderStep.Comfirm)
+        setStep(OrderStep.Confirm)
       } catch (error) {
         Modal.error({ title: 'Build transaction:\n', content: error.message })
       } finally {
@@ -176,7 +176,7 @@ export default () => {
   ])
 
   const SelectContent = (
-    <OrderSelectPopver>
+    <OrderSelectPopover>
       <Input
         style={{
           flex: 'auto',
@@ -194,19 +194,19 @@ export default () => {
         <PairBlock key={item.name} onClick={() => changePair()}>
           <Button className="pair-trace-box" type="text">
             <TradeCoinBox pair={item.name} />
-            <div className="decollect">/</div>
+            <div className="decollete">/</div>
             <TradeCoinBox pair="CKB" />
           </Button>
         </PairBlock>
       ))}
-    </OrderSelectPopver>
+    </OrderSelectPopover>
   )
 
   const confirmButton = (
     <Button
       htmlType="submit"
       className="submit-btn"
-      disabled={Wallet.connecting || insuffcientCKB || maxPayOverFlow}
+      disabled={Wallet.connecting || insufficientCKB || maxPayOverFlow}
       size="large"
       type="text"
       loading={collectingCells || Wallet.connecting}
@@ -217,20 +217,20 @@ export default () => {
 
   const tooltipTitle = useMemo(() => {
     if (OrderType.Buy === Order.orderType) {
-      return i18n.t('trade.insuffcientCKBBalance')
+      return i18n.t('trade.insufficientCKBBalance')
     }
 
     if (maxPayOverFlow) {
-      return i18n.t('trade.insuffcientSUDTBalance')
+      return i18n.t('trade.insufficientSUDTBalance')
     }
 
-    return i18n.t('trade.insuffcientCKBBalance')
+    return i18n.t('trade.insufficientCKBBalance')
   }, [Order.orderType, maxPayOverFlow])
 
   return (
     <PairOrderFormBox id="order-box">
       <Popover
-        overlayClassName="no-arrorPoint popver-overlay"
+        overlayClassName="no-arronPoint popover-overlay"
         trigger="click"
         visible={visiblePopover}
         getPopupContainer={() => document.getElementById('order-box') as HTMLElement}
@@ -242,7 +242,7 @@ export default () => {
             <span className="pair">{i18n.t('trade.pair')}</span>
             <Button className="pair-trace-box" type="text">
               <TradeCoinBox pair={Order.pair[0]} />
-              <div className="decollect">/</div>
+              <div className="decollete">/</div>
               <TradeCoinBox pair={Order.pair[1]} />
             </Button>
           </PairBlock>
@@ -341,7 +341,7 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          {insuffcientCKB || maxPayOverFlow ? <Tooltip title={tooltipTitle}>{confirmButton}</Tooltip> : confirmButton}
+          {insufficientCKB || maxPayOverFlow ? <Tooltip title={tooltipTitle}>{confirmButton}</Tooltip> : confirmButton}
         </Form.Item>
       </Form>
     </PairOrderFormBox>

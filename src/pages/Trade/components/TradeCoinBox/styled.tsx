@@ -25,7 +25,7 @@ export const PairBox = styled.div`
     &: hover {
       background: #f2f4f5;
     }
-    .decollect {
+    .decollete {
       padding: 0 10px;
       color: rgba(136, 136, 136, 1);
     }

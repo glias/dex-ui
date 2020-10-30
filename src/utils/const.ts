@@ -7,21 +7,6 @@ import usdt from '../assets/img/token/usdt.png'
 import bitcoin from '../assets/img/token/bitcoin.png'
 import ckb from '../assets/img/token/ckb.png'
 
-export const HeaderNavgationLists = [
-  {
-    name: 'Trade',
-    path: '/trade',
-  },
-  {
-    name: 'Pool',
-    path: '/pool',
-  },
-  {
-    name: 'Match',
-    path: '/match',
-  },
-]
-
 export const thirdPartyLinks = [
   {
     name: 'FAQ',
@@ -33,7 +18,7 @@ export const thirdPartyLinks = [
   },
 ]
 
-export const TraceTableList = ['all', 'pedding', 'opening', 'complete', 'claimed', 'aborted']
+export const TraceTableList = ['all', 'pending', 'opening', 'complete', 'claimed', 'aborted']
 
 export const ConnectLists = [
   {

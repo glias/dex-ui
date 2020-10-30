@@ -83,12 +83,12 @@ input::-webkit-input-placeholder {
 
 /**  reset antd-design */
 
-/* popver */
-.no-arrorPoint .ant-popover-arrow {
+/* popover */
+.no-arronPoint .ant-popover-arrow {
   display: none;
 }
 
-.no-arrorPoint .ant-popover-inner-content {
+.no-arronPoint .ant-popover-inner-content {
   padding: 0;
 }
 

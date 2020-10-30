@@ -16,6 +16,6 @@ export const PoolContainer = styled.div`
 export const HomeBox = styled.div`
   margin: 0 auto;
   min-width: 1000px;
-  oveflow: scroll;
+  overflow: scroll;
   min-height: 600px;
 `

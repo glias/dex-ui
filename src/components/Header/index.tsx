@@ -32,11 +32,11 @@ const Header = () => {
   const ckbAddress = ckbWallet.address
   const ethAddress = ethWallet.address
 
-  const truncatureStr = (str: string): string => {
+  const truncateStr = (str: string): string => {
     return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
   }
 
-  // propver visible config
+  // popover visible config
   const [visibleMore, setVisibleMore] = useState(false)
   const [visibleWallet, setVisibleWallet] = useState(false)
 
@@ -115,12 +115,12 @@ const Header = () => {
             <>
               <UserMeta>
                 <img src={MetaMaskpng} alt="metaMask" />
-                {truncatureStr(ethAddress)}
+                {truncateStr(ethAddress)}
               </UserMeta>
               <Popover
                 placement="bottomRight"
                 title=""
-                overlayClassName="no-arrorPoint popover-wallet"
+                overlayClassName="no-arronPoint popover-wallet"
                 trigger="click"
                 visible={visibleWallet}
                 onVisibleChange={() => setVisibleWallet(!visibleWallet)}
@@ -152,7 +152,7 @@ const Header = () => {
             trigger="click"
             visible={visibleMore}
             onVisibleChange={() => setVisibleMore(!visibleMore)}
-            overlayClassName="sidebarBox no-arrorPoint"
+            overlayClassName="sidebarBox no-arronPoint"
             getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
           >
             <Button
