@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
 import { useHistory } from 'react-router-dom'
-import { Button, Popover, Menu, Badge } from 'antd'
+import { Button, Popover, Menu, Badge, Modal } from 'antd'
 import WalletBox from './HeaderWalletBox'
 import { ReactComponent as HeaderMoreSVG } from '../../assets/svg/more.svg'
 import { ReactComponent as HeaderMetaSVG } from '../../assets/svg/Component12.svg'
@@ -42,6 +42,17 @@ const Header = () => {
   const { web3ModalRef } = Wallet
   const { connectWallet, disconnectWallet } = Wallet
 
+  const handleWalletConnect = useCallback(
+    () =>
+      connectWallet().catch(error =>
+        Modal.error({
+          title: 'Connection Error',
+          content: error.message,
+        }),
+      ),
+    [connectWallet],
+  )
+
   useDidMount(() => {
     web3ModalRef.current = new Web3Modal({
       network: getChainData(1).network,
@@ -50,7 +61,7 @@ const Header = () => {
     })
 
     if (web3ModalRef.current.cachedProvider) {
-      connectWallet()
+      handleWalletConnect()
     }
   })
 
@@ -92,7 +103,7 @@ const Header = () => {
         </Menu>
         <HeaderMeta id="header-meta">
           {ckbAddress === '' ? (
-            <Button className="collect-btn" onClick={connectWallet} disabled={Wallet.connecting}>
+            <Button className="collect-btn" onClick={handleWalletConnect} disabled={Wallet.connecting}>
               {Wallet.connecting ? i18n.t('header.connecting') : i18n.t('header.wallet')}
             </Button>
           ) : (
