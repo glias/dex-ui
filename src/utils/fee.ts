@@ -5,14 +5,14 @@ export function calcBuyReceive(pay: string, price: string) {
   return new BigNumber(pay)
     .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
     .div(new BigNumber(price))
-    .toFixed(10, 1)
+    .toFixed(8, 1)
 }
 
 export function calcSellReceive(pay: string, price: string) {
   return new BigNumber(pay)
     .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
     .times(new BigNumber(price))
-    .toFixed(10, 1)
+    .toFixed(8, 1)
 }
 
 export function calcBuyAmount(pay: string) {
