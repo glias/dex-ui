@@ -25,7 +25,7 @@ export default function Trade() {
       <a target="_blank" rel="noreferrer noopener" href={`https://explorer.nervos.org/aggron/transaction/${txHash}`}>
         {i18n.t('trade.viewExplorer')}
         <div className="explorer-svg">
-          <ExplorerSVG className="full" />
+          <ExplorerSVG className="full-width-and-height" />
         </div>
       </a>
     </div>
