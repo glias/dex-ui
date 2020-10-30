@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useReducer } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { PageHeader, Table, Button, Spin, Tooltip } from 'antd'
+import { PageHeader, Table, Button, Spin, Tooltip, Modal } from 'antd'
 import { SyncOutlined } from '@ant-design/icons'
 import { useContainer } from 'unstated-next'
 import PWCore from '@lay2/pw-core'
@@ -151,7 +151,9 @@ const History = () => {
     width: 100,
     render: (_: unknown, order: OrderInList) => {
       const handleClick = () => {
-        handleWithdraw(order.key)
+        handleWithdraw(order.key).catch(error => {
+          Modal.error({ title: 'Transaction Error', content: error.message })
+        })
       }
       if (state.pendingIdList.includes(order.key)) {
         return <Spin indicator={<SyncOutlined spin translate="loadaing" />} />

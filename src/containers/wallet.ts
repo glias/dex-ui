@@ -136,10 +136,6 @@ export function useWallet() {
       setEthAddress(ethAddr.toLowerCase())
       setCkbAddress(ckbAddr)
       reloadWallet(ckbAddr)
-    } catch (error) {
-      // @TODO: error handling
-      // eslint-disable-next-line no-console
-      console.error(error)
     } finally {
       setConnecting(false)
     }
