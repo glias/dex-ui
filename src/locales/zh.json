@@ -15,7 +15,7 @@
       "insuffcientCKBBalance": "CKB余额不足",
       "unEffectiveNumber": "非有效数字",
       "tooSmallNumber": "数字太小，无法交易",
-      "tooMaxprecision": "最大精度为10位",
+      "tooMaxprecision": "最大精度为 {{precision}} 位",
       "lessThanMaxNumber": "数额过大",
       "inUse": "已使用",
       "free": "余额",
