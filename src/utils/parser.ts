@@ -29,7 +29,7 @@ export const parseOrderRecord = ({
   const priceInNum = new BigNumber(price).dividedBy(PRICE_DECIMAL)
   const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum))
     .multipliedBy(1 + +COMMISSION_FEE)
-    .toFixed(8)
+    .toFixed(8, 1)
 
   return {
     key,
