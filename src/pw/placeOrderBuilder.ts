@@ -124,7 +124,9 @@ export class PlaceOrderBuilder extends Builder {
       return this.buildSellTx()
     }
 
-    const neededCapacity = new Amount(calcBuyAmount(this.pay.toString())).add(fee)
+    const buyCellCapacity = new Amount(calcBuyAmount(this.pay.toString()))
+
+    const neededCapacity = buyCellCapacity.add(fee)
     let inputCapacity = Amount.ZERO
     const inputs: Cell[] = []
 
@@ -134,7 +136,7 @@ export class PlaceOrderBuilder extends Builder {
       ORDER_BOOK_LOCK_SCRIPT.hashType,
     )
 
-    const orderOutput = new Cell(this.pay, orderLock, SUDT_TYPE_SCRIPT)
+    const orderOutput = new Cell(buyCellCapacity, orderLock, SUDT_TYPE_SCRIPT)
     const receive = calcBuyReceive(this.pay.toString(), this.price).toString()
     orderOutput.setHexData(buildBuyData(receive, this.price))
     // fill the inputs
