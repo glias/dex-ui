@@ -68,6 +68,7 @@ export const HeaderLogoBox = styled.h1`
   font-size: 26px;
   color: #517788;
   line-height: 53px;
+  cursor: pointer;
 `
 export const HeaderNavgationBox = styled.ul`
   display: flex;
