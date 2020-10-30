@@ -98,7 +98,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
       <HeaderWallet>
         <span>{i18n.t('header.testWallet')}</span>
         <Button onClick={disconnect} type="text">
-          <SignOutSVG className="full" />
+          <SignOutSVG className="full-width-and-height" />
         </Button>
       </HeaderWallet>
       <WalletList>
@@ -119,7 +119,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                     setClipboardTooltip(copied)
                   }}
                 >
-                  <CopySVG className="full" />
+                  <CopySVG className="full-width-and-height" />
                 </Button>
               </Tooltip>
             </span>
@@ -128,7 +128,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
               placement="bottom"
             >
               <Button type="text" className="question-btn">
-                <QuesitonSVG className="full" />
+                <QuesitonSVG className="full-width-and-height" />
               </Button>
             </Tooltip>
           </div>
@@ -144,7 +144,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                     marginLeft: '10px',
                   }}
                 >
-                  {i18n.t('header.balances')}
+                  {i18n.t('header.balance')}
                 </h4>
                 <div className="divider" />
                 <ul>
@@ -173,7 +173,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                           }}
                         >
                           <div className="explorer-svg">
-                            <ExplorerSVG className="full" />
+                            <ExplorerSVG className="full-width-and-height" />
                           </div>
                         </Button>
                       </div>

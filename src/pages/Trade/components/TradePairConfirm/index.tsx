@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import PWCore, { Address, AddressType, Amount } from '@lay2/pw-core'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import PWCore, { Builder } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
-import { Button, Divider, Modal } from 'antd'
+import BigNumber from 'bignumber.js'
+import { Button, Divider, Tooltip, Modal } from 'antd'
 import {
   TradePairConfirmBox,
   OrderBox,
@@ -14,8 +15,8 @@ import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
-import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import { calcBuyReceive, calcSellReceive } from '../../../../utils/fee'
+import { COMMISSION_FEE } from '../../../../utils'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
@@ -33,20 +34,10 @@ export default function TradePairConfirm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address])
 
-  const onConfirm = async () => {
+  const onConfirm = useCallback(async () => {
+    setDisabled(true)
     try {
-      setDisabled(true)
-      const builder = new PlaceOrderBuilder(
-        new Address(Wallet.ckbWallet.address, AddressType.ckb),
-        new Amount(Order.pay),
-        Order.orderType,
-        Order.price,
-      )
-
-      const txHash = await Wallet.pw?.sendTransaction(builder)
-      if (!txHash) {
-        throw new Error('Fail to send transaction')
-      }
+      const txHash = await Wallet.pw?.sendTransaction(Order.tx!)
 
       const isBid = Order.orderType === OrderType.Buy
       const receiveCalc = isBid ? calcBuyReceive : calcSellReceive
@@ -61,7 +52,7 @@ export default function TradePairConfirm() {
         createdAt: `${Date.now()}`,
       }
       Order.setAndCacheSubmittedOrders(orders => [submittedOrder, ...orders])
-      Order.setTxHash(txHash)
+      Order.setTxHash(txHash!)
       Order.setStep(OrderStep.Result)
       Wallet.reloadWallet(PWCore.provider.address.toCKBAddress())
     } catch (error) {
@@ -69,7 +60,29 @@ export default function TradePairConfirm() {
     } finally {
       setDisabled(false)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    Wallet.reloadWallet,
+    Order.setStep,
+    Order.setTxHash,
+    Order.setAndCacheSubmittedOrders,
+    Order.pay,
+    Order.price,
+    Wallet.pw,
+    Order.tx,
+  ])
+
+  const transactionFee = useMemo(() => {
+    return Order.tx ? Builder.calcFee(Order.tx).toString() : 0
+  }, [Order.tx])
+
+  const executionFee = useMemo(() => {
+    return new BigNumber(Order.pay || '0')
+      .div(1 + COMMISSION_FEE)
+      .times(COMMISSION_FEE)
+      .toFixed(8, 1)
+      .toString()
+  }, [Order.pay])
 
   return (
     <TradePairConfirmBox>
@@ -120,10 +133,24 @@ export default function TradePairConfirm() {
             <li className="execution-fee">
               <div>
                 {i18n.t(`trade.executionFee`)}
-                <i className="ai-question-circle-o" />
+                <Tooltip title={i18n.t('trade.executionFeeDesc')}>
+                  <i className="ai-question-circle-o" />
+                </Tooltip>
               </div>
               <div>
-                <span>--</span>
+                <span>{executionFee}</span>
+                <span>{buyer}</span>
+              </div>
+            </li>
+            <li className="execution-fee">
+              <div>
+                {i18n.t(`trade.transactionFee`)}
+                <Tooltip title={i18n.t('trade.transactionFeeDesc')}>
+                  <i className="ai-question-circle-o" />
+                </Tooltip>
+              </div>
+              <div>
+                <span>{transactionFee}</span>
                 <span>CKB</span>
               </div>
             </li>

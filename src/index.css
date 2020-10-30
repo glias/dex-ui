@@ -93,7 +93,7 @@ input::-webkit-input-placeholder {
 }
 
 /* svg all config */
-svg.full {
+svg.full-width-and-height {
   width: 100%;
   height: 100%;
   fill: currentColor;
@@ -104,4 +104,8 @@ svg rect {
 }
 svg path {
   fill: currentColor;
+}
+
+svg.walletconnect-qrcode__image path {
+  fill: transparent;
 }

@@ -1,8 +1,9 @@
 /* eslint-disable operator-linebreak */
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
+import { Form, Input, Button, Tooltip, Divider, Popover, Modal } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import { Address, Amount, AddressType } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import {
   PairList,
@@ -18,6 +19,7 @@ import { PairOrderFormBox, PayMeta, OrderSelectPopver, PairBlock } from './style
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import styles from './tradePairOrder.module.css'
+import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 
 export default () => {
   const [form] = Form.useForm()
@@ -27,6 +29,7 @@ export default () => {
   const { price, pay, setPrice, setPay, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
+  const [collectingCells, setCollectingCells] = useState(false)
 
   const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
 
@@ -122,12 +125,8 @@ export default () => {
       return i18n.t('header.connecting')
     }
 
-    if (walletNotConnected) {
-      return i18n.t('header.wallet')
-    }
-
     return i18n.t('trade.placeOrder')
-  }, [Wallet.connecting, walletNotConnected])
+  }, [Wallet.connecting])
 
   useEffect(() => {
     if (Wallet.ckbWallet.address === '') {
@@ -143,14 +142,38 @@ export default () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Order.step])
 
-  const onSubmit = useCallback(() => {
+  const onSubmit = useCallback(async () => {
     if (walletNotConnected) {
       Wallet.connectWallet()
     } else {
-      setStep(OrderStep.Comfirm)
+      const builder = new PlaceOrderBuilder(
+        new Address(Wallet.ckbWallet.address, AddressType.ckb),
+        new Amount(Order.pay),
+        Order.orderType,
+        Order.price,
+      )
+      try {
+        setCollectingCells(true)
+        const tx = await builder.build()
+        Order.setTx(tx)
+        setStep(OrderStep.Comfirm)
+      } catch (error) {
+        Modal.error({ title: 'Build transaction:\n', content: error.message })
+      } finally {
+        setCollectingCells(false)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setStep, walletNotConnected, Wallet.connectWallet])
+  }, [
+    setStep,
+    walletNotConnected,
+    Wallet.connectWallet,
+    Order.orderType,
+    Order.setTx,
+    Order.price,
+    Order.pay,
+    Order.orderType,
+  ])
 
   const SelectContent = (
     <OrderSelectPopver>
@@ -186,6 +209,7 @@ export default () => {
       disabled={Wallet.connecting || insuffcientCKB || maxPayOverFlow}
       size="large"
       type="text"
+      loading={collectingCells || Wallet.connecting}
     >
       {submitStatus}
     </Button>

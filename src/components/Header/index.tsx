@@ -134,7 +134,10 @@ const Header = () => {
                     }}
                   >
                     <ButtonWalletSvgBox>
-                      <HeaderMetaSVG className="full" color={visibleWallet ? 'rgba(0,106,151,1)' : '#fff'} />
+                      <HeaderMetaSVG
+                        className="full-width-and-height"
+                        color={visibleWallet ? 'rgba(0,106,151,1)' : '#fff'}
+                      />
                     </ButtonWalletSvgBox>
                   </Button>
                 </Badge>
@@ -160,7 +163,7 @@ const Header = () => {
               }}
             >
               <ButtonSvgBox color={visibleMore ? 'rgba(0,106,151,1)' : '#fff'}>
-                <HeaderMoreSVG className="full" />
+                <HeaderMoreSVG className="full-width-and-height" />
               </ButtonSvgBox>
             </Button>
           </Popover>
