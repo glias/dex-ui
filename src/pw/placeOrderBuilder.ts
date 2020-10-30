@@ -19,7 +19,7 @@ import {
   SUDT_TYPE_SCRIPT,
   MIN_SUDT_CAPACITY,
 } from '../utils/const'
-import calcBuyReceive, { calcBuyAmount, calcSellReceive } from '../utils/fee'
+import { calcBuyReceive, calcBuyAmount, calcSellReceive } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -68,13 +68,7 @@ export class PlaceOrderBuilder extends Builder {
       } = cell
       sudtSumAmount = sudtSumAmount.add(new Amount(getAmountFromCellData(data)))
       inputs.push(
-        new Cell(
-          new Amount(capacity),
-          Script.fromRPC(lock)!!,
-          Script.fromRPC(type),
-          new OutPoint(tx_hash, index),
-          data,
-        ),
+        new Cell(new Amount(capacity), Script.fromRPC(lock)!, Script.fromRPC(type), new OutPoint(tx_hash, index), data),
       )
       inputCapacity = inputCapacity.add(new Amount(capacity, AmountUnit.shannon))
     })
@@ -94,17 +88,16 @@ export class PlaceOrderBuilder extends Builder {
           AmountUnit.ckb,
         )}`,
       )
-    } else if (inputCapacity < neededCapacity.add(new Amount(MIN_SUDT_CAPACITY.toString()))) {
+    }
+
+    const receive = calcSellReceive(`${this.pay}`, this.price)
+    if (inputCapacity < neededCapacity.add(new Amount(MIN_SUDT_CAPACITY.toString()))) {
       orderOutput.capacity = inputCapacity
-      orderOutput.setHexData(
-        buildSellData(sudtSumAmount.toString(), calcSellReceive(this.pay.toString(), this.price), this.price),
-      )
+      orderOutput.setHexData(buildSellData(`${sudtSumAmount}`, receive, this.price))
       outputs.push(orderOutput)
     } else {
       orderOutput.capacity = neededCapacity
-      orderOutput.setHexData(
-        buildSellData(this.pay.toString(), calcSellReceive(this.pay.toString(), this.price), this.price),
-      )
+      orderOutput.setHexData(buildSellData(`${this.pay}`, receive, this.price))
       const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, SUDT_TYPE_SCRIPT)
       changeOutput.setHexData(buildChangeData(sudtSumAmount.sub(this.pay).toString()))
       outputs = outputs.concat([orderOutput, changeOutput])
@@ -160,12 +153,14 @@ export class PlaceOrderBuilder extends Builder {
           AmountUnit.ckb,
         )}`,
       )
-    } else if (inputCapacity.lt(neededCapacity.add(Builder.MIN_CHANGE))) {
+    }
+
+    if (inputCapacity.lt(neededCapacity.add(Builder.MIN_CHANGE))) {
       orderOutput.capacity = inputCapacity
       outputs.push(orderOutput)
     } else {
       outputs.push(orderOutput)
-      outputs.push(new Cell(inputCapacity.sub(neededCapacity), this.address.toLockScript()))
+      outputs.push(new Cell(inputCapacity.sub(neededCapacity), this.inputLock))
     }
 
     const tx = new Transaction(new RawTransaction(inputs, outputs), [Builder.WITNESS_ARGS.Secp256k1])
