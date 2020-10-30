@@ -144,7 +144,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                     marginLeft: '10px',
                   }}
                 >
-                  {i18n.t('header.balances')}
+                  {i18n.t('header.balance')}
                 </h4>
                 <div className="divider" />
                 <ul>
