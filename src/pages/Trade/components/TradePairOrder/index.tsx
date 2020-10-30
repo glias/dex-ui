@@ -1,10 +1,17 @@
+/* eslint-disable operator-linebreak */
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Form, Input, Button, Tooltip, Divider, Popover, Modal } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { Address, Amount, AddressType } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
-import { PairList, PRICE_DECIMAL, SUDT_DECIMAL, MIN_ORDER_DAI, MIN_ORDER_CKB } from '../../../../utils/const'
+import {
+  PairList,
+  PRICE_DECIMAL,
+  SUDT_DECIMAL,
+  ORDER_CELL_CAPACITY,
+  MAX_TRANSACTION_FEE,
+} from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
@@ -24,15 +31,7 @@ export default () => {
   const [buyer, seller] = Order.pair
   const [collectingCells, setCollectingCells] = useState(false)
 
-  // disabled button
-  const [fieldPay, setFieldPay] = useState(false)
-  const [fieldPrice, setFieldPrice] = useState(false)
-  // @TODO: for demo quick resolve conflict
-  // eslint-disable-next-line no-console
-  console.log(fieldPay, fieldPrice)
-
   const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
-  const MIN_ORDER = Order.orderType === OrderType.Buy ? MIN_ORDER_DAI : MIN_ORDER_CKB
 
   const changePair = () => {
     setVisiblePopover(false)
@@ -44,79 +43,90 @@ export default () => {
     return !Wallet.ckbWallet.address
   }, [Wallet.ckbWallet.address])
 
-  const checkPay = (_: any, value: string): Promise<void> => {
+  const ckbBalance = useMemo(() => {
+    return Wallet.ckbWallet.balance.toString()
+  }, [Wallet.ckbWallet.balance])
+
+  const insuffcientCKB = useMemo(() => {
+    return new BigNumber(ckbBalance).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE).isLessThanOrEqualTo(0)
+  }, [ckbBalance])
+
+  const maxPay = useMemo(() => {
+    const p =
+      Order.orderType === OrderType.Buy
+        ? new BigNumber(Order.maxPay).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE)
+        : new BigNumber(Order.maxPay)
+    if (p.isLessThan(0)) {
+      return '0'
+    }
+
+    return p.toString()
+  }, [Order.maxPay, Order.orderType])
+
+  const setMaxPay = useCallback(() => {
+    // eslint-disable-next-line no-unused-expressions
+    formRef.current?.setFieldsValue({
+      pay: maxPay,
+    })
+    setPay(maxPay)
+  }, [maxPay, formRef, setPay])
+
+  const checkPay = useCallback((_: any, value: string): Promise<void> => {
     const val = new BigNumber(value)
+    const decimal = 8
 
     if (Number.isNaN(parseFloat(value))) {
-      setFieldPay(false)
       return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
     }
 
-    const PRECISION = 8
-    if (!new BigNumber(value).decimalPlaces(PRECISION).isEqualTo(val)) {
-      setFieldPay(false)
-      return Promise.reject(i18n.t(`trade.tooMaxprecision`, { precision: PRECISION }))
+    if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
+      return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
     }
-
-    if (!val.multipliedBy(`${MIN_VAL}`).isGreaterThan(0.1)) {
-      setFieldPay(false)
-      return Promise.reject(i18n.t(`trade.tooSmallNumber`))
-    }
-
-    if (val.comparedTo(Order.maxPay) === 1) {
-      setFieldPay(false)
-      return Promise.reject(i18n.t(`trade.lessThanMaxNumber`))
-    }
-
-    if (new BigNumber(Order.maxPay).minus(val).lt(MIN_ORDER)) {
-      setFieldPay(false)
-      return Promise.reject(i18n.t(`trade.insuffcientCKBBalance`))
-    }
-
-    setFieldPay(true)
 
     return Promise.resolve()
-  }
+  }, [])
 
-  const checkPrice = (_: any, value: string): Promise<void> => {
-    const val = new BigNumber(value)
+  const checkPrice = useCallback(
+    (_: any, value: string) => {
+      const val = new BigNumber(value)
+      const decimal = 8
 
-    if (Number.isNaN(parseFloat(value))) {
-      setFieldPrice(false)
-      return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
-    }
+      if (Number.isNaN(parseFloat(value))) {
+        return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
+      }
 
-    const PRECISION = 10
-    if (!new BigNumber(val).decimalPlaces(PRECISION).isEqualTo(val)) {
-      setFieldPrice(false)
-      return Promise.reject(i18n.t(`trade.tooMaxprecision`, { precision: PRECISION }))
-    }
-    if (!val.multipliedBy(`${PRICE_DECIMAL}`).isGreaterThan(0.1)) {
-      setFieldPrice(false)
-      return Promise.reject(i18n.t(`trade.tooSmallNumber`))
-    }
-    setFieldPrice(true)
-    return Promise.resolve()
-  }
+      if (!val.multipliedBy(`${MIN_VAL}`).isGreaterThan(0.1)) {
+        return Promise.reject(i18n.t(`trade.tooSmallNumber`))
+      }
+
+      if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
+        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
+      }
+
+      return Promise.resolve()
+    },
+    [MIN_VAL],
+  )
 
   const setBestPrice = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
       price: Order.bestPrice,
     })
-  }, [Order.bestPrice, formRef])
+    setPrice(Order.bestPrice)
+  }, [Order.bestPrice, formRef, setPrice])
+
+  const maxPayOverFlow = useMemo(() => {
+    return new BigNumber(Order.pay).gt(maxPay)
+  }, [Order.pay, maxPay])
 
   const submitStatus = useMemo(() => {
     if (Wallet.connecting) {
       return i18n.t('header.connecting')
     }
 
-    if (walletNotConnected) {
-      return i18n.t('header.wallet')
-    }
-
     return i18n.t('trade.placeOrder')
-  }, [Wallet.connecting, walletNotConnected])
+  }, [Wallet.connecting])
 
   useEffect(() => {
     if (Wallet.ckbWallet.address === '') {
@@ -149,7 +159,6 @@ export default () => {
         setStep(OrderStep.Comfirm)
       } catch (error) {
         Modal.error({ title: 'Build transaction:\n', content: error.message })
-        setCollectingCells(false)
       } finally {
         setCollectingCells(false)
       }
@@ -193,6 +202,31 @@ export default () => {
     </OrderSelectPopver>
   )
 
+  const confirmButton = (
+    <Button
+      htmlType="submit"
+      className="submit-btn"
+      disabled={Wallet.connecting || insuffcientCKB || maxPayOverFlow}
+      size="large"
+      type="text"
+      loading={collectingCells || Wallet.connecting}
+    >
+      {submitStatus}
+    </Button>
+  )
+
+  const tooltipTitle = useMemo(() => {
+    if (OrderType.Buy === Order.orderType) {
+      return i18n.t('trade.insuffcientCKBBalance')
+    }
+
+    if (maxPayOverFlow) {
+      return i18n.t('trade.insuffcientSUDTBalance')
+    }
+
+    return i18n.t('trade.insuffcientCKBBalance')
+  }, [Order.orderType, maxPayOverFlow])
+
   return (
     <PairOrderFormBox id="order-box">
       <Popover
@@ -218,7 +252,9 @@ export default () => {
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
-            <span className="form-label-meta-num">{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
+            <Button type="text" className="form-label-meta-num" onClick={setMaxPay}>
+              {`${i18n.t('trade.max')}: ${maxPay}`}
+            </Button>
             <Tooltip title={i18n.t('trade.maxPay')}>
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -305,16 +341,7 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button
-            htmlType="submit"
-            className="submit-btn"
-            disabled={Wallet.connecting || collectingCells}
-            size="large"
-            type="text"
-            loading={Wallet.connecting || collectingCells}
-          >
-            {submitStatus}
-          </Button>
+          {insuffcientCKB || maxPayOverFlow ? <Tooltip title={tooltipTitle}>{confirmButton}</Tooltip> : confirmButton}
         </Form.Item>
       </Form>
     </PairOrderFormBox>

@@ -100,6 +100,7 @@ export const MIN_SUDT_CAPACITY = 142
 
 export const MIN_ORDER_DAI = 147
 export const MIN_ORDER_CKB = 289
+export const MAX_TRANSACTION_FEE = 0.1
 
 export const HISTORY_PARAMS = {
   typeCodeHash: '0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
