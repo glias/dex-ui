@@ -3,7 +3,15 @@ import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { useContainer } from 'unstated-next'
-import { PairList, PRICE_DECIMAL, SUDT_DECIMAL, MIN_ORDER_DAI, MIN_ORDER_CKB } from '../../../../utils/const'
+import {
+  PairList,
+  DECIMAL_TEN,
+  DECIMAL_EIGHT,
+  PRICE_DECIMAL,
+  SUDT_DECIMAL,
+  MIN_ORDER_DAI,
+  MIN_ORDER_CKB,
+} from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
@@ -24,11 +32,9 @@ export default () => {
   // disabled button
   const [fieldPay, setFieldPay] = useState(false)
   const [fieldPrice, setFieldPrice] = useState(false)
-  // @TODO: for demo quick resolove conflict
-  // eslint-disable-next-line no-console
-  console.log(fieldPay, fieldPrice)
 
   const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
+  const MIN_DECIMALPLACES = Order.orderType === OrderType.Buy ? DECIMAL_EIGHT : DECIMAL_TEN
   const MIN_ORDER = Order.orderType === OrderType.Buy ? MIN_ORDER_DAI : MIN_ORDER_CKB
 
   const changePair = () => {
@@ -43,10 +49,23 @@ export default () => {
 
   const checkPay = (_: any, value: string): Promise<void> => {
     const val = new BigNumber(value)
+    const fieldsValue = formRef.current?.getFieldsValue()
+
+    // Initialization pay to avoid receive calculation
+    setPrice('')
+
+    if (walletNotConnected) {
+      return Promise.resolve()
+    }
 
     if (Number.isNaN(parseFloat(value))) {
       setFieldPay(false)
       return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
+    }
+
+    if (!new BigNumber(val).decimalPlaces(MIN_DECIMALPLACES).isEqualTo(val)) {
+      setFieldPay(false)
+      return Promise.reject(i18n.t(`trade.tooMaxprecision`))
     }
 
     if (!val.multipliedBy(`${MIN_VAL}`).isGreaterThan(0.1)) {
@@ -65,12 +84,21 @@ export default () => {
     }
 
     setFieldPay(true)
+    setPrice(fieldsValue.pay)
 
     return Promise.resolve()
   }
 
   const checkPrice = (_: any, value: string): Promise<void> => {
     const val = new BigNumber(value)
+    const fieldsValue = formRef.current?.getFieldsValue()
+
+    // Initialization pay to avoid receive calculation
+    setPay('')
+
+    if (walletNotConnected) {
+      return Promise.resolve()
+    }
 
     if (Number.isNaN(parseFloat(value))) {
       setFieldPrice(false)
@@ -86,6 +114,8 @@ export default () => {
       return Promise.reject(i18n.t(`trade.tooSmallNumber`))
     }
     setFieldPrice(true)
+    setPay(fieldsValue.price)
+
     return Promise.resolve()
   }
 
@@ -95,6 +125,19 @@ export default () => {
       price: Order.bestPrice,
     })
   }, [Order.bestPrice, formRef])
+
+  const disabledFn = () => {
+    if (walletNotConnected) {
+      return false
+    }
+    if (Wallet.connecting) {
+      return true
+    }
+    if (!fieldPay || !fieldPrice) {
+      return true
+    }
+    return false
+  }
 
   const submitStatus = useMemo(() => {
     if (Wallet.connecting) {
@@ -129,7 +172,7 @@ export default () => {
       setStep(OrderStep.Comfirm)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setStep, walletNotConnected, Wallet.connectWallet])
+  }, [setStep, walletNotConnected, Wallet.connectWallet, formRef, setPay, setPrice])
 
   const SelectContent = (
     <OrderSelectPopver>
@@ -201,7 +244,6 @@ export default () => {
               placeholder="0"
               suffix={buyer}
               type="number"
-              required
               size="large"
               style={{
                 color: 'rgba(81, 119, 136, 1)',
@@ -209,7 +251,6 @@ export default () => {
               }}
               step="any"
               value={pay}
-              onChange={e => setPay(e.target.value)}
               max={Order.maxPay}
             />
           </Form.Item>
@@ -238,10 +279,8 @@ export default () => {
               style={{
                 color: 'rgba(81, 119, 136, 1)',
               }}
-              required
               type="number"
               step="any"
-              onChange={e => setPrice(e.target.value)}
               value={price}
             />
           </Form.Item>
@@ -270,7 +309,7 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button htmlType="submit" className="submit-btn" disabled={Wallet.connecting} size="large" type="text">
+          <Button htmlType="submit" className="submit-btn" disabled={disabledFn()} size="large" type="text">
             {submitStatus}
           </Button>
         </Form.Item>

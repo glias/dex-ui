@@ -90,9 +90,12 @@ export const CKB_NODE_URL = 'https://aggron.ckb.dev'
 export const CKB_INDEXER_URL = 'https://prototype.ckbapp.dev/testnet/indexer'
 
 export const COMMISSION_FEE = 0.003
-export const PRICE_DECIMAL = new BigNumber(10).pow(new BigNumber(10))
-export const SUDT_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
-export const CKB_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
+
+export const DECIMAL_TEN = 10
+export const DECIMAL_EIGHT = 8
+export const PRICE_DECIMAL = new BigNumber(DECIMAL_TEN).pow(new BigNumber(DECIMAL_TEN))
+export const SUDT_DECIMAL = new BigNumber(DECIMAL_TEN).pow(new BigNumber(DECIMAL_EIGHT))
+export const CKB_DECIMAL = new BigNumber(DECIMAL_TEN).pow(new BigNumber(DECIMAL_EIGHT))
 
 //  @TODO: comments
 export const ORDER_CELL_CAPACITY = 179
