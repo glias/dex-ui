@@ -6,7 +6,7 @@ import { useContainer } from 'unstated-next'
 import WalletContainer from '../../../containers/wallet'
 import { ReactComponent as SignOutSVG } from '../../../assets/svg/exit.svg'
 import { ReactComponent as CopySVG } from '../../../assets/svg/copy.svg'
-import { ReactComponent as QuesitonSVG } from '../../../assets/svg/Question.svg'
+import { ReactComponent as QuestionSVG } from '../../../assets/svg/Question.svg'
 import { ReactComponent as ExplorerSVG } from '../../../assets/svg/toExplorer.svg'
 import { PairList } from '../../../utils/const'
 import i18n from '../../../utils/i18n'
@@ -32,7 +32,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
   const Wallet = useContainer(WalletContainer)
   const { ckbWallet, sudtWallet } = Wallet
 
-  const truncatureStr = (str: string): string => {
+  const truncateStr = (str: string): string => {
     return str.length > 10 ? `${str.slice(0, 10)}...${str.slice(-10)}` : str
   }
 
@@ -105,11 +105,11 @@ export default function WalletBox({ disconnect, addresses }: Props) {
         {addresses.map(address => (
           <div className="wallet" key={address}>
             <span className="address">
-              {truncatureStr(address)}
+              {truncateStr(address)}
               <Tooltip
                 title={clipboardTooltip}
                 placement="bottom"
-                onVisibleChange={visable => visable && setClipboardTooltip(copyToClipboard)}
+                onVisibleChange={visible => visible && setClipboardTooltip(copyToClipboard)}
               >
                 <Button
                   type="text"
@@ -128,7 +128,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
               placement="bottom"
             >
               <Button type="text" className="question-btn">
-                <QuesitonSVG className="full-width-and-height" />
+                <QuestionSVG className="full-width-and-height" />
               </Button>
             </Tooltip>
           </div>
@@ -164,7 +164,7 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                           type="text"
                           size="small"
                           onClick={() => {
-                            // @TODO: achor link
+                            // @TODO: anchor link
                             if (item.name === 'CKB') {
                               window.open(`https://explorer.nervos.org/aggron/address/${(item as any).address}`)
                             } else {

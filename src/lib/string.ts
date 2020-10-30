@@ -1,4 +1,4 @@
-export const truncatureStr = (str: string): string => {
+export const truncateStr = (str: string): string => {
   return str.length > 10 ? `${str.slice(0, 10)}...${str.slice(-10)}` : str
 }
 

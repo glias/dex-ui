@@ -39,7 +39,7 @@ declare namespace State {
   }
 
   interface WalletState {
-    walletConnectStatus: 'unstart' | 'success' | 'failed' // 钱包连接状态
+    walletConnectStatus: 'un_start' | 'success' | 'failed' // 钱包连接状态
     addressList: String[] // 所有钱包地址
     currentSelectedAddress: string // 当前选中的地址
   }
@@ -59,25 +59,5 @@ declare namespace State {
 
   export interface AppState extends PageState {
     app: App
-  }
-
-  export interface AppPayload extends App {
-    appError: AppError
-  }
-
-  export interface AppError {
-    type: 'Network' | 'CodeLogic'
-    message: string[]
-  }
-
-  interface NotFound404 {
-    name: string
-  }
-  interface CoinExchange {
-    buyDaiNum: number
-    shellDaiNum: number
-    spendNum: number
-    reciverNum: number
-    buyPrice: number
   }
 }

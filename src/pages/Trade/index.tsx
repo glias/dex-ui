@@ -42,7 +42,7 @@ const Trade = () => {
     switch (Order.step) {
       case OrderStep.Order:
         return <TradePairOrder />
-      case OrderStep.Comfirm:
+      case OrderStep.Confirm:
         return <TradePairConfirm />
       default:
         return <TradePairResult />

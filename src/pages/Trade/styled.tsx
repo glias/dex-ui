@@ -5,10 +5,6 @@ export const TradePage = styled.div`
   min-height: calc(100% - 93px);
   padding: 10px 120px;
   box-sizing: border-box;
-  .asider {
-    flex: 0 0 250px;
-    min-width: 250px;
-  }
 `
 
 export const TradeMain = styled.div`
@@ -20,10 +16,4 @@ export const TradeMain = styled.div`
 export const TradeContent = styled.div`
   box-size: border-box;
   background-color: #ecf2f4;
-`
-
-export const TradeForm = styled.div``
-
-export const ConectIconBox = styled.div`
-  text-align: center;
 `

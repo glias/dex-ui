@@ -124,13 +124,7 @@ export const HeaderLogoBox = styled.h1`
   font-size: 26px;
   color: #517788;
 `
-export const HeaderNavgationBox = styled.ul`
-  display: flex;
-  justify-content: center;
-  flex: 1;
-  align-items: center;
-  margin-left: 50px;
-`
+
 export const UserMeta = styled.div`
   display: inline-block;
   font-size: 12px;
@@ -197,7 +191,7 @@ export const HeaderMeta = styled.div`
         font-size: 17px;
       }
       .divider {
-        wodth: 100%;
+        width: 100%;
         border-top: 1px solid rgba(171, 209, 225, 1);
       }
       .balance-list {
@@ -299,7 +293,7 @@ export const HeaderMeta = styled.div`
     }
     button {
       border-color: rgba(0, 106, 151, 1);
-      border-redius: 10px;
+      border-radius: 10px;
       margin: 0 10px;
     }
   }

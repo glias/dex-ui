@@ -17,7 +17,7 @@ import WalletContainer from './wallet'
 // eslint-disable-next-line no-shadow
 export enum OrderStep {
   Order,
-  Comfirm,
+  Confirm,
   Result,
 }
 
@@ -43,7 +43,7 @@ export function useOrder() {
   const [orderType, setOrderType] = useState(OrderType.Buy)
   const sellPair = ['DAI', 'CKB']
   const buyPair = ['CKB', 'DAI']
-  const [historyOrders, setHisotryOrders] = useState<any[]>([])
+  const [historyOrders, setHistoryOrders] = useState<any[]>([])
   const { address } = Wallet.ckbWallet
   const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
   const ckbBalance = Wallet.ckbWallet.free.toString()
@@ -61,7 +61,7 @@ export function useOrder() {
 
   const concatHistoryOrders = useCallback(
     (arr: any[]) => {
-      setHisotryOrders(historyOrders.concat(...arr))
+      setHistoryOrders(historyOrders.concat(...arr))
     },
     [historyOrders],
   )
@@ -117,7 +117,7 @@ export function useOrder() {
       const order = historyOrders.find(o => o.key === key)
       if (order) {
         order.loading = true
-        setHisotryOrders(historyOrders)
+        setHistoryOrders(historyOrders)
       }
     },
     [historyOrders],
@@ -164,7 +164,7 @@ export function useOrder() {
     pair,
     concatHistoryOrders,
     historyOrders,
-    setHisotryOrders,
+    setHistoryOrders,
     submittedOrders,
     setAndCacheSubmittedOrders,
     setLoading,

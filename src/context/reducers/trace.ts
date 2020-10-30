@@ -1,4 +1,4 @@
-import { SELECTED_TRADE, TRACEORDER_STEP, TRACE_TABLELIST } from '../actions/types'
+import { SELECTED_TRADE, TRADE_ORDER_STEP, TRACE_TABLE_LIST } from '../actions/types'
 import i18n from '../../utils/i18n'
 
 interface ordersListType {
@@ -6,7 +6,7 @@ interface ordersListType {
   receive: string
   price: string
   conversionUnit: string
-  status: 'Complete' | 'Aborted' | 'Opening' | 'Pedding' | 'Claimed'
+  status: 'Complete' | 'Aborted' | 'Opening' | 'Pending' | 'Claimed'
   executed: number | null
 }
 
@@ -74,12 +74,12 @@ const tradeReducer = (state = initTraceState, action: State.actionType) => {
         ...state,
         currentPair: action.payload?.currentPair,
       }
-    case TRACEORDER_STEP:
+    case TRADE_ORDER_STEP:
       return {
         ...state,
         orderStep: action.payload?.orderStep,
       }
-    case TRACE_TABLELIST:
+    case TRACE_TABLE_LIST:
       return {
         ...state,
         ordersList: action.payload?.ordersList,

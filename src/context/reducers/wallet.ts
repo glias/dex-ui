@@ -1,7 +1,7 @@
 import { SELECTED_TRADE, CONNECT_WALLET } from '../actions/types'
 
 export const initWallet = {
-  walletConnectStatus: 'unstart',
+  walletConnectStatus: 'un_start',
   addressList: ['0x7e8svdger98sd9sqwdu89fsd89ds89d290e1', '0x7e8svdger98sd9sdu89fsd89ds89d290e1'],
   currentSelectedAddress: '0x7e8svdger98sd9sduxxx89fsd89ds89d290e1',
 }

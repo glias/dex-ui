@@ -21,7 +21,7 @@ export default function Trade() {
       <div className="order-place">
         <img src={orderPlace} alt="Order Place" />
       </div>
-      <div className="order-tip">{i18n.t('trade.orderSubmited')}</div>
+      <div className="order-tip">{i18n.t('trade.orderSubmitted')}</div>
       <a target="_blank" rel="noreferrer noopener" href={`https://explorer.nervos.org/aggron/transaction/${txHash}`}>
         {i18n.t('trade.viewExplorer')}
         <div className="explorer-svg">

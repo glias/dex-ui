@@ -5,7 +5,7 @@ export const PairOrderFormBox = styled.div`
   position: relative;
   color: rgba(102, 102, 102, 1);
   box-sizing: border-box;
-  .popver-overlay {
+  .popover-overlay {
     width: 100%;
     .ant-popover-content {
       margin-top: -10px;
@@ -78,19 +78,19 @@ export const PairOrderFormBox = styled.div`
       font-weight: 500;
       height: 60px;
       width: 100%;
+      line-height: 60px;
       color: rgba(0, 106, 151, 1);
       text-align: center;
-    }
-    .submit-btn[disabled] {
-      background: rgba(241, 241, 241, 1);
-      border-bottom-right-radius: 10px;
-      overflow: hidden;
-      border-bottom-left-radius: 10px;
+      &[disabled] {
+        background: rgba(241, 241, 241, 1);
+        border-bottom-right-radius: 10px;
+        border-bottom-left-radius: 10px;
+      }
     }
   }
 `
 
-export const OrderSelectPopver = styled.div`
+export const OrderSelectPopover = styled.div`
   width: 100%;
   padding: 10px 10px 30px;
 `
@@ -125,7 +125,7 @@ export const PairBlock = styled.div`
     &: hover {
       background: #f2f4f5;
     }
-    .decollect {
+    .decollete {
       padding: 0 10px;
       color: rgba(136, 136, 136, 1);
     }
