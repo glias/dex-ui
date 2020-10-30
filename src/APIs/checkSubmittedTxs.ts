@@ -1,3 +1,4 @@
+/** eslint-disable import/no-unresolved */
 import CKB from '@nervosnetwork/ckb-sdk-core'
 import { CKB_NODE_URL } from '../utils'
 
