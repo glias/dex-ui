@@ -54,6 +54,7 @@
     "@typescript-eslint/parser": "^4.5.0",
     "babel-plugin-styled-components": "^1.11.1",
     "create-react-app": "^3.4.1",
+    "customize-cra": "^1.0.0",
     "eslint": "6.6.0",
     "eslint-config-airbnb": "18.2.0",
     "eslint-config-airbnb-typescript": "^12.0.0",
