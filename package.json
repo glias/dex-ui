@@ -86,6 +86,9 @@
       "pre-commit": "yarn lint"
     }
   },
+  "resolutions": {
+    "styled-components": "5"
+  },
   "homepage": ".",
   "browserslist": {
     "production": [

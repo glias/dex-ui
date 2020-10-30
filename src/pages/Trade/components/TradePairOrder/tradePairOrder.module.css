@@ -19,3 +19,24 @@
 .OrderSelectBox .pair-trace-box:hover {
   background: transparent !important;
 }
+.payMeta {
+  position: absolute;
+  top: -31px;
+  right: 0;
+  font-size: 13px;
+  color: rgba(102, 102, 102, 1);
+} 
+.payMeta span {
+  margin: -30px 5px 0 0;
+  color: rgba(102, 102, 102, 1);
+  padding: 0;
+  text-decoration: underline;
+}
+.payMeta i {
+  margin-left: 5px;
+}
+
+.payMeta button {
+  margin: 0;
+  padding: 0;
+}

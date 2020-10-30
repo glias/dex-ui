@@ -7,7 +7,7 @@ import { PairList, PRICE_DECIMAL, SUDT_DECIMAL, MIN_ORDER_DAI, MIN_ORDER_CKB } f
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
-import { PairOrderFormBox, PayMeta, OrderSelectPopver, PairBlock } from './styled'
+import { PairOrderFormBox, OrderSelectPopver, PairBlock } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import styles from './tradePairOrder.module.css'
@@ -182,12 +182,12 @@ export default () => {
       <TracePairCoin resetFields={() => form.resetFields()} />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Form.Item label={i18n.t('trade.pay')}>
-          <PayMeta>
-            <span className="form-label-meta-num">{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
+          <div className={styles.payMeta}>
+            <span>{`${i18n.t('trade.max')}: ${Order.maxPay}`}</span>
             <Tooltip title={i18n.t('trade.maxPay')}>
               <i className="ai-question-circle-o" />
             </Tooltip>
-          </PayMeta>
+          </div>
           <Form.Item
             name="pay"
             noStyle
@@ -215,14 +215,14 @@ export default () => {
           </Form.Item>
         </Form.Item>
         <Form.Item label={i18n.t('trade.price')} className="price-box">
-          <PayMeta>
+          <div className={styles.payMeta}>
             <Button type="text" className="form-label-meta-num" onClick={setBestPrice}>
               {`${i18n.t('trade.suggestion')}: ${Order.bestPrice}`}
             </Button>
             <Tooltip title={i18n.t(`trade.suggestionTooltip`)}>
               <i className="ai-question-circle-o" />
             </Tooltip>
-          </PayMeta>
+          </div>
           <Form.Item
             name="price"
             rules={[

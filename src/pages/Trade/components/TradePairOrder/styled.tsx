@@ -95,26 +95,10 @@ export const OrderSelectPopver = styled.div`
   padding: 10px 10px 30px;
 `
 
-export const PayMeta = styled.div`
-  position: absolute;
-  top: -30px;
-  right: 0;
-  font-size: 13px;
-  color: rgba(102, 102, 102, 1);
-  .form-label-meta-num {
-    margin: -30px 5px 0 0;
-    color: rgba(102, 102, 102, 1);
-    padding: 0;
-    text-decoration: underline;
-    span {
-      text-decoration: underline;
-    }
-  }
-`
-
 export const PairBlock = styled.div`
   font-size: 16px;
   display: flex;
+  padding-left: 20px;
   .pair-trace-box {
     display: flex;
     padding: 0 10px;
