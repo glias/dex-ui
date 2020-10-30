@@ -20,11 +20,8 @@ export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHas
   })
 }
 
-export function getCkbLiveCels(type: Script, lock: Script, ckbAmount: string) {
+export function getCkbLiveCels(lock: Script, ckbAmount: string) {
   const params = {
-    type_code_hash: type.codeHash,
-    type_hash_type: type.hashType,
-    type_args: type.args,
     lock_code_hash: lock.codeHash,
     lock_hash_type: lock.hashType,
     lock_args: lock.args,
