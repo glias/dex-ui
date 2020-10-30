@@ -19,4 +19,8 @@ export function calcBuyAmount(pay: string) {
   return new BigNumber(pay).plus(new BigNumber(ORDER_CELL_CAPACITY)).toString()
 }
 
-export default calcBuyReceive
+export default {
+  calcBuyReceive,
+  calcSellReceive,
+  calcBuyAmount,
+}
