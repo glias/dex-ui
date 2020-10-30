@@ -76,6 +76,10 @@ const Header = () => {
     </div>
   )
 
+  const gotoHome = () => {
+    history.push('/')
+  }
+
   const disconnect = useCallback(() => {
     disconnectWallet(() => setVisibleWallet(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -84,7 +88,7 @@ const Header = () => {
   return (
     <HeaderBox className="header-box">
       <HeaderPanel>
-        <HeaderLogoBox>CKB DEX</HeaderLogoBox>
+        <HeaderLogoBox onClick={gotoHome}>CKB DEX</HeaderLogoBox>
         <Menu
           defaultSelectedKeys={['trade', '']}
           mode="horizontal"

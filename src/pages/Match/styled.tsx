@@ -10,6 +10,7 @@ export const MatchContainer = styled.div`
   padding: 10px 50px;
   box-sizing: border-box;
   color: rgb(102, 102, 102);
+  padding-top: 60px;
 `
 
 export const HomeBox = styled.div`

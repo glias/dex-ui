@@ -5,6 +5,7 @@ import Trade from '../pages/Trade'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Pool from '../pages/Pool'
+import Match from '../pages/Match'
 
 const Containers: CustomRouter.Route[] = [
   {
@@ -28,13 +29,13 @@ const Containers: CustomRouter.Route[] = [
     showHeader: true,
     component: Pool,
   },
-  // {
-  //   name: 'Match',
-  //   path: '/match',
-  //   exact: true,
-  //   showHeader: true,
-  //   component: Match,
-  // },
+  {
+    name: 'Match',
+    path: '/match',
+    exact: true,
+    showHeader: true,
+    component: Match,
+  },
   {
     name: '404',
     path: '/404',
