@@ -115,6 +115,7 @@ export const PayMeta = styled.div`
 export const PairBlock = styled.div`
   font-size: 16px;
   display: flex;
+  padding-left: 20px;
   .pair-trace-box {
     display: flex;
     padding: 0 10px;
