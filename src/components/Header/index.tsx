@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { Button, Popover, Menu, Badge, Modal } from 'antd'
 import WalletBox from './HeaderWalletBox'
 import { ReactComponent as HeaderMoreSVG } from '../../assets/svg/more.svg'
@@ -26,6 +26,7 @@ import { useDidMount } from '../../hooks'
 const Header = () => {
   const history = useHistory()
   const Wallet = useContainer(WalletContainer)
+  const { pathname } = useLocation()
 
   const { ckbWallet, ethWallet } = Wallet
   const ckbAddress = ckbWallet.address
@@ -90,7 +91,7 @@ const Header = () => {
       <HeaderPanel>
         <HeaderLogoBox onClick={gotoHome}>CKB DEX</HeaderLogoBox>
         <Menu
-          defaultSelectedKeys={['trade', '']}
+          defaultSelectedKeys={[pathname.substring(1) || 'trade']}
           mode="horizontal"
           className="menuBox"
           onClick={e => history.push(`/${e.key}`)}
