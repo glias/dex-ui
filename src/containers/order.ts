@@ -73,6 +73,9 @@ export function useOrder() {
     return new BigNumber(Wallet.ckbWallet.free.toString()).div(ORDER_CELL_CAPACITY).div(COMMISSION_FEE).toFixed(8, 1)
   }, [Wallet.ckbWallet.free])
 
+  const sudtBestPrice = Wallet.sudtWallet.bestPrice
+  const ckbBestPrice = Wallet.ckbWallet.bestPrice
+
   const togglePair = useCallback(async () => {
     if (orderType === OrderType.Buy) {
       setPair(sellPair)
@@ -85,16 +88,14 @@ export function useOrder() {
     if (!lockScript) {
       return
     }
-    // todo: error handling
-    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, orderType)
-    setBestPrice(new BigNumber(data.price).div(PRICE_DECIMAL).toString())
 
     if (orderType === OrderType.Buy) {
       setMaxPay(ckbMax)
     } else {
       setMaxPay(Wallet.sudtWallet.balance.toString())
     }
-  }, [orderType, sellPair, buyPair, Wallet.sudtWallet.balance, ckbMax])
+    setBestPrice(OrderType.Sell === orderType ? ckbBestPrice.toString() : sudtBestPrice.toString())
+  }, [orderType, sellPair, buyPair, Wallet.sudtWallet.balance, ckbMax, ckbBestPrice, sudtBestPrice])
 
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()

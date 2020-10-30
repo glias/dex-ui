@@ -77,6 +77,7 @@ export const PairOrderFormBox = styled.div`
       font-size: 17px;
       font-weight: 500;
       height: 60px;
+      line-height: 60px;
       width: 100%;
       color: rgba(0, 106, 151, 1);
       text-align: center;
