@@ -92,7 +92,6 @@ export function useWallet() {
     const free = new Amount(res.free, AmountUnit.shannon)
     const occupied = new Amount(res.occupied, AmountUnit.shannon)
     const lockedOrder = new Amount(res.locked_order, AmountUnit.shannon)
-    // eslint-disable-next-line no-debugger
     setCkbWallet({
       balance: free,
       inuse: occupied,

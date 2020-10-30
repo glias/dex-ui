@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { Form, Input, Button, Tooltip, Divider, Popover } from 'antd'
+import { Form, Input, Button, Tooltip, Divider, Popover, Modal } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import { Address, Amount, AddressType } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import { PairList, PRICE_DECIMAL, SUDT_DECIMAL, MIN_ORDER_DAI, MIN_ORDER_CKB } from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
@@ -11,6 +12,7 @@ import { PairOrderFormBox, PayMeta, OrderSelectPopver, PairBlock } from './style
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import styles from './tradePairOrder.module.css'
+import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 
 export default () => {
   const [form] = Form.useForm()
@@ -20,6 +22,7 @@ export default () => {
   const { price, pay, setPrice, setPay, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
+  const [collectingCells, setCollectingCells] = useState(false)
 
   // disabled button
   const [fieldPay, setFieldPay] = useState(false)
@@ -122,14 +125,39 @@ export default () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Order.step])
 
-  const onSubmit = useCallback(() => {
+  const onSubmit = useCallback(async () => {
     if (walletNotConnected) {
       Wallet.connectWallet()
     } else {
-      setStep(OrderStep.Comfirm)
+      const builder = new PlaceOrderBuilder(
+        new Address(Wallet.ckbWallet.address, AddressType.ckb),
+        new Amount(Order.pay),
+        Order.orderType,
+        Order.price,
+      )
+      try {
+        setCollectingCells(true)
+        const tx = await builder.build()
+        Order.setTx(tx)
+        setStep(OrderStep.Comfirm)
+      } catch (error) {
+        Modal.error({ title: 'Build transaction:\n', content: error.message })
+        setCollectingCells(false)
+      } finally {
+        setCollectingCells(false)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setStep, walletNotConnected, Wallet.connectWallet])
+  }, [
+    setStep,
+    walletNotConnected,
+    Wallet.connectWallet,
+    Order.orderType,
+    Order.setTx,
+    Order.price,
+    Order.pay,
+    Order.orderType,
+  ])
 
   const SelectContent = (
     <OrderSelectPopver>
@@ -270,7 +298,14 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          <Button htmlType="submit" className="submit-btn" disabled={Wallet.connecting} size="large" type="text">
+          <Button
+            htmlType="submit"
+            className="submit-btn"
+            disabled={Wallet.connecting || collectingCells}
+            size="large"
+            type="text"
+            loading={Wallet.connecting || collectingCells}
+          >
             {submitStatus}
           </Button>
         </Form.Item>

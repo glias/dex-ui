@@ -1,4 +1,4 @@
-import PWCore from '@lay2/pw-core'
+import PWCore, { Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
@@ -49,6 +49,7 @@ export function useOrder() {
   const ckbBalance = Wallet.ckbWallet.free.toString()
   const [maxPay, setMaxPay] = useState(ckbBalance)
   const [bestPrice, setBestPrice] = useState('0.00')
+  const [tx, setTx] = useState<Transaction | null>(null)
 
   useEffect(() => {
     if (!address) {
@@ -97,7 +98,6 @@ export function useOrder() {
     const { free } = (await getCkbBalance(lockScript)).data
     setMaxPay(new BigNumber(free).div(new BigNumber(CKB_DECIMAL.toString())).toString())
     const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, OrderType.Sell)
-    // eslint-disable-next-line no-debugger
     setBestPrice(new BigNumber(data.price).div(new BigNumber(PRICE_DECIMAL.toString())).toString())
   }, [])
 
@@ -114,7 +114,6 @@ export function useOrder() {
 
   const setLoading = useCallback(
     (key: string) => {
-      // eslint-disable-next-line no-debugger
       const order = historyOrders.find(o => o.key === key)
       if (order) {
         order.loading = true
@@ -172,6 +171,8 @@ export function useOrder() {
     maxPay,
     bestPrice,
     initPrice,
+    tx,
+    setTx,
   }
 }
 
