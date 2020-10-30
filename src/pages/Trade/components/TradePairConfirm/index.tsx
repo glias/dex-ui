@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PWCore, { Address, AddressType, Amount } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
-import { Button, Divider } from 'antd'
+import { Button, Divider, Modal } from 'antd'
 import {
   TradePairConfirmBox,
   OrderBox,
@@ -22,19 +22,32 @@ export default function TradePairConfirm() {
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
   const [disabled, setDisabled] = useState(false)
+  const { address } = Wallet.ckbWallet
+
+  useEffect(() => {
+    if (address === '') {
+      setDisabled(false)
+      Order.reset()
+      Order.setStep(OrderStep.Order)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address])
 
   const onConfirm = async () => {
-    setDisabled(true)
-    const builder = new PlaceOrderBuilder(
-      new Address(Wallet.ckbWallet.address, AddressType.ckb),
-      new Amount(Order.pay),
-      Order.orderType,
-      Order.price,
-    )
+    try {
+      setDisabled(true)
+      const builder = new PlaceOrderBuilder(
+        new Address(Wallet.ckbWallet.address, AddressType.ckb),
+        new Amount(Order.pay),
+        Order.orderType,
+        Order.price,
+      )
 
-    const txHash = await Wallet.pw?.sendTransaction(builder)
+      const txHash = await Wallet.pw?.sendTransaction(builder)
+      if (!txHash) {
+        throw new Error('Fail to send transaction')
+      }
 
-    if (txHash) {
       const isBid = Order.orderType === OrderType.Buy
       const receiveCalc = isBid ? calcBuyReceive : calcSellReceive
 
@@ -47,11 +60,14 @@ export default function TradePairConfirm() {
         price: Order.price,
         createdAt: `${Date.now()}`,
       }
-      setDisabled(true)
       Order.setAndCacheSubmittedOrders(orders => [submittedOrder, ...orders])
       Order.setTxHash(txHash)
       Order.setStep(OrderStep.Result)
       Wallet.reloadWallet(PWCore.provider.address.toCKBAddress())
+    } catch (error) {
+      Modal.error({ title: 'Submission Error', content: error.message })
+    } finally {
+      setDisabled(false)
     }
   }
 
