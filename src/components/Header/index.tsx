@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
 import { useHistory } from 'react-router-dom'
-import { Button, Popover, Menu, Badge } from 'antd'
+import { Button, Popover, Menu, Badge, Modal } from 'antd'
 import WalletBox from './HeaderWalletBox'
 import { ReactComponent as HeaderMoreSVG } from '../../assets/svg/more.svg'
 import { ReactComponent as HeaderMetaSVG } from '../../assets/svg/Component12.svg'
@@ -42,6 +42,17 @@ const Header = () => {
   const { web3ModalRef } = Wallet
   const { connectWallet, disconnectWallet } = Wallet
 
+  const handleWalletConnect = useCallback(
+    () =>
+      connectWallet().catch(error =>
+        Modal.error({
+          title: 'Connection Error',
+          content: error.message,
+        }),
+      ),
+    [connectWallet],
+  )
+
   useDidMount(() => {
     web3ModalRef.current = new Web3Modal({
       network: getChainData(1).network,
@@ -50,7 +61,7 @@ const Header = () => {
     })
 
     if (web3ModalRef.current.cachedProvider) {
-      connectWallet()
+      handleWalletConnect()
     }
   })
 
@@ -65,6 +76,10 @@ const Header = () => {
     </div>
   )
 
+  const gotoHome = () => {
+    history.push('/')
+  }
+
   const disconnect = useCallback(() => {
     disconnectWallet(() => setVisibleWallet(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,7 +88,7 @@ const Header = () => {
   return (
     <HeaderBox className="header-box">
       <HeaderPanel>
-        <HeaderLogoBox>CKB DEX</HeaderLogoBox>
+        <HeaderLogoBox onClick={gotoHome}>CKB DEX</HeaderLogoBox>
         <Menu
           defaultSelectedKeys={['trade', '']}
           mode="horizontal"
@@ -92,7 +107,7 @@ const Header = () => {
         </Menu>
         <HeaderMeta id="header-meta">
           {ckbAddress === '' ? (
-            <Button className="collect-btn" onClick={connectWallet} disabled={Wallet.connecting}>
+            <Button className="collect-btn" onClick={handleWalletConnect} disabled={Wallet.connecting}>
               {Wallet.connecting ? i18n.t('header.connecting') : i18n.t('header.wallet')}
             </Button>
           ) : (
@@ -119,7 +134,10 @@ const Header = () => {
                     }}
                   >
                     <ButtonWalletSvgBox>
-                      <HeaderMetaSVG className="full" color={visibleWallet ? 'rgba(0,106,151,1)' : '#fff'} />
+                      <HeaderMetaSVG
+                        className="full-width-and-height"
+                        color={visibleWallet ? 'rgba(0,106,151,1)' : '#fff'}
+                      />
                     </ButtonWalletSvgBox>
                   </Button>
                 </Badge>
@@ -145,7 +163,7 @@ const Header = () => {
               }}
             >
               <ButtonSvgBox color={visibleMore ? 'rgba(0,106,151,1)' : '#fff'}>
-                <HeaderMoreSVG className="full" />
+                <HeaderMoreSVG className="full-width-and-height" />
               </ButtonSvgBox>
             </Button>
           </Popover>

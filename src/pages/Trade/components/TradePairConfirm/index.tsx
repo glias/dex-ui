@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import PWCore, { Builder } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import BigNumber from 'bignumber.js'
-import { Button, Divider, Tooltip } from 'antd'
+import { Button, Divider, Tooltip, Modal } from 'antd'
 import {
   TradePairConfirmBox,
   OrderBox,
@@ -23,13 +23,22 @@ export default function TradePairConfirm() {
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
   const [disabled, setDisabled] = useState(false)
+  const { address } = Wallet.ckbWallet
+
+  useEffect(() => {
+    if (address === '') {
+      setDisabled(false)
+      Order.reset()
+      Order.setStep(OrderStep.Order)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address])
 
   const onConfirm = useCallback(async () => {
     setDisabled(true)
+    try {
+      const txHash = await Wallet.pw?.sendTransaction(Order.tx!)
 
-    const txHash = await Wallet.pw?.sendTransaction(Order.tx!)
-
-    if (txHash) {
       const isBid = Order.orderType === OrderType.Buy
       const receiveCalc = isBid ? calcBuyReceive : calcSellReceive
 
@@ -42,11 +51,14 @@ export default function TradePairConfirm() {
         price: Order.price,
         createdAt: `${Date.now()}`,
       }
-      setDisabled(true)
       Order.setAndCacheSubmittedOrders(orders => [submittedOrder, ...orders])
-      Order.setTxHash(txHash)
+      Order.setTxHash(txHash!)
       Order.setStep(OrderStep.Result)
       Wallet.reloadWallet(PWCore.provider.address.toCKBAddress())
+    } catch (error) {
+      Modal.error({ title: 'Submission Error', content: error.message })
+    } finally {
+      setDisabled(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

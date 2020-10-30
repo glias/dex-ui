@@ -15,7 +15,7 @@
       "insuffcientCKBBalance": "CKB余额不足",
       "unEffectiveNumber": "非有效数字",
       "tooSmallNumber": "数字太小，无法交易",
-      "tooMaxprecision": "最大精度为10位",
+      "tooMaxprecision": "最大精度为 {{precision}} 位",
       "lessThanMaxNumber": "数额过大",
       "inUse": "已使用",
       "free": "余额",
@@ -53,6 +53,8 @@
       "suggestionTooltip": "市场价格：有了这个价格，订单很可能被填满，但不能保证，未完成的订单将在链上打开。",
       "maxPay": "账户可用余额"
     },
-    "pool": {}
+    "pool": {
+      "comingSoon": "敬请期待..."
+    }
   }
 }

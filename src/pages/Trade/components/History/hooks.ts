@@ -119,13 +119,11 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
         pendingOrders.add(orderId, txHash)
         return hash
       } catch (error) {
-        if (error.code !== REJECT_ERROR_CODE) {
-          // TODO: use dialog or something designed for production
-          /* eslint-disable-next-line no-alert */
-          window.alert(error.message)
-        }
         dispatch({ type: ActionType.RemovePendingId, value: orderId })
-        return null
+        if (error.code === REJECT_ERROR_CODE) {
+          throw new Error('Transaction Declined')
+        }
+        throw error
       }
     },
     [address, dispatch],
