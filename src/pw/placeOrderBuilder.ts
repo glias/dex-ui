@@ -82,7 +82,7 @@ export class PlaceOrderBuilder extends Builder {
       inputCapacity = extraCells.map(cell => cell.capacity).reduce((prev, curr) => prev.add(curr), inputCapacity)
     }
 
-    if (inputCapacity < neededCapacity) {
+    if (inputCapacity.lt(neededCapacity)) {
       throw new Error(
         `Input capacity not enough, need ${neededCapacity.toString(AmountUnit.ckb)}, got ${inputCapacity.toString(
           AmountUnit.ckb,
@@ -91,7 +91,7 @@ export class PlaceOrderBuilder extends Builder {
     }
 
     const receive = calcSellReceive(`${this.pay}`, this.price)
-    if (inputCapacity < neededCapacity.add(new Amount(MIN_SUDT_CAPACITY.toString()))) {
+    if (inputCapacity.lt(neededCapacity.add(new Amount(MIN_SUDT_CAPACITY.toString())))) {
       orderOutput.capacity = inputCapacity
       orderOutput.setHexData(buildSellData(`${sudtSumAmount}`, receive, this.price))
       outputs.push(orderOutput)
