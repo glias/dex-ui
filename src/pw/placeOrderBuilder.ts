@@ -18,6 +18,7 @@ import {
   SUDT_DEP,
   SUDT_TYPE_SCRIPT,
   MIN_SUDT_CAPACITY,
+  MAX_TRANSACTION_FEE,
 } from '../utils/const'
 import { calcBuyReceive, calcBuyAmount, calcSellReceive } from '../utils/fee'
 
@@ -51,14 +52,18 @@ export class PlaceOrderBuilder extends Builder {
   async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
     let sudtSumAmount = Amount.ZERO
     let inputCapacity = Amount.ZERO
-    const neededCapacity = new Amount(ORDER_CELL_CAPACITY.toString()).add(fee)
+    const neededCapacity = new Amount(ORDER_CELL_CAPACITY.toString()).add(fee).add(new Amount(`${MAX_TRANSACTION_FEE}`))
 
     const inputs: Cell[] = []
     let outputs: Cell[] = []
 
     const orderOutput = new Cell(neededCapacity, this.orderLock, SUDT_TYPE_SCRIPT)
 
-    const { data: cells } = await getSudtLiveCells(SUDT_TYPE_SCRIPT, this.inputLock, this.pay.toString())
+    const { data: cells } = await getSudtLiveCells(
+      SUDT_TYPE_SCRIPT,
+      this.inputLock,
+      this.pay.toString(AmountUnit.shannon),
+    )
 
     cells.forEach((cell: any) => {
       const {
@@ -72,6 +77,10 @@ export class PlaceOrderBuilder extends Builder {
       )
       inputCapacity = inputCapacity.add(new Amount(capacity, AmountUnit.shannon))
     })
+
+    if (sudtSumAmount.lt(this.pay)) {
+      throw new Error(`Input SUDT amount not enough, need ${this.pay.toString()}, got ${sudtSumAmount.toString()}`)
+    }
 
     if (inputCapacity.lt(neededCapacity)) {
       const extraCells = await this.collector.collect(
@@ -99,7 +108,7 @@ export class PlaceOrderBuilder extends Builder {
       orderOutput.capacity = neededCapacity
       orderOutput.setHexData(buildSellData(`${this.pay}`, receive, this.price))
       const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, SUDT_TYPE_SCRIPT)
-      changeOutput.setHexData(buildChangeData(sudtSumAmount.sub(this.pay).toString()))
+      changeOutput.setHexData(buildChangeData(sudtSumAmount.sub(this.pay).toString(AmountUnit.shannon)))
       outputs = outputs.concat([orderOutput, changeOutput])
     }
 
@@ -126,17 +135,11 @@ export class PlaceOrderBuilder extends Builder {
 
     const buyCellCapacity = new Amount(calcBuyAmount(this.pay.toString()))
 
-    const neededCapacity = buyCellCapacity.add(fee)
+    const neededCapacity = buyCellCapacity.add(fee).add(new Amount(`${MAX_TRANSACTION_FEE}`))
     let inputCapacity = Amount.ZERO
     const inputs: Cell[] = []
 
-    const orderLock = new Script(
-      ORDER_BOOK_LOCK_SCRIPT.codeHash,
-      this.inputLock.toHash(),
-      ORDER_BOOK_LOCK_SCRIPT.hashType,
-    )
-
-    const orderOutput = new Cell(buyCellCapacity, orderLock, SUDT_TYPE_SCRIPT)
+    const orderOutput = new Cell(buyCellCapacity, this.orderLock, SUDT_TYPE_SCRIPT)
     const receive = calcBuyReceive(this.pay.toString(), this.price).toString()
     orderOutput.setHexData(buildBuyData(receive, this.price))
     // fill the inputs
