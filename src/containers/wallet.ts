@@ -1,10 +1,12 @@
 import PWCore, { Amount, AmountUnit, Web3ModalProvider } from '@lay2/pw-core'
+import BigNumber from 'bignumber.js'
 import { useCallback, useState, useRef } from 'react'
 import { createContainer } from 'unstated-next'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
-import { getCkbBalance, getSudtBalance } from '../APIs'
-import { CKB_NODE_URL, SUDT_TYPE_SCRIPT } from '../utils'
+import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
+import { CKB_NODE_URL, PRICE_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils'
+import { OrderType } from './order'
 
 const { SDCollector } = require('./sd-collector')
 
@@ -12,6 +14,7 @@ interface Wallet {
   balance: Amount
   lockedOrder: Amount
   address: string
+  bestPrice: string
 }
 
 interface CkbWallet extends Wallet {
@@ -33,18 +36,21 @@ export function useWallet() {
     free: Amount.ZERO,
     lockedOrder: Amount.ZERO,
     address: '',
+    bestPrice: '0.00',
   })
   const [connecting, setConnecting] = useState(false)
   const [ethWallet, setEthWallet] = useState<Wallet>({
     balance: Amount.ZERO,
     lockedOrder: Amount.ZERO,
     address: '',
+    bestPrice: '0.00',
   })
 
   const [sudtWallet, setSudtWallet] = useState<SudtWallet>({
     balance: Amount.ZERO,
     lockedOrder: Amount.ZERO,
     address: '',
+    bestPrice: '0.00',
   })
 
   const setEthBalance = useCallback(
@@ -89,26 +95,31 @@ export function useWallet() {
 
   const reloadCkbWallet = useCallback(async (address: string) => {
     const res = (await getCkbBalance(PWCore.provider.address.toLockScript())).data
+    const { price } = (await getBestPrice(SUDT_TYPE_SCRIPT, OrderType.Sell)).data
     const free = new Amount(res.free, AmountUnit.shannon)
     const occupied = new Amount(res.occupied, AmountUnit.shannon)
     const lockedOrder = new Amount(res.locked_order, AmountUnit.shannon)
+
     setCkbWallet({
       balance: free,
       inuse: occupied,
       free,
       lockedOrder,
       address,
+      bestPrice: new BigNumber(price).div(new BigNumber(PRICE_DECIMAL.toString())).toString(),
     })
   }, [])
 
   const reloadSudtWallet = useCallback(async () => {
     const res = (await getSudtBalance(SUDT_TYPE_SCRIPT, PWCore.provider.address.toLockScript())).data
+    const { price } = (await getBestPrice(SUDT_TYPE_SCRIPT, OrderType.Buy)).data
     const free = new Amount(res.free, AmountUnit.shannon)
     const lockedOrder = new Amount(res.locked_order, AmountUnit.shannon)
     setSudtWallet({
       balance: free,
       lockedOrder,
       address: '',
+      bestPrice: new BigNumber(price).div(new BigNumber(PRICE_DECIMAL.toString())).toString(),
     })
   }, [])
 
