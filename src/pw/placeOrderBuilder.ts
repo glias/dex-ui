@@ -54,7 +54,7 @@ export class PlaceOrderBuilder extends Builder {
     const neededCapacity = new Amount(ORDER_CELL_CAPACITY.toString()).add(fee)
 
     const inputs: Cell[] = []
-    const outputs: Cell[] = []
+    let outputs: Cell[] = []
 
     const orderOutput = new Cell(neededCapacity, this.orderLock, SUDT_TYPE_SCRIPT)
 
@@ -70,8 +70,8 @@ export class PlaceOrderBuilder extends Builder {
       inputs.push(
         new Cell(
           new Amount(capacity),
-          new Script(lock.code_hash, lock.args, lock.hash_type),
-          new Script(type.code_hash, type.args, type.hash_type),
+          Script.fromRPC(lock)!!,
+          Script.fromRPC(type),
           new OutPoint(tx_hash, index),
           data,
         ),
@@ -105,10 +105,9 @@ export class PlaceOrderBuilder extends Builder {
       orderOutput.setHexData(
         buildSellData(this.pay.toString(), calcSellReceive(this.pay.toString(), this.price), this.price),
       )
-      outputs.push(orderOutput)
       const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, SUDT_TYPE_SCRIPT)
       changeOutput.setHexData(buildChangeData(sudtSumAmount.sub(this.pay).toString()))
-      outputs.push(changeOutput)
+      outputs = outputs.concat([orderOutput, changeOutput])
     }
 
     const tx = new Transaction(new RawTransaction(inputs, outputs), [Builder.WITNESS_ARGS.Secp256k1])
