@@ -9,7 +9,7 @@ import {
   Script,
   OutPoint,
 } from '@lay2/pw-core'
-import { getSudtLiveCels as getSudtLiveCells } from '../APIs'
+import { getSudtLiveCells } from '../APIs'
 import { OrderType } from '../containers/order'
 import { buildSellData, getAmountFromCellData, buildChangeData, buildBuyData } from '../utils/buffer'
 import {
