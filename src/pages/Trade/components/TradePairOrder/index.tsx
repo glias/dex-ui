@@ -27,7 +27,7 @@ export default () => {
   const { price, pay, setPrice, setPay, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
-  
+
   const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
 
   const changePair = () => {
