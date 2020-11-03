@@ -114,7 +114,6 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                 <Button
                   type="text"
                   onClick={() => {
-                    // eslint-disable-next-line no-debugger
                     clipboard(address)
                     setClipboardTooltip(copied)
                   }}

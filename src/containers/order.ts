@@ -7,9 +7,9 @@ import {
   CKB_DECIMAL,
   PRICE_DECIMAL,
   SUDT_TYPE_SCRIPT,
-  COMMISSION_FEE,
   submittedOrders as submittedOrdersCache,
   ORDER_CELL_CAPACITY,
+  MAX_TRANSACTION_FEE,
 } from '../utils'
 import type { OrderRecord } from '../utils'
 import { calcBuyReceive, calcSellReceive } from '../utils/fee'
@@ -70,7 +70,10 @@ export function useOrder() {
   const [pair, setPair] = useState(buyPair)
 
   const ckbMax = useMemo(() => {
-    return new BigNumber(Wallet.ckbWallet.free.toString()).div(ORDER_CELL_CAPACITY).div(COMMISSION_FEE).toFixed(8, 1)
+    return new BigNumber(Wallet.ckbWallet.free.toString())
+      .minus(ORDER_CELL_CAPACITY)
+      .minus(MAX_TRANSACTION_FEE)
+      .toFixed(8, 1)
   }, [Wallet.ckbWallet.free])
 
   const sudtBestPrice = Wallet.sudtWallet.bestPrice
@@ -89,7 +92,7 @@ export function useOrder() {
       return
     }
 
-    if (orderType === OrderType.Buy) {
+    if (orderType === OrderType.Sell) {
       setMaxPay(ckbMax)
     } else {
       setMaxPay(Wallet.sudtWallet.balance.toString())
@@ -100,7 +103,7 @@ export function useOrder() {
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()
     const { free } = (await getCkbBalance(lockScript)).data
-    setMaxPay(new BigNumber(free).div(new BigNumber(CKB_DECIMAL.toString())).toString())
+    setMaxPay(new BigNumber(free).div(CKB_DECIMAL).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE).toFixed(8, 1))
     const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, OrderType.Sell)
     setBestPrice(new BigNumber(data.price).div(new BigNumber(PRICE_DECIMAL.toString())).toString())
   }, [])

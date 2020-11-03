@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
+import PWCore from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -39,6 +40,7 @@ const Header = () => {
   // popover visible config
   const [visibleMore, setVisibleMore] = useState(false)
   const [visibleWallet, setVisibleWallet] = useState(false)
+  const updateWalletTimer = useRef<ReturnType<typeof setInterval> | undefined>()
 
   const { web3ModalRef } = Wallet
   const { connectWallet, disconnectWallet } = Wallet
@@ -48,7 +50,7 @@ const Header = () => {
       connectWallet().catch(error =>
         Modal.error({
           title: 'Connection Error',
-          content: error.message,
+          content: error?.message ?? error,
         }),
       ),
     [connectWallet],
@@ -63,6 +65,20 @@ const Header = () => {
 
     if (web3ModalRef.current.cachedProvider) {
       handleWalletConnect()
+    }
+
+    const INTERVAL_TIME = 10000
+    updateWalletTimer.current = setInterval(() => {
+      const address = PWCore.provider?.address?.toCKBAddress?.() ?? ''
+      if (Wallet.connecting === false && address) {
+        Wallet.reloadWallet(address)
+      }
+    }, INTERVAL_TIME)
+
+    return () => {
+      if (updateWalletTimer.current) {
+        clearInterval(updateWalletTimer.current)
+      }
     }
   })
 

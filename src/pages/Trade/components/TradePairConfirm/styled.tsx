@@ -103,6 +103,9 @@ export const OrderBox = styled.div`
       i {
         font-size: 12px;
       }
+      span {
+        color: rgba(81, 119, 136, 1) !important;
+      }
     }
     li {
       display: flex;
@@ -113,6 +116,10 @@ export const OrderBox = styled.div`
         display: inline-block;
         text-align: right;
         font-weight: 300;
+        i {
+          display: inline;
+          margin-left: 5px;
+        }
         &:first-child {
           text-align: left;
           text-indent: 10px;
@@ -126,7 +133,7 @@ export const OrderBox = styled.div`
             font-weight: 500;
           }
           &:last-child {
-            width: 85px;
+            width: 60px;
             margin-left: 5px;
             font-size: 14px;
             display: inline-block;
