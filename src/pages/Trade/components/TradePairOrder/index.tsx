@@ -52,16 +52,13 @@ export default () => {
   }, [ckbBalance])
 
   const maxPay = useMemo(() => {
-    const p =
-      Order.orderType === OrderType.Buy
-        ? new BigNumber(Order.maxPay).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE)
-        : new BigNumber(Order.maxPay)
+    const p = new BigNumber(Order.maxPay)
     if (p.isLessThan(0)) {
       return '0'
     }
 
     return p.toString()
-  }, [Order.maxPay, Order.orderType])
+  }, [Order.maxPay])
 
   const setMaxPay = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions

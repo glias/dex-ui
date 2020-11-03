@@ -119,7 +119,7 @@ export default function TradePairConfirm() {
               <div>{i18n.t(`trade.price`)}</div>
               <div>
                 <span>{Order.price}</span>
-                <span>{`${seller} per ${buyer}`}</span>
+                <span>{`${seller}/${buyer}`}</span>
               </div>
             </li>
             <Divider />

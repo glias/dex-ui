@@ -108,7 +108,8 @@ export class PlaceOrderBuilder extends Builder {
       orderOutput.capacity = neededCapacity
       orderOutput.setHexData(buildSellData(`${this.pay}`, receive, this.price))
       const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, SUDT_TYPE_SCRIPT)
-      changeOutput.setHexData(buildChangeData(sudtSumAmount.sub(this.pay).toString(AmountUnit.shannon)))
+      const changeAmount = sudtSumAmount.sub(this.pay).toString()
+      changeOutput.setHexData(buildChangeData(changeAmount))
       outputs = outputs.concat([orderOutput, changeOutput])
     }
 

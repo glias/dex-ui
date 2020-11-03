@@ -25,7 +25,7 @@
       "maxIntro": "Free capacity in your current account",
       "insufficientSUDTBalance": "Insufficient sUDT balance",
       "insufficientCKBBalance": "Insufficient CKB balance",
-      "unEffectiveNumber": "Please input the effective number",
+      "unEffectiveNumber": "Please fill in a valid number",
       "lessThanMaxNumber": "The value should be less than MAX",
       "maximumDecimal": "The value up to {{decimal}} precision",
       "tooSmallNumber": "The value is too small",
