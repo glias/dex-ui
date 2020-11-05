@@ -139,6 +139,13 @@ export const HeaderMeta = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  .explorer-svg {
+    display: inline;
+    width: 15px;
+    float: right;
+    color: rgba(136, 136, 136, 1);
+    margin-right: 5px;
+  }
   .sidebarBox {
     .ant-popover-content {
       overflow: hidden;
