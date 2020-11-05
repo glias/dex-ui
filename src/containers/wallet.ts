@@ -5,7 +5,7 @@ import { createContainer } from 'unstated-next'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
 import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
-import { CKB_NODE_URL, PRICE_DECIMAL, SUDT_TYPE_SCRIPT } from '../utils'
+import { CKB_NODE_URL, IS_DEVNET, PRICE_DECIMAL, PW_DEV_CHAIN_CONFIG, SUDT_TYPE_SCRIPT } from '../utils'
 import { OrderType } from './order'
 
 const { SDCollector } = require('./sd-collector')
@@ -142,7 +142,13 @@ export function useWallet() {
       })
 
       const newWeb3 = new Web3(provider)
-      const newPw = await new PWCore(CKB_NODE_URL).init(new Web3ModalProvider(newWeb3), new SDCollector() as any)
+      const newPw = await new PWCore(CKB_NODE_URL).init(
+        new Web3ModalProvider(newWeb3),
+        new SDCollector() as any,
+        IS_DEVNET ? 2 : undefined,
+        IS_DEVNET ? PW_DEV_CHAIN_CONFIG : undefined,
+      )
+
       const [ethAddr] = await newWeb3.eth.getAccounts()
       const ckbAddr = PWCore.provider.address.toCKBAddress()
 
