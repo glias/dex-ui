@@ -26,32 +26,38 @@ interface SudtWallet extends Wallet {
   lockedOrder: Amount
 }
 
+const defaultCkbWallet = {
+  balance: Amount.ZERO,
+  inuse: Amount.ZERO,
+  free: Amount.ZERO,
+  lockedOrder: Amount.ZERO,
+  address: '',
+  bestPrice: '0.00',
+}
+
+const defaultSUDTWallet = {
+  balance: Amount.ZERO,
+  lockedOrder: Amount.ZERO,
+  address: '',
+  bestPrice: '0.00',
+}
+
+const defaultEthWallet = {
+  balance: Amount.ZERO,
+  lockedOrder: Amount.ZERO,
+  address: '',
+  bestPrice: '0.00',
+}
+
 export function useWallet() {
   const [pw, setPw] = useState<null | PWCore>(null)
   const [web3, setWeb3] = useState<null | Web3>(null)
   const web3ModalRef = useRef<Web3Modal | null>(null)
-  const [ckbWallet, setCkbWallet] = useState<CkbWallet>({
-    balance: Amount.ZERO,
-    inuse: Amount.ZERO,
-    free: Amount.ZERO,
-    lockedOrder: Amount.ZERO,
-    address: '',
-    bestPrice: '0.00',
-  })
+  const [ckbWallet, setCkbWallet] = useState<CkbWallet>(defaultCkbWallet)
   const [connecting, setConnecting] = useState(false)
-  const [ethWallet, setEthWallet] = useState<Wallet>({
-    balance: Amount.ZERO,
-    lockedOrder: Amount.ZERO,
-    address: '',
-    bestPrice: '0.00',
-  })
+  const [ethWallet, setEthWallet] = useState<Wallet>(defaultEthWallet)
 
-  const [sudtWallet, setSudtWallet] = useState<SudtWallet>({
-    balance: Amount.ZERO,
-    lockedOrder: Amount.ZERO,
-    address: '',
-    bestPrice: '0.00',
-  })
+  const [sudtWallet, setSudtWallet] = useState<SudtWallet>(defaultSUDTWallet)
 
   const setEthBalance = useCallback(
     (balance: Amount) => {
@@ -176,6 +182,12 @@ export function useWallet() {
     [setCkbAddress, setEthAddress],
   )
 
+  const resetWallet = useCallback(() => {
+    setCkbWallet(defaultCkbWallet)
+    setSudtWallet(defaultSUDTWallet)
+    setEthWallet(defaultEthWallet)
+  }, [])
+
   return {
     pw,
     web3,
@@ -197,6 +209,7 @@ export function useWallet() {
     connectWallet,
     disconnectWallet,
     web3ModalRef,
+    resetWallet,
   }
 }
 

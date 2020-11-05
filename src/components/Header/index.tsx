@@ -24,6 +24,8 @@ import { getChainData, getProviderOptions } from './chain'
 import WalletContainer from '../../containers/wallet'
 import { useDidMount } from '../../hooks'
 
+const CLOSE_BY_THE_USER_ERROR_MSG = 'Modal closed by user'
+
 const Header = () => {
   const history = useHistory()
   const Wallet = useContainer(WalletContainer)
@@ -43,17 +45,21 @@ const Header = () => {
   const updateWalletTimer = useRef<ReturnType<typeof setInterval> | undefined>()
 
   const { web3ModalRef } = Wallet
-  const { connectWallet, disconnectWallet } = Wallet
+  const { connectWallet, disconnectWallet, resetWallet } = Wallet
 
   const handleWalletConnect = useCallback(
     () =>
-      connectWallet().catch(error =>
+      connectWallet().catch(error => {
+        resetWallet()
+        if (error === CLOSE_BY_THE_USER_ERROR_MSG) {
+          return
+        }
         Modal.error({
           title: 'Connection Error',
           content: error?.message ?? error,
-        }),
-      ),
-    [connectWallet],
+        })
+      }),
+    [connectWallet, resetWallet],
   )
 
   useDidMount(() => {
