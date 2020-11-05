@@ -199,12 +199,13 @@ export default () => {
       ))}
     </OrderSelectPopover>
   )
+  const isLessThanMiniumReceive = new BigNumber(receive).isLessThan(MINIUM_RECEIVE)
 
   const confirmButton = (
     <Button
       htmlType="submit"
       className="submit-btn"
-      disabled={Wallet.connecting || insufficientCKB || maxPayOverFlow}
+      disabled={Wallet.connecting || insufficientCKB || insufficientCKB || maxPayOverFlow || isLessThanMiniumReceive}
       size="large"
       type="text"
       loading={collectingCells || Wallet.connecting}
@@ -212,8 +213,6 @@ export default () => {
       {submitStatus}
     </Button>
   )
-
-  const isLessThanMiniumReceive = new BigNumber(receive).isLessThan(MINIUM_RECEIVE)
 
   const tooltipTitle = useMemo(() => {
     if (isLessThanMiniumReceive) {
