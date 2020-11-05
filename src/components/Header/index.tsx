@@ -25,6 +25,7 @@ import WalletContainer from '../../containers/wallet'
 import { useDidMount } from '../../hooks'
 
 const CLOSE_BY_THE_USER_ERROR_MSG = 'Modal closed by user'
+const UNKNOWN_CONNECT_WALLET_FAILED = 'Connect wallet failed, please check wallet settings.'
 
 const Header = () => {
   const history = useHistory()
@@ -56,7 +57,7 @@ const Header = () => {
         }
         Modal.error({
           title: 'Connection Error',
-          content: error?.message ?? error,
+          content: error?.message ?? error ?? UNKNOWN_CONNECT_WALLET_FAILED,
         })
       }),
     [connectWallet, resetWallet],
