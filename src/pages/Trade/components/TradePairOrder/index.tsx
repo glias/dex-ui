@@ -11,6 +11,7 @@ import {
   SUDT_DECIMAL,
   ORDER_CELL_CAPACITY,
   MAX_TRANSACTION_FEE,
+  MINIUM_RECEIVE,
 } from '../../../../utils/const'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
@@ -212,7 +213,13 @@ export default () => {
     </Button>
   )
 
+  const isLessThanMiniumReceive = new BigNumber(receive).isLessThan(MINIUM_RECEIVE)
+
   const tooltipTitle = useMemo(() => {
+    if (isLessThanMiniumReceive) {
+      return i18n.t('trade.miniumReceive')
+    }
+
     if (OrderType.Buy === Order.orderType) {
       return i18n.t('trade.insufficientCKBBalance')
     }
@@ -222,7 +229,7 @@ export default () => {
     }
 
     return i18n.t('trade.insufficientCKBBalance')
-  }, [Order.orderType, maxPayOverFlow])
+  }, [Order.orderType, maxPayOverFlow, isLessThanMiniumReceive])
 
   return (
     <PairOrderFormBox id="order-box">
@@ -338,7 +345,11 @@ export default () => {
         </Form.Item>
         <div className="dividing-line" />
         <Form.Item className="submit-item">
-          {insufficientCKB || maxPayOverFlow ? <Tooltip title={tooltipTitle}>{confirmButton}</Tooltip> : confirmButton}
+          {insufficientCKB || maxPayOverFlow || isLessThanMiniumReceive ? (
+            <Tooltip title={tooltipTitle}>{confirmButton}</Tooltip>
+          ) : (
+            confirmButton
+          )}
         </Form.Item>
       </Form>
     </PairOrderFormBox>

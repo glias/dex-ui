@@ -49,6 +49,8 @@ export const PairList = [
   },
 ]
 
+export const MINIUM_RECEIVE = 0.00000001
+
 export const SUDT_TYPE_SCRIPT = new Script(
   process.env.REACT_APP_SUDT_TYPE_HASH || '0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
   process.env.REACT_APP_SUDT_TYPE_ARGS || '0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902',
