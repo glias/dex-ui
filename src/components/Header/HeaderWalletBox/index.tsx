@@ -8,7 +8,7 @@ import { ReactComponent as SignOutSVG } from '../../../assets/svg/exit.svg'
 import { ReactComponent as CopySVG } from '../../../assets/svg/copy.svg'
 import { ReactComponent as QuestionSVG } from '../../../assets/svg/Question.svg'
 import { ReactComponent as ExplorerSVG } from '../../../assets/svg/toExplorer.svg'
-import { PairList } from '../../../utils/const'
+import { EXPLORER_URL, PairList } from '../../../utils/const'
 import i18n from '../../../utils/i18n'
 import { HeaderBox, HeaderPanel, HeaderMeta, HeaderWalletBox, HeaderWallet, WalletList } from './styled'
 
@@ -159,22 +159,11 @@ export default function WalletBox({ disconnect, addresses }: Props) {
                       </div>
                       <div className="wallet-info">{walletFlexBox(item)}</div>
                       <div className="explorer">
-                        <Button
-                          type="text"
-                          size="small"
-                          onClick={() => {
-                            // @TODO: anchor link
-                            if (item.name === 'CKB') {
-                              window.open(`https://explorer.nervos.org/aggron/address/${(item as any).address}`)
-                            } else {
-                              window.open(`https://explorer.nervos.org/aggron/address/${(item as any).address}`)
-                            }
-                          }}
-                        >
+                        <a href={`${EXPLORER_URL}address/${item.address}`} target="_blank" rel="noreferrer noopener">
                           <div className="explorer-svg">
-                            <ExplorerSVG className="full-width-and-height" />
+                            <ExplorerSVG className="full-width-and-height" fill="#7d7d7d" />
                           </div>
-                        </Button>
+                        </a>
                       </div>
                     </li>
                   ))}
