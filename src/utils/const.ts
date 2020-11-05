@@ -50,29 +50,35 @@ export const PairList = [
 ]
 
 export const SUDT_TYPE_SCRIPT = new Script(
-  '0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
-  '0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902',
+  process.env.SUDT_TYPE_HASH || '0xc5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
+  process.env.SUDT_TYPE_ARGS || '0x6fe3733cd9df22d05b8a70f7b505d0fb67fb58fb88693217135ff5079713e902',
   HashType.type,
 )
 
 export const SUDT_DEP = new CellDep(
   DepType.code,
-  new OutPoint('0xe12877ebd2c3c364dc46c5c992bcfaf4fee33fa13eebdf82c591fc9825aab769', '0x0'),
+  new OutPoint(
+    process.env.SUDT_DEP_OUT_POINT || '0xe12877ebd2c3c364dc46c5c992bcfaf4fee33fa13eebdf82c591fc9825aab769',
+    '0x0',
+  ),
 )
 
 export const ORDER_BOOK_LOCK_SCRIPT = new Script(
-  '0x9c833b9ebd4259ca044d2c47c5e51b7fc25380b07291e54b248d3808f08ed7fd',
-  '0xb74a976e3ceab91f27690b27473731d7ccdff45302bb082394a03cb97641edaa',
+  process.env.ORDER_BOOK_LOCK_HASH || '0x9c833b9ebd4259ca044d2c47c5e51b7fc25380b07291e54b248d3808f08ed7fd',
+  '0x0000000000000000000000000000000000000000000000000000000000000000',
   HashType.type,
 )
 
 export const ORDER_BOOK_LOCK_DEP = new CellDep(
   DepType.code,
-  new OutPoint('0xcdfd397823f6a130294c72fbe397c469d459b83db401296c291db7b170b15839', '0x0'),
+  new OutPoint(
+    process.env.ORDER_BOOK_LOCK_DEP_OUT_POINT || '0xcdfd397823f6a130294c72fbe397c469d459b83db401296c291db7b170b15839',
+    '0x0',
+  ),
 )
 
-export const CKB_NODE_URL = 'https://aggron.ckb.dev'
-export const CKB_INDEXER_URL = 'https://prototype.ckbapp.dev/testnet/indexer'
+export const CKB_NODE_URL = process.env.CKB_NODE_URL || 'https://aggron.ckb.dev'
+export const CKB_INDEXER_URL = process.env.CKB_INDEXER_URL || 'https://prototype.ckbapp.dev/testnet/indexer'
 
 export const COMMISSION_FEE = 0.003
 export const PRICE_DECIMAL = new BigNumber(10).pow(new BigNumber(10))
