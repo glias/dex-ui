@@ -1,5 +1,4 @@
 import WalletConnectProvider from '@walletconnect/web3-provider'
-import Torus from '@toruslabs/torus-embed'
 
 export const supportedChains = [
   {
@@ -207,9 +206,6 @@ export function getProviderOptions() {
         // infuraId: process.env.REACT_APP_INFURA_ID
         infuraId: '89a648e271d54224ba4827d348cbaa54',
       },
-    },
-    torus: {
-      package: Torus,
     },
   }
   return providerOptions

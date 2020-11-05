@@ -1,43 +1,45 @@
-  body {
-    margin: 0;
-    padding: 0;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  @font-face {
-    font-family: 'Lato';
-    src: local('Lato'), url('./assets/fonts/Lato-Regular.ttf') format('truetype');
-    font-weight: 300;
-    font-style: normal;
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Lato, sans-serif, Montserrat, PingFang SC, -apple-system;
-  }
-  
-  .monospace {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, Courier New, monospace;
-  }
-  
-  *[role]:focus {
-    outline: none;
-  }
-  
-  .container {
-    width: auto;
-  }
-  
-  a {
-    text-decoration: none;
-    font-size: inherit;
-    font-weight: 500;
-    color: inherit;
-  }
+@import '~antd/dist/antd.css';
+
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-overflow-scrolling: touch;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: local('Lato'), url('./assets/fonts/Lato-Regular.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Lato, sans-serif, Montserrat, PingFang SC, -apple-system;
+}
+
+.monospace {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, Courier New, monospace;
+}
+
+*[role]:focus {
+  outline: none;
+}
+
+.container {
+  width: auto;
+}
+
+a {
+  text-decoration: none;
+  font-size: inherit;
+  font-weight: 500;
+  color: inherit;
+}
   
 ul, ol { list-style: none; margin: 0}
 li { list-style: none;}
