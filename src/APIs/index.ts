@@ -74,7 +74,7 @@ export function getCkbBalance(lock: Script) {
   })
 }
 
-export function getBestPrice(type: Script, orderType: OrderType) {
+export async function getBestPrice(type: Script, orderType: OrderType) {
   const params = {
     type_code_hash: type.codeHash,
     type_hash_type: type.hashType,
@@ -82,9 +82,16 @@ export function getBestPrice(type: Script, orderType: OrderType) {
     is_bid: orderType === OrderType.Sell,
   }
 
-  return axios.get(`${SERVER_URL}/best-price`, {
-    params,
-  })
+  try {
+    // if there is no order existed, get best price may failed
+    const data = await axios.get(`${SERVER_URL}/best-price`, {
+      params,
+    })
+
+    return data
+  } catch (error) {
+    return Promise.resolve({ data: { price: '0' } })
+  }
 }
 
 export function getHistoryOrders(lockArgs: string) {

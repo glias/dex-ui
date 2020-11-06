@@ -1,4 +1,5 @@
 import WalletConnectProvider from '@walletconnect/web3-provider'
+import { INFURA_ID } from '../../utils'
 
 export const supportedChains = [
   {
@@ -185,10 +186,8 @@ export function getChainData(chainId: number) {
   if (!chainData) {
     throw new Error('ChainId missing or not supported')
   }
-  // const API_KEY = process.env.REACT_APP_INFURA_ID;
-  const API_KEY = '89a648e271d54224ba4827d348cbaa54'
-  if (chainData.rpc_url.includes('infura.io') && chainData.rpc_url.includes('%API_KEY%') && API_KEY) {
-    const rpcUrl = chainData.rpc_url.replace('%API_KEY%', API_KEY)
+  if (chainData.rpc_url.includes('infura.io') && chainData.rpc_url.includes('%API_KEY%')) {
+    const rpcUrl = chainData.rpc_url.replace('%API_KEY%', INFURA_ID)
     return {
       ...chainData,
       rpc_url: rpcUrl,
@@ -204,7 +203,7 @@ export function getProviderOptions() {
       package: WalletConnectProvider,
       options: {
         // infuraId: process.env.REACT_APP_INFURA_ID
-        infuraId: '89a648e271d54224ba4827d348cbaa54',
+        infuraId: INFURA_ID,
       },
     },
   }

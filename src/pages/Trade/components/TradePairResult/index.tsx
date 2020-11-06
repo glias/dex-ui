@@ -7,6 +7,7 @@ import declined from '../../../../assets/img/declined.png'
 import { OrderButton, TracePairResultBox, TradePairConfirmHeader, TradePairConfirmContent } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
 import { ReactComponent as ExplorerSVG } from '../../../../assets/svg/toExplorer.svg'
+import { EXPLORER_URL } from '../../../../utils'
 
 export default function Trade() {
   const Order = useContainer(OrderContainer)
@@ -19,7 +20,7 @@ export default function Trade() {
         <img src={orderPlace} alt="Order Place" />
       </div>
       <div className="order-tip">{i18n.t('trade.orderSubmitted')}</div>
-      <a target="_blank" rel="noreferrer noopener" href={`https://explorer.nervos.org/aggron/transaction/${txHash}`}>
+      <a target="_blank" rel="noreferrer noopener" href={`${EXPLORER_URL}transaction/${txHash}`}>
         {i18n.t('trade.viewExplorer')}
         <div className="explorer-svg">
           <ExplorerSVG className="full-width-and-height" />
