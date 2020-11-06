@@ -1,7 +1,6 @@
 import React from 'react'
 import { Button } from 'antd'
 import { useContainer } from 'unstated-next'
-import { useSelector } from 'react-redux'
 import i18n from '../../../../utils/i18n'
 import orderPlace from '../../../../assets/img/orderPlaced.png'
 import declined from '../../../../assets/img/declined.png'
@@ -11,8 +10,6 @@ import { ReactComponent as ExplorerSVG } from '../../../../assets/svg/toExplorer
 import { EXPLORER_URL } from '../../../../utils'
 
 export default function Trade() {
-  const isOrderSuccess = useSelector((state: any) => state.trace.isOrderSuccess)
-  const tradeResultStr = isOrderSuccess ? i18n.t(`trade.TradeSuccess`) : i18n.t(`trade.TradeFailed`)
   const Order = useContainer(OrderContainer)
   const handleClickSubmit = () => {
     Order.setStep(OrderStep.Order)
@@ -57,7 +54,7 @@ export default function Trade() {
             color: 'rgba(0, 106, 151, 1)',
           }}
         >
-          {tradeResultStr}
+          {i18n.t(`trade.TradeSuccess`)}
         </Button>
       </OrderButton>
     </TracePairResultBox>

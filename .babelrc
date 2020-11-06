@@ -2,6 +2,12 @@
   "plugins": [
     ["babel-plugin-styled-components", {
       "namespace": "dex-"
-    }]
+    }],
+    ["import", { "libraryName": "antd", "libraryDirectory": "es", "style": true}, "antd"],
+    ["import", {
+      "libraryName": "@ant-design/icons",
+      "libraryDirectory": "es/icons",
+      "camel2DashComponentName": false
+    }, "ant-design-icons"]
   ]
 }
