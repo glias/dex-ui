@@ -70,6 +70,7 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
+    "start:production": "serve build -s -p 3030",
     "build": "react-app-rewired build",
     "test:cov": "jest test --coverage",
     "lint": "eslint src/**/*.{ts,tsx} --fix",
