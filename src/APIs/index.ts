@@ -1,5 +1,6 @@
 import { Script } from '@lay2/pw-core'
-import axios from 'axios'
+import type { Cell } from '@ckb-lumos/base'
+import axios, { AxiosResponse } from 'axios'
 import { OrderType } from '../containers/order'
 import { SUDT_TYPE_SCRIPT } from '../utils'
 
@@ -20,7 +21,7 @@ export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHas
   })
 }
 
-export function getCkbLiveCells(lock: Script, ckbAmount: string) {
+export function getCkbLiveCells(lock: Script, ckbAmount: string): Promise<AxiosResponse<Cell[]>> {
   const params = {
     lock_code_hash: lock.codeHash,
     lock_hash_type: lock.hashType,
@@ -28,12 +29,10 @@ export function getCkbLiveCells(lock: Script, ckbAmount: string) {
     ckb_amount: ckbAmount,
   }
 
-  return axios.get(`${SERVER_URL}/cells`, {
-    params,
-  })
+  return axios.post(`${SERVER_URL}/cells-for-amount`, params)
 }
 
-export function getSudtLiveCells(type: Script, lock: Script, amount: string) {
+export function getSudtLiveCells(type: Script, lock: Script, amount: string): Promise<AxiosResponse<Cell[]>> {
   const params = {
     type_code_hash: type.codeHash,
     type_hash_type: type.hashType,
@@ -44,9 +43,7 @@ export function getSudtLiveCells(type: Script, lock: Script, amount: string) {
     sudt_amount: amount,
   }
 
-  return axios.get(`${SERVER_URL}/cells`, {
-    params,
-  })
+  return axios.post(`${SERVER_URL}/cells-for-amount`, params)
 }
 
 export function getSudtBalance(type: Script, lock: Script) {
