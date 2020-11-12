@@ -16,7 +16,7 @@ import OrderContainer, { OrderStep, OrderType } from '../../../../containers/ord
 import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import { calcBuyReceive, calcSellReceive } from '../../../../utils/fee'
-import { COMMISSION_FEE } from '../../../../utils'
+import { COMMISSION_FEE, spentCells } from '../../../../utils'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
@@ -37,7 +37,9 @@ export default function TradePairConfirm() {
   const onConfirm = useCallback(async () => {
     setDisabled(true)
     try {
-      const txHash = await Wallet.pw?.sendTransaction(Order.tx!)
+      const tx = Order.tx!
+      const txHash = await Wallet.pw?.sendTransaction(tx)
+      spentCells.add(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
 
       const isBid = Order.orderType === OrderType.Buy
       const receiveCalc = isBid ? calcBuyReceive : calcSellReceive

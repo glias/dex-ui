@@ -1,17 +1,43 @@
 /** eslint-disable import/no-unresolved */
 import CKB from '@nervosnetwork/ckb-sdk-core'
-import { CKB_NODE_URL } from '../utils'
+import { CKB_NODE_URL, spentCells } from '../utils'
 
-export const checkSubmittedTxs = (hashes: Array<string>) => {
+export const checkSubmittedTxs = async (hashes: Array<string>) => {
   const ckb = new CKB(CKB_NODE_URL)
+  const allSpentCells = spentCells.get()
+  const spentCellsLength = allSpentCells.length
   const requests: Array<['getTransaction', string]> = hashes.map(hash => ['getTransaction', hash])
-  return ckb.rpc
-    .createBatchRequest(requests)
-    .exec()
-    .then(resList => resList.map(res => res?.txStatus?.status === 'committed'))
-    .catch(() => {
-      return new Array<boolean>(requests.length).fill(false)
-    })
+  try {
+    const resList = await ckb.rpc.createBatchRequest(requests).exec()
+    const unconfirmedHashes: Array<boolean> = []
+    for (let i = 0; i < resList.length; i++) {
+      const tx = resList[i]
+      const inputs = tx?.transaction?.inputs ?? []
+      if (tx?.txStatus?.status === 'committed') {
+        for (let j = 0; j < spentCellsLength; j++) {
+          const cell = allSpentCells[j]
+          if (
+            inputs.some(
+              (input: any) => input.previousOutput.index === cell.index && input.previousOutput.txHash === cell.tx_hash,
+            )
+          ) {
+            allSpentCells.splice(j, 1)
+          }
+        }
+        unconfirmedHashes.push(true)
+      } else {
+        unconfirmedHashes.push(false)
+      }
+    }
+
+    if (spentCellsLength !== allSpentCells.length) {
+      spentCells.set(allSpentCells)
+    }
+
+    return unconfirmedHashes
+  } catch (e) {
+    return new Array<boolean>(requests.length).fill(false)
+  }
 }
 
 export default { checkSubmittedTxs }
