@@ -2,7 +2,7 @@ import { useEffect, MutableRefObject, useCallback } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import { getHistoryOrders } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
-import { parseOrderRecord, pendingOrders, REJECT_ERROR_CODE } from '../../../../utils'
+import { parseOrderRecord, pendingOrders, REJECT_ERROR_CODE, spentCells } from '../../../../utils'
 import type { RawOrder } from '../../../../utils'
 
 export interface HistoryState {
@@ -115,7 +115,9 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
 
       try {
         dispatch({ type: ActionType.AddPendingId, value: orderId })
-        const hash = await builder.send()
+        const tx = await builder.build()
+        const hash = await builder.send(tx)
+        spentCells.add(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
         pendingOrders.add(orderId, txHash)
         return hash
       } catch (error) {

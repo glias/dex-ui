@@ -1,7 +1,14 @@
 import type { SubmittedOrder } from '../containers/order'
 
-const PENDING_ORDERS_LABEL = 'pending_orders'
-const SUBMITTED_ORDERS_LABEL = 'submitted_orders'
+const PENDING_ORDERS_LABEL = 'ckb_dex_pending_orders'
+const SUBMITTED_ORDERS_LABEL = 'ckb_dex_submitted_orders'
+const SPENDT_CELLS_LABEL = 'ckb_dex_spent_cells'
+
+export interface SpentCell {
+  tx_hash: string
+  index: string
+  timestamp?: string
+}
 
 export const pendingOrders = {
   get: () => {
@@ -36,4 +43,41 @@ export const submittedOrders = {
   },
 }
 
-export default { pendingOrders, submittedOrders }
+const isSameSpentCell = (c1: SpentCell, c2: SpentCell) => {
+  return c1.index === c2.index && c1.tx_hash === c2.tx_hash
+}
+
+export const spentCells = {
+  get: (): SpentCell[] => {
+    try {
+      return JSON.parse(localStorage.getItem(SPENDT_CELLS_LABEL)!) || []
+    } catch (err) {
+      return []
+    }
+  },
+  add: (cells: SpentCell[]) => {
+    const allSpentCells = spentCells.get()
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i]
+      if (!allSpentCells.some(c => isSameSpentCell(c, cell))) {
+        allSpentCells.push(cell)
+      }
+    }
+    spentCells.set(allSpentCells)
+  },
+  remove: (cells: SpentCell[]) => {
+    const allSpentCells = spentCells.get()
+    for (let i = 0; i < allSpentCells.length; i++) {
+      const cell = allSpentCells[i]
+      if (cells.some(c => isSameSpentCell(c, cell))) {
+        allSpentCells.splice(i, 1)
+      }
+    }
+    spentCells.set(allSpentCells)
+  },
+  set: (cells: SpentCell[]) => {
+    localStorage.setItem(SPENDT_CELLS_LABEL, JSON.stringify(cells))
+  },
+}
+
+export default { pendingOrders, submittedOrders, spentCells }

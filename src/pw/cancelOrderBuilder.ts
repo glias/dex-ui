@@ -51,8 +51,8 @@ export class CancelOrderBuilder extends Builder {
     return tx
   }
 
-  send() {
-    return this.core.sendTransaction(this)
+  send(tx?: Transaction) {
+    return this.core.sendTransaction(tx ?? this)
   }
 
   #getOrderCell = async () => {
