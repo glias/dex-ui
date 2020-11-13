@@ -5,10 +5,9 @@ import { createContainer } from 'unstated-next'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
 import { getBestPrice, getCkbBalance, getSudtBalance } from '../APIs'
-import { CKB_NODE_URL, IS_DEVNET, PRICE_DECIMAL, PW_DEV_CHAIN_CONFIG, SUDT_TYPE_SCRIPT } from '../utils'
+import { CKB_NODE_URL, IS_DEVNET, PRICE_DECIMAL, PW_DEV_CHAIN_CONFIG, SUDT_TYPE_SCRIPT } from '../constants'
 import { OrderType } from './order'
-
-const { SDCollector } = require('./sd-collector')
+import DEXCollector from '../pw/dexCollector'
 
 interface Wallet {
   balance: Amount
@@ -150,7 +149,7 @@ export function useWallet() {
       const newWeb3 = new Web3(provider)
       const newPw = await new PWCore(CKB_NODE_URL).init(
         new Web3ModalProvider(newWeb3),
-        new SDCollector() as any,
+        new DEXCollector(),
         IS_DEVNET ? 2 : undefined,
         IS_DEVNET ? PW_DEV_CHAIN_CONFIG : undefined,
       )

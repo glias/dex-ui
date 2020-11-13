@@ -1,6 +1,6 @@
 import React from 'react'
 import { PairBox, PairSpace } from './styled'
-import { PairList } from '../../../../utils/const'
+import { PairList } from '../../../../constants'
 
 interface IMenuListProps {
   pair: String

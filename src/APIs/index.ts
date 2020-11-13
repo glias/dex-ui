@@ -2,7 +2,7 @@ import { Script } from '@lay2/pw-core'
 import type { Cell } from '@ckb-lumos/base'
 import axios, { AxiosResponse } from 'axios'
 import { OrderType } from '../containers/order'
-import { SUDT_TYPE_SCRIPT } from '../utils'
+import { SUDT_DAI } from '../constants'
 
 export * from './checkSubmittedTxs'
 
@@ -29,7 +29,7 @@ export function getCkbLiveCells(lock: Script, ckbAmount: string): Promise<AxiosR
     ckb_amount: ckbAmount,
   }
 
-  return axios.post(`${SERVER_URL}/cells-for-amount`, params)
+  return axios.get(`${SERVER_URL}/cells-for-amount`, { params })
 }
 
 export function getSudtLiveCells(type: Script, lock: Script, amount: string): Promise<AxiosResponse<Cell[]>> {
@@ -43,7 +43,7 @@ export function getSudtLiveCells(type: Script, lock: Script, amount: string): Pr
     sudt_amount: amount,
   }
 
-  return axios.post(`${SERVER_URL}/cells-for-amount`, params)
+  return axios.get(`${SERVER_URL}/cells-for-amount`, { params })
 }
 
 export function getSudtBalance(type: Script, lock: Script) {
@@ -92,13 +92,16 @@ export async function getBestPrice(type: Script, orderType: OrderType) {
 }
 
 export function getHistoryOrders(lockArgs: string) {
+  const TypeScript = SUDT_DAI.toTypeScript()
+
   const params = {
     order_lock_args: lockArgs,
-    type_code_hash: SUDT_TYPE_SCRIPT.codeHash,
-    type_hash_type: SUDT_TYPE_SCRIPT.hashType,
-    type_args: SUDT_TYPE_SCRIPT.args,
+    type_code_hash: TypeScript.codeHash,
+    type_hash_type: TypeScript.hashType,
+    type_args: TypeScript.args,
   }
 
+  // TODO: order history should get all sudt
   return axios.get(`${SERVER_URL}/order-history`, {
     params,
   })

@@ -1,6 +1,7 @@
 /** eslint-disable import/no-unresolved */
 import CKB from '@nervosnetwork/ckb-sdk-core'
-import { CKB_NODE_URL, spentCells } from '../utils'
+import { CKB_NODE_URL } from '../constants'
+import { spentCells } from '../utils'
 
 export const checkSubmittedTxs = async (hashes: Array<string>) => {
   const ckb = new CKB(CKB_NODE_URL)

@@ -12,7 +12,8 @@ import {
   ORDER_CELL_CAPACITY,
   MAX_TRANSACTION_FEE,
   MINIUM_RECEIVE,
-} from '../../../../utils/const'
+  SUDT_DAI,
+} from '../../../../constants'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
 import TracePairCoin from '../TracePairCoin'
@@ -21,6 +22,7 @@ import OrderContainer, { OrderStep, OrderType } from '../../../../containers/ord
 import WalletContainer from '../../../../containers/wallet'
 import styles from './tradePairOrder.module.css'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
+import DEXCollector from '../../../../pw/dexCollector'
 
 export default () => {
   const [form] = Form.useForm()
@@ -149,6 +151,8 @@ export default () => {
         new Amount(Order.pay),
         Order.orderType,
         Order.price,
+        SUDT_DAI,
+        new DEXCollector(),
       )
       try {
         setCollectingCells(true)
