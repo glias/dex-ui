@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from './const'
+import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from '../constants'
 
 export function calcBuyReceive(pay: string, price: string) {
   return new BigNumber(pay)

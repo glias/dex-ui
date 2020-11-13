@@ -8,7 +8,7 @@ import WalletBox from './HeaderWalletBox'
 import { ReactComponent as HeaderMoreSVG } from '../../assets/svg/more.svg'
 import { ReactComponent as HeaderMetaSVG } from '../../assets/svg/Component12.svg'
 import i18n from '../../utils/i18n'
-import { thirdPartyLinks } from '../../utils/const'
+import { thirdPartyLinks } from '../../constants'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import {
   HeaderBox,

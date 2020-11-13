@@ -7,20 +7,18 @@ import {
   RawTransaction,
   Address,
   Script,
-  OutPoint,
+  SUDT,
+  SUDTCollector,
 } from '@lay2/pw-core'
-import type { Cell as LumosCell } from '@ckb-lumos/base'
-import { getCkbLiveCells, getSudtLiveCells } from '../APIs'
 import { OrderType } from '../containers/order'
-import { buildSellData, getAmountFromCellData, buildChangeData, buildBuyData } from '../utils/buffer'
+import { buildSellData, buildChangeData, buildBuyData } from '../utils/buffer'
 import {
   ORDER_BOOK_LOCK_SCRIPT,
   ORDER_CELL_CAPACITY,
   SUDT_DEP,
-  SUDT_TYPE_SCRIPT,
   MIN_SUDT_CAPACITY,
   MAX_TRANSACTION_FEE,
-} from '../utils/const'
+} from '../constants'
 import { calcBuyReceive, calcBuyAmount, calcSellReceive } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
@@ -36,35 +34,32 @@ export class PlaceOrderBuilder extends Builder {
 
   inputLock: Script
 
-  constructor(address: Address, pay: Amount, orderType: OrderType, price: string, feeRate?: number) {
+  sudt: SUDT
+
+  collector: SUDTCollector
+
+  constructor(
+    address: Address,
+    pay: Amount,
+    orderType: OrderType,
+    price: string,
+    sudt: SUDT,
+    collector: SUDTCollector,
+    feeRate?: number,
+  ) {
     super(feeRate)
+    this.collector = collector
     this.address = address
     this.orderType = orderType
     this.price = price
     this.pay = pay
+    this.sudt = sudt
     this.orderLock = new Script(
       ORDER_BOOK_LOCK_SCRIPT.codeHash,
       this.address.toLockScript().toHash(),
       ORDER_BOOK_LOCK_SCRIPT.hashType,
     )
     this.inputLock = this.address.toLockScript()
-  }
-
-  public static fromLumosCell(cell: LumosCell) {
-    const {
-      cell_output: { lock, type, capacity },
-      data,
-      out_point,
-    } = cell
-    const { tx_hash, index } = out_point!
-
-    return new Cell(
-      new Amount(capacity, AmountUnit.shannon),
-      Script.fromRPC(lock)!,
-      Script.fromRPC(type),
-      new OutPoint(tx_hash, index),
-      data,
-    )
   }
 
   async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
@@ -75,19 +70,15 @@ export class PlaceOrderBuilder extends Builder {
     const inputs: Cell[] = []
     let outputs: Cell[] = []
 
-    const orderOutput = new Cell(neededCapacity, this.orderLock, SUDT_TYPE_SCRIPT)
+    const orderOutput = new Cell(neededCapacity, this.orderLock, this.sudt.toTypeScript())
 
-    const { data: cells } = await getSudtLiveCells(
-      SUDT_TYPE_SCRIPT,
-      this.inputLock,
-      this.pay.toString(AmountUnit.shannon),
-    )
+    const cells = await this.collector.collectSUDT(this.sudt, this.address, { neededAmount: this.pay })
 
     cells.forEach(cell => {
-      const input = PlaceOrderBuilder.fromLumosCell(cell)
-      sudtSumAmount = sudtSumAmount.add(new Amount(getAmountFromCellData(cell.data)))
-      inputs.push(input)
-      inputCapacity = inputCapacity.add(input.capacity)
+      // TODO: decimal
+      sudtSumAmount = sudtSumAmount.add(cell.getSUDTAmount())
+      inputs.push(cell)
+      inputCapacity = inputCapacity.add(cell.capacity)
     })
 
     if (sudtSumAmount.lt(this.pay)) {
@@ -95,16 +86,14 @@ export class PlaceOrderBuilder extends Builder {
     }
 
     if (inputCapacity.lt(neededCapacity)) {
-      const { data: extraCells } = await getCkbLiveCells(
-        this.inputLock,
-        neededCapacity.sub(inputCapacity).add(new Amount(MIN_SUDT_CAPACITY.toString())).toString(AmountUnit.shannon),
-      )
+      const extraCells = await this.collector.collect(this.address, {
+        neededAmount: neededCapacity.sub(inputCapacity).add(new Amount(MIN_SUDT_CAPACITY.toString())),
+      })
 
       extraCells.forEach(cell => {
         if (inputCapacity.lte(neededCapacity)) {
-          const input = PlaceOrderBuilder.fromLumosCell(cell)
-          inputs.push(input)
-          inputCapacity = inputCapacity.add(input.capacity)
+          inputs.push(cell)
+          inputCapacity = inputCapacity.add(cell.capacity)
         }
       })
     }
@@ -125,7 +114,7 @@ export class PlaceOrderBuilder extends Builder {
     } else {
       orderOutput.capacity = neededCapacity
       orderOutput.setHexData(buildSellData(`${this.pay}`, receive, this.price))
-      const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, SUDT_TYPE_SCRIPT)
+      const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, this.sudt.toTypeScript())
       const changeAmount = sudtSumAmount.sub(this.pay).toString()
       changeOutput.setHexData(buildChangeData(changeAmount))
       outputs = outputs.concat([orderOutput, changeOutput])
@@ -158,16 +147,15 @@ export class PlaceOrderBuilder extends Builder {
     let inputCapacity = Amount.ZERO
     const inputs: Cell[] = []
 
-    const orderOutput = new Cell(buyCellCapacity, this.orderLock, SUDT_TYPE_SCRIPT)
+    const orderOutput = new Cell(buyCellCapacity, this.orderLock, this.sudt.toTypeScript())
     const receive = calcBuyReceive(this.pay.toString(), this.price).toString()
     orderOutput.setHexData(buildBuyData(receive, this.price))
     // fill the inputs
-    const { data: cells } = await getCkbLiveCells(this.inputLock, neededCapacity.toString(AmountUnit.shannon))
+    const cells = await this.collector.collect(this.address, { neededAmount: neededCapacity })
     cells.forEach(cell => {
       if (inputCapacity.lte(neededCapacity)) {
-        const input = PlaceOrderBuilder.fromLumosCell(cell)
-        inputs.push(input)
-        inputCapacity = inputCapacity.add(input.capacity)
+        inputs.push(cell)
+        inputCapacity = inputCapacity.add(cell.capacity)
       }
     })
 

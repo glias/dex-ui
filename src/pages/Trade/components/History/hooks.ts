@@ -2,7 +2,8 @@ import { useEffect, MutableRefObject, useCallback } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import { getHistoryOrders } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
-import { parseOrderRecord, pendingOrders, REJECT_ERROR_CODE, spentCells } from '../../../../utils'
+import { parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
+import { REJECT_ERROR_CODE } from '../../../../constants'
 import type { RawOrder } from '../../../../utils'
 
 export interface HistoryState {

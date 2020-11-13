@@ -9,9 +9,7 @@ import PWCore, {
   OutPoint,
   AmountUnit,
 } from '@lay2/pw-core'
-import { getCkbLiveCells } from '../APIs'
-import { ORDER_BOOK_LOCK_DEP, SUDT_DEP, CKB_NODE_URL } from '../utils/const'
-import PlaceOrderBuilder from './placeOrderBuilder'
+import { ORDER_BOOK_LOCK_DEP, SUDT_DEP, CKB_NODE_URL } from '../constants'
 
 export class CancelOrderBuilder extends Builder {
   address: Address
@@ -27,16 +25,13 @@ export class CancelOrderBuilder extends Builder {
   }
 
   async build(): Promise<Transaction> {
-    const { data: cells } = await getCkbLiveCells(
-      this.address.toLockScript(),
-      Builder.MIN_CHANGE.toString(AmountUnit.shannon),
-    )
+    const cells = await this.collector.collect(this.address, { neededAmount: Builder.MIN_CHANGE })
 
     if (!cells.length) {
       throw new Error('Cannot find extra cells for validation')
     }
 
-    const normalCell = PlaceOrderBuilder.fromLumosCell(cells[0])
+    const [normalCell] = cells
 
     const orderCell = await this.#getOrderCell()
 
