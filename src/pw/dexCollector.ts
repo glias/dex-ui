@@ -51,7 +51,7 @@ export default class DEXCollector extends SUDTCollector {
     const { data: cells } = await getSudtLiveCells(
       sudt.toTypeScript(),
       address.toLockScript(),
-      neededAmount!.toString(sudt.info?.decimals ?? AmountUnit.shannon),
+      neededAmount!.toBigInt().toString(),
     )
 
     return cells.map(DEXCollector.fromLumosCell)
