@@ -2,7 +2,7 @@ import { Script } from '@lay2/pw-core'
 import type { Cell } from '@ckb-lumos/base'
 import axios, { AxiosResponse } from 'axios'
 import { OrderType } from '../containers/order'
-import { SUDT_DAI } from '../constants'
+import { EXPLORER_API, SUDT_DAI } from '../constants'
 
 export * from './checkSubmittedTxs'
 
@@ -107,4 +107,19 @@ export function getHistoryOrders(lockArgs: string) {
   })
 }
 
-export default getLiveCells
+export function getCkbTransactions(address: string, page: number = 1, pageSize: number = 100) {
+  const params = {
+    page,
+    page_size: pageSize,
+  }
+
+  // TODO: order history should get all sudt
+  return axios.get(`${EXPLORER_API}address_transactions/${address}`, {
+    params,
+    headers: {
+      'Content-Type': 'application/vnd.api+json',
+      Accept: 'application/vnd.api+json',
+    },
+    data: null,
+  })
+}
