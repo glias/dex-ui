@@ -7,7 +7,7 @@ import declined from '../../../../assets/img/declined.png'
 import { OrderButton, TracePairResultBox, TradePairConfirmHeader, TradePairConfirmContent } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
 import { ReactComponent as ExplorerSVG } from '../../../../assets/svg/toExplorer.svg'
-import { EXPLORER_URL } from '../../../../utils'
+import { EXPLORER_URL } from '../../../../constants'
 
 export default function Trade() {
   const Order = useContainer(OrderContainer)

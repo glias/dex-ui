@@ -3,14 +3,8 @@ import BigNumber from 'bignumber.js'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import { getBestPrice, getCkbBalance } from '../APIs'
-import {
-  CKB_DECIMAL,
-  PRICE_DECIMAL,
-  SUDT_TYPE_SCRIPT,
-  submittedOrders as submittedOrdersCache,
-  ORDER_CELL_CAPACITY,
-  MAX_TRANSACTION_FEE,
-} from '../utils'
+import { CKB_DECIMAL, PRICE_DECIMAL, SUDT_TYPE_SCRIPT, ORDER_CELL_CAPACITY, MAX_TRANSACTION_FEE } from '../constants'
+import { submittedOrders as submittedOrdersCache } from '../utils'
 import type { OrderRecord } from '../utils'
 import { calcBuyReceive, calcSellReceive } from '../utils/fee'
 import WalletContainer from './wallet'

@@ -8,7 +8,7 @@ import { ReactComponent as SignOutSVG } from '../../../assets/svg/exit.svg'
 import { ReactComponent as CopySVG } from '../../../assets/svg/copy.svg'
 import { ReactComponent as QuestionSVG } from '../../../assets/svg/Question.svg'
 import { ReactComponent as ExplorerSVG } from '../../../assets/svg/toExplorer.svg'
-import { EXPLORER_URL, PairList } from '../../../utils/const'
+import { EXPLORER_URL, PairList } from '../../../constants'
 import i18n from '../../../utils/i18n'
 import { HeaderBox, HeaderPanel, HeaderMeta, HeaderWalletBox, HeaderWallet, WalletList } from './styled'
 

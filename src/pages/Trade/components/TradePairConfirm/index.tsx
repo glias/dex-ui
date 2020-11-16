@@ -16,7 +16,8 @@ import OrderContainer, { OrderStep, OrderType } from '../../../../containers/ord
 import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import { calcBuyReceive, calcSellReceive } from '../../../../utils/fee'
-import { COMMISSION_FEE, spentCells } from '../../../../utils'
+import { COMMISSION_FEE } from '../../../../constants'
+import { spentCells } from '../../../../utils'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)

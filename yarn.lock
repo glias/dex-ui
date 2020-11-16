@@ -34,7 +34,7 @@
   resolved "https://registry.yarnpkg.com/@ant-design/icons-svg/-/icons-svg-4.1.0.tgz#480b025f4b20ef7fe8f47d4a4846e4fee84ea06c"
   integrity sha512-Fi03PfuUqRs76aI3UWYpP864lkrfPo0hluwGqh7NJdLhvH4iRDc3jbJqZIvRDLHKbXrvAfPPV3+zjUccfFvWOQ==
 
-"@ant-design/icons@^4.2.1", "@ant-design/icons@^4.2.2":
+"@ant-design/icons@4.2.2", "@ant-design/icons@^4.2.1", "@ant-design/icons@^4.2.2":
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/@ant-design/icons/-/icons-4.2.2.tgz#6533c5a02aec49238ec4748074845ad7d85a4f5e"
   integrity sha512-DrVV+wcupnHS7PehJ6KiTcJtAR5c25UMgjGECCc6pUT9rsvw0AuYG+a4HDjfxEQuDqKTHwW+oX/nIvCymyLE8Q==
@@ -1212,6 +1212,16 @@
   resolved "https://registry.yarnpkg.com/@chaitanyapotti/random-id/-/random-id-1.0.3.tgz#f52f647cfe9f79fc7723ea2b01b0ad3889204002"
   integrity sha512-xiVWA2vTL3jQeuZ+yebXAtwIeEbh/13RAFxvRq0YxeUc02RBOGyC9eyDKXjwlN0uxPtnEwWxsELkSwnaH5kxjg==
 
+"@ckb-lumos/base@0.13.1":
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/@ckb-lumos/base/-/base-0.13.1.tgz#6439b230bd64e3b6d64fbe0d9c19806b5fbf7ea7"
+  integrity sha512-elJLWRAfLxQ1AKxed3HmBGcDc9TDUV4As9586Qe78BKf8rf7nOQ1VVyaWpUePo7vCPKclXkulY3XpwqnBKtmOg==
+  dependencies:
+    blake2b "^2.1.3"
+    ckb-js-toolkit "^0.9.2"
+    immutable "^4.0.0-rc.12"
+    xxhash "^0.3.0"
+
 "@ckb-lumos/types@^0.2.4":
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/@ckb-lumos/types/-/types-0.2.4.tgz#1733d29a7489af8ddfc297a240249fb3046fda7a"
@@ -1643,10 +1653,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@lay2/pw-core@0.3.20-beta.0":
-  version "0.3.20-beta.0"
-  resolved "https://registry.npmjs.org/@lay2/pw-core/-/pw-core-0.3.20-beta.0.tgz#5731fc47b19dcc35c90f89f54f0b65394982866f"
-  integrity sha512-oO0dm0bq8ExnrGQJC/26cES7baqHLme7JApJKBikyWhZ7KtCR+lXBFtr3H+ffyxBP2o4vW4HGvLWvZ7WW3BtNg==
+"@lay2/pw-core@0.3.20-beta.4":
+  version "0.3.20-beta.4"
+  resolved "https://registry.yarnpkg.com/@lay2/pw-core/-/pw-core-0.3.20-beta.4.tgz#c4a49f433228b392ddf2f01c4f88cf5806fb7e96"
+  integrity sha512-Q8Lua5nVi7t3VYFeDPwUf4bS480vLUrsUz7iOANHhCcF5PnzCxGtvM2HNLU8xR4r9a9maSmVcXkpW+YhxgREdg==
   dependencies:
     "@ckb-lumos/types" "^0.2.4"
     "@nervosnetwork/ckb-sdk-utils" "^0.32.0"
@@ -1654,6 +1664,7 @@
     bech32 "^1.1.4"
     blake2b "^2.1.3"
     ckb-js-toolkit "^0.9.1"
+    decimal.js "^10.2.1"
     ethereum-ens "^0.8.0"
     ethereumjs-util "^7.0.2"
     jsbi "^3.1.2"
@@ -1686,6 +1697,17 @@
     axios "0.19.2"
     tslib "2.0.1"
 
+"@nervosnetwork/ckb-sdk-utils@0.36.2":
+  version "0.36.2"
+  resolved "https://registry.yarnpkg.com/@nervosnetwork/ckb-sdk-utils/-/ckb-sdk-utils-0.36.2.tgz#03172f92ac00b1fc004d3fc6dd7296ddc804402b"
+  integrity sha512-AmdHoL6RCFrg99L5M8yGpRO6BnWAN8t9GocWuiTRYDgd4rUxqwE/ryJskPtsbDoy58yp3qGmUCYOsbst23yLng==
+  dependencies:
+    "@nervosnetwork/ckb-types" "0.36.2"
+    blake2b-wasm "2.1.0"
+    elliptic "6.5.3"
+    jsbi "3.1.3"
+    tslib "2.0.1"
+
 "@nervosnetwork/ckb-sdk-utils@0.37.0":
   version "0.37.0"
   resolved "https://registry.npmjs.org/@nervosnetwork/ckb-sdk-utils/-/ckb-sdk-utils-0.37.0.tgz#25322c9b2860bee6672444e9a74ad699a3b83395"
@@ -1705,17 +1727,6 @@
     blake2b-wasm "2.1.0"
     elliptic "6.5.2"
     jsbi "3.1.2"
-
-"@nervosnetwork/ckb-sdk-utils@^0.36.2":
-  version "0.36.2"
-  resolved "https://registry.yarnpkg.com/@nervosnetwork/ckb-sdk-utils/-/ckb-sdk-utils-0.36.2.tgz#03172f92ac00b1fc004d3fc6dd7296ddc804402b"
-  integrity sha512-AmdHoL6RCFrg99L5M8yGpRO6BnWAN8t9GocWuiTRYDgd4rUxqwE/ryJskPtsbDoy58yp3qGmUCYOsbst23yLng==
-  dependencies:
-    "@nervosnetwork/ckb-types" "0.36.2"
-    blake2b-wasm "2.1.0"
-    elliptic "6.5.3"
-    jsbi "3.1.3"
-    tslib "2.0.1"
 
 "@nervosnetwork/ckb-types@0.32.0":
   version "0.32.0"
@@ -1962,7 +1973,7 @@
     deepmerge "^4.2.2"
     loglevel "^1.6.8"
 
-"@toruslabs/torus-embed@^1.8.6":
+"@toruslabs/torus-embed@1.8.6":
   version "1.8.6"
   resolved "https://registry.yarnpkg.com/@toruslabs/torus-embed/-/torus-embed-1.8.6.tgz#ad149d7fbea996540921a6025b528402744b19bc"
   integrity sha512-7u23gH783weAqAJMTBS9unDsBhL/n6KKkRbTVNCRF9lAqMNznxj+yYWGaVxJkmL5x6gl3P5jbLgji8/KoV0I1w==
@@ -2562,7 +2573,7 @@
     window-getters "1.0.0"
     window-metadata "1.0.0"
 
-"@walletconnect/web3-provider@^1.3.1":
+"@walletconnect/web3-provider@1.3.1":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@walletconnect/web3-provider/-/web3-provider-1.3.1.tgz#031c1cc7a52ea12287f1278929501ee91847e237"
   integrity sha512-sOLtEbNLFrD8DgbvE0P/vRrmdPbF6Zufhn3gAo6/lxDQGH0ajHGmkl04sq/qcwMHKK0zHjYKRSFEG2VqNIThHg==
@@ -4224,7 +4235,7 @@ cipher-base@^1.0.0, cipher-base@^1.0.1, cipher-base@^1.0.3:
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
 
-ckb-js-toolkit@^0.9.1:
+ckb-js-toolkit@^0.9.1, ckb-js-toolkit@^0.9.2:
   version "0.9.2"
   resolved "https://registry.yarnpkg.com/ckb-js-toolkit/-/ckb-js-toolkit-0.9.2.tgz#c80eb98dc25099241e97bb025ac1566b896bbd49"
   integrity sha512-KutTBpsvkioPl3wPzwS6A5yEppq2pbpSPG4dXnbAu+L5gBzhQVEOj5tH4WBwF8qHm6u9mc/zCRnmjPw8e8Ad2g==
@@ -5076,6 +5087,11 @@ decamelize@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-1.2.0.tgz#f6534d15148269b20352e7bee26f501f9a191290"
   integrity sha1-9lNNFRSCabIDUue+4m9QH5oZEpA=
+
+decimal.js@^10.2.1:
+  version "10.2.1"
+  resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-10.2.1.tgz#238ae7b0f0c793d3e3cea410108b35a2c01426a3"
+  integrity sha512-KaL7+6Fw6i5A2XSnsbhm/6B+NuEA7TZ4vqxnd5tXz9sbKtrN9Srj8ab4vKVdK8YAqZO9P1kg45Y6YLoduPf+kw==
 
 decode-uri-component@^0.2.0:
   version "0.2.0"
@@ -14532,9 +14548,9 @@ unset-value@^1.0.0:
     has-value "^0.3.1"
     isobject "^3.0.0"
 
-unstated-next@^1.1.0:
+unstated-next@1.1.0:
   version "1.1.0"
-  resolved "https://registry.npmjs.org/unstated-next/-/unstated-next-1.1.0.tgz#7bb4911a12fdf3cc8ad3eb11a0b315e4a8685ea8"
+  resolved "https://registry.yarnpkg.com/unstated-next/-/unstated-next-1.1.0.tgz#7bb4911a12fdf3cc8ad3eb11a0b315e4a8685ea8"
   integrity sha512-AAn47ZncPvgBGOvMcn8tSRxsrqwf2VdAPxLASTuLJvZt4rhKfDvUkmYZLGfclImSfTVMv7tF4ynaVxin0JjDCA==
 
 upath@^1.1.1:
@@ -15322,7 +15338,7 @@ web3@^1.0.0-beta.34:
     web3-shh "1.3.0"
     web3-utils "1.3.0"
 
-web3modal@^1.9.1:
+web3modal@1.9.1:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/web3modal/-/web3modal-1.9.1.tgz#a6c6dfc1b3803c1f41a833ce8d4005dc1de5044c"
   integrity sha512-fBybI1+jFAWO492ieyMexyr0MMdquCapeVaHLhclx8GegzIUeWhWa/S19LYMLMW/DDUi2aVTE4JbECX/IHYdQQ==

@@ -9,7 +9,7 @@ import PWCore, {
   OutPoint,
   AmountUnit,
 } from '@lay2/pw-core'
-import { ORDER_BOOK_LOCK_DEP, SUDT_DEP, CKB_NODE_URL } from '../utils/const'
+import { ORDER_BOOK_LOCK_DEP, SUDT_DEP, CKB_NODE_URL } from '../constants'
 
 export class CancelOrderBuilder extends Builder {
   address: Address
@@ -25,16 +25,18 @@ export class CancelOrderBuilder extends Builder {
   }
 
   async build(): Promise<Transaction> {
-    const cells = await this.collector.collect(this.address, { withData: false } as any)
+    const cells = await this.collector.collect(this.address, { neededAmount: Builder.MIN_CHANGE })
 
     if (!cells.length) {
       throw new Error('Cannot find extra cells for validation')
     }
 
+    const [normalCell] = cells
+
     const orderCell = await this.#getOrderCell()
 
-    const inputCells: Cell[] = [cells[0], orderCell]
-    const outputCells: Cell[] = [cells[0], orderCell.clone()]
+    const inputCells: Cell[] = [normalCell, orderCell]
+    const outputCells: Cell[] = [normalCell, orderCell.clone()]
 
     if (outputCells[1].type) {
       outputCells[1].setHexData(outputCells[1].getHexData().slice(0, 34))

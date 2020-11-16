@@ -1,5 +1,5 @@
 import WalletConnectProvider from '@walletconnect/web3-provider'
-import { INFURA_ID } from '../../utils'
+import { INFURA_ID } from '../../constants'
 
 export const supportedChains = [
   {
