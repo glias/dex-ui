@@ -124,7 +124,7 @@ export const PairBlock = styled.div`
     width: 100%;
     line-height: 40px;
     cursor: pointer;
-    &: hover {
+    &:hover {
       background: #f2f4f5;
     }
     .decollete {

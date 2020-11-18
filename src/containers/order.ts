@@ -70,7 +70,7 @@ export function useOrder() {
       .toFixed(8, 1)
   }, [Wallet.ckbWallet.free])
 
-  const sudtBestPrice = Wallet.sudtWallet.bestPrice
+  const sudtBestPrice = Wallet.currentSudtWallet.bestPrice
   const ckbBestPrice = Wallet.ckbWallet.bestPrice
 
   const togglePair = useCallback(async () => {
@@ -89,10 +89,10 @@ export function useOrder() {
     if (orderType === OrderType.Sell) {
       setMaxPay(ckbMax)
     } else {
-      setMaxPay(Wallet.sudtWallet.balance.toString())
+      setMaxPay(Wallet.currentSudtWallet.balance.toString())
     }
     setBestPrice(OrderType.Sell === orderType ? ckbBestPrice.toString() : sudtBestPrice.toString())
-  }, [orderType, sellPair, buyPair, Wallet.sudtWallet.balance, ckbMax, ckbBestPrice, sudtBestPrice])
+  }, [orderType, sellPair, buyPair, Wallet.currentSudtWallet.balance, ckbMax, ckbBestPrice, sudtBestPrice])
 
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()
