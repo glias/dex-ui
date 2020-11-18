@@ -3,6 +3,7 @@ import type { Cell } from '@ckb-lumos/base'
 import axios, { AxiosResponse } from 'axios'
 import { OrderType } from '../containers/order'
 import { EXPLORER_API, SUDT_DAI } from '../constants'
+import { spentCells } from '../utils'
 
 export * from './checkSubmittedTxs'
 
@@ -27,9 +28,10 @@ export function getCkbLiveCells(lock: Script, ckbAmount: string): Promise<AxiosR
     lock_hash_type: lock.hashType,
     lock_args: lock.args,
     ckb_amount: ckbAmount,
+    spent_cells: spentCells.get(),
   }
 
-  return axios.get(`${SERVER_URL}/cells-for-amount`, { params })
+  return axios.post(`${SERVER_URL}/cells-for-amount`, params)
 }
 
 export function getSudtLiveCells(type: Script, lock: Script, amount: string): Promise<AxiosResponse<Cell[]>> {
@@ -41,9 +43,10 @@ export function getSudtLiveCells(type: Script, lock: Script, amount: string): Pr
     lock_hash_type: lock.hashType,
     lock_args: lock.args,
     sudt_amount: amount,
+    spent_cells: spentCells.get(),
   }
 
-  return axios.get(`${SERVER_URL}/cells-for-amount`, { params })
+  return axios.post(`${SERVER_URL}/cells-for-amount`, params)
 }
 
 export function getSudtBalance(type: Script, lock: Script) {
