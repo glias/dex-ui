@@ -12,7 +12,7 @@ import {
   ORDER_CELL_CAPACITY,
   MAX_TRANSACTION_FEE,
   MINIUM_RECEIVE,
-  SUDT_DAI,
+  SUDT_GLIA,
 } from '../../../../constants'
 import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
@@ -151,7 +151,7 @@ export default () => {
         new Amount(Order.pay),
         Order.orderType,
         Order.price,
-        SUDT_DAI,
+        SUDT_GLIA,
         new DEXCollector(),
       )
       try {

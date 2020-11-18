@@ -2,7 +2,7 @@ import { Script } from '@lay2/pw-core'
 import type { Cell } from '@ckb-lumos/base'
 import axios, { AxiosResponse } from 'axios'
 import { OrderType } from '../containers/order'
-import { EXPLORER_API, SUDT_DAI } from '../constants'
+import { EXPLORER_API, SUDT_GLIA } from '../constants'
 import { spentCells } from '../utils'
 
 export * from './checkSubmittedTxs'
@@ -95,7 +95,7 @@ export async function getBestPrice(type: Script, orderType: OrderType) {
 }
 
 export function getHistoryOrders(lockArgs: string) {
-  const TypeScript = SUDT_DAI.toTypeScript()
+  const TypeScript = SUDT_GLIA.toTypeScript()
 
   const params = {
     order_lock_args: lockArgs,

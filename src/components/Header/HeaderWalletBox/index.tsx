@@ -30,7 +30,7 @@ function clipboard(content: string) {
 
 export default function WalletBox({ disconnect, addresses }: Props) {
   const Wallet = useContainer(WalletContainer)
-  const { ckbWallet, sudtWallet } = Wallet
+  const { ckbWallet, currentSudtWallet: sudtWallet } = Wallet
 
   const truncateStr = (str: string): string => {
     return str.length > 10 ? `${str.slice(0, 10)}...${str.slice(-10)}` : str
