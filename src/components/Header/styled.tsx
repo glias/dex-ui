@@ -1,32 +1,16 @@
 import styled from 'styled-components'
 
 export const HeaderBox = styled.div`
-  padding: 0 120px;
   color: rgba(81, 119, 136, 1);
-  .header-col-menu {
-    display: flex;
-    justify-content: space-between;
-    .ant-menu {
-      border-bottom: none;
-      line-height: 51px;
-      .ant-menu-item {
-        color: rgba(0, 106, 151, 0.6);
-        border-bottom: 2px solid transparent;
-        &: hover {
-          color: rgba(0, 106, 151, 1);
-          border-bottom: 2px solid rgba(0, 106, 151, 1);
-        }
-        &.ant-menu-item-selected {
-          color: rgba(0, 106, 151, 1);
-          border-bottom: 2px solid rgba(0, 106, 151, 1);
-        }
-        .ant-menu-item-selected {
-          color: rgba(0, 106, 151, 1);
-        }
-      }
-    }
-  }
+  padding: 0 120px;
+  background-color: #6b70e0;
+  box-shadow: 3px 3px 8px 0 rgba(0, 0, 0, 0.08);
+  color: white;
+  position: absolute;
+  width: 100%;
+  z-index: 999;
 `
+
 export const MenuLiText = styled.span`
   font-weight: bolder;
   font-size: 16px;
@@ -36,38 +20,40 @@ export const HeaderPanel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-size: border-box;
   margin: 0 auto;
-  max-width: 1440px;
-  h1 {
-    margin: 0 20px 0 0;
-  }
   .ant-menu {
+    background-color: #6b70e0;
     border-bottom: 1px solid transparent;
   }
   .ant-menu-item {
-    color: rgba(0, 106, 151, 0.6);
+    color: white;
     border-bottom: 2px solid transparent;
-    &: hover {
-      color: rgba(0, 106, 151, 1);
-      border-bottom: 2px solid rgba(0, 106, 151, 1);
+    margin: 0 40px !important;
+    &:hover {
+      color: white !important;
+      border-bottom: 2px solid white !important;
     }
     &.ant-menu-item-selected {
-      color: rgba(0, 106, 151, 1);
-      border-bottom: 2px solid rgba(0, 106, 151, 1);
+      color: white;
+      border-bottom: 2px solid white;
     }
     .ant-menu-item-selected {
-      color: rgba(0, 106, 151, 1);
+      color: white;
     }
   }
 `
 
 export const HeaderLogoBox = styled.h1`
   margin: 0 0 0 10px;
-  font-weight: 900;
-  font-size: 26px;
-  color: #517788;
-  line-height: 53px;
+  font-family: Lato;
+  font-size: 18px;
+  font-weight: 800;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: #ffffff;
   cursor: pointer;
 `
 
@@ -254,9 +240,9 @@ export const HeaderMeta = styled.div`
     font-weight: 500;
     border-color: #006a97;
     border-radius: 10px;
-    &: disabled {
+    &:disabled {
       background-color: #006a97;
-      &: hover {
+      &:hover {
         color: #fff;
       }
     }
@@ -277,6 +263,19 @@ export const HeaderMeta = styled.div`
       border-color: rgba(0, 106, 151, 1);
       border-radius: 10px;
       margin: 0 10px;
+    }
+  }
+`
+
+export const Background = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 340px;
+  top: 0;
+
+  svg {
+    rect {
+      fill: url(#pattern0);
     }
   }
 `

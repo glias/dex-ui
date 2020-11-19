@@ -1,10 +1,6 @@
 import styled from 'styled-components'
 
 export const PairOrderFormBox = styled.div`
-  overflow: hidden;
-  position: relative;
-  color: rgba(102, 102, 102, 1);
-  box-sizing: border-box;
   .popover-overlay {
     width: 100%;
     .ant-popover-content {

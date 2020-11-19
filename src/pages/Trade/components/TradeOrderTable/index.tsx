@@ -1,12 +1,11 @@
 /* eslint-disable operator-linebreak */
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { Form, Input, Button, Tooltip, Divider, Popover, Modal } from 'antd'
+import { Form, Input, Button, Tooltip, Modal } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { Address, Amount, AddressType } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import {
-  PairList,
   PRICE_DECIMAL,
   SUDT_DECIMAL,
   ORDER_CELL_CAPACITY,
@@ -14,21 +13,17 @@ import {
   MINIUM_RECEIVE,
   SUDT_GLIA,
 } from '../../../../constants'
-import TradeCoinBox from '../TradeCoinBox'
 import i18n from '../../../../utils/i18n'
-import TracePairCoin from '../TracePairCoin'
-import { PairOrderFormBox, PayMeta, OrderSelectPopover, PairBlock } from './styled'
+import { PairOrderFormBox, PayMeta } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
-import styles from './tradePairOrder.module.css'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import DEXCollector from '../../../../pw/dexCollector'
 
-export default () => {
+export default function OrderTable() {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
-  const [visiblePopover, setVisiblePopover] = useState(false)
   const { price, pay, setPrice, setPay, receive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
@@ -36,11 +31,10 @@ export default () => {
 
   const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
 
-  const changePair = () => {
-    setVisiblePopover(false)
-    Order.togglePair()
-    form.resetFields()
-  }
+  // const changePair = () => {
+  //   Order.togglePair()
+  //   form.resetFields()
+  // }
 
   const walletNotConnected = useMemo(() => {
     return !Wallet.ckbWallet.address
@@ -177,32 +171,6 @@ export default () => {
     Order.orderType,
   ])
 
-  const SelectContent = (
-    <OrderSelectPopover>
-      <Input
-        style={{
-          flex: 'auto',
-          fontSize: '16px',
-          background: 'rgba(236, 242, 244, 1)',
-        }}
-        placeholder={i18n.t('trade.searchPairPlaceHolder')}
-      />
-      <Divider
-        style={{
-          background: '#ABD1E1',
-        }}
-      />
-      {PairList.slice(1).map(item => (
-        <PairBlock key={item.name} onClick={() => changePair()}>
-          <Button className="pair-trace-box" type="text">
-            <TradeCoinBox pair={item.name} />
-            <div className="decollete">/</div>
-            <TradeCoinBox pair="CKB" />
-          </Button>
-        </PairBlock>
-      ))}
-    </OrderSelectPopover>
-  )
   const isLessThanMiniumReceive = new BigNumber(receive).isLessThan(MINIUM_RECEIVE)
 
   const confirmButton = (
@@ -236,26 +204,6 @@ export default () => {
 
   return (
     <PairOrderFormBox id="order-box">
-      <Popover
-        overlayClassName="no-arronPoint popover-overlay"
-        trigger="click"
-        visible={visiblePopover}
-        getPopupContainer={() => document.getElementById('order-box') as HTMLElement}
-        content={SelectContent}
-        onVisibleChange={(visible: boolean) => setVisiblePopover(visible)}
-      >
-        <div className={styles.OrderSelectBox}>
-          <PairBlock>
-            <span className="pair">{i18n.t('trade.pair')}</span>
-            <Button className="pair-trace-box" type="text">
-              <TradeCoinBox pair={Order.pair[0]} />
-              <div className="decollete">/</div>
-              <TradeCoinBox pair={Order.pair[1]} />
-            </Button>
-          </PairBlock>
-        </div>
-      </Popover>
-      <TracePairCoin resetFields={() => form.resetFields()} />
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>

@@ -98,7 +98,6 @@ export const HeaderPanel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-size: border-box;
   font-size: 20px;
   .panel-nav {
     flex: 1;
@@ -115,6 +114,9 @@ export const HeaderPanel = styled.div`
     .ant-menu-item-selected {
       color: rgba(0, 106, 151, 1);
     }
+  }
+  .ant-menu {
+    background-color: black !important;
   }
 `
 
