@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react'
 import { useContainer } from 'unstated-next'
 import { Layout, Row, Col } from 'antd'
-import TradePairOrder from './components/TradePairOrder'
+import TradeOrderTable from './components/TradeOrderTable'
 import History from './components/History'
-import TradePairConfirm from './components/TradePairConfirm'
-import TradePairResult from './components/TradePairResult'
-import { TradePage, TradeContent, TradeMain } from './styled'
+import TradeOrderConfirm from './components/TradeOrderConfirm'
+import TradeOrderResult from './components/TradeOrderResult'
+import { TradePage, TradeMain } from './styled'
 import OrderContainer, { OrderStep } from '../../containers/order'
 import { checkSubmittedTxs } from '../../APIs'
 
@@ -41,11 +41,11 @@ const Trade = () => {
   const traceNavigation = () => {
     switch (Order.step) {
       case OrderStep.Order:
-        return <TradePairOrder />
+        return <TradeOrderTable />
       case OrderStep.Confirm:
-        return <TradePairConfirm />
+        return <TradeOrderConfirm />
       default:
-        return <TradePairResult />
+        return <TradeOrderResult />
     }
   }
 
@@ -54,7 +54,7 @@ const Trade = () => {
       <TradeMain>
         <Row>
           <Col span={8}>
-            <TradeContent>{traceNavigation()}</TradeContent>
+            <div>{traceNavigation()}</div>
           </Col>
           <Col span={16}>
             <Content>
