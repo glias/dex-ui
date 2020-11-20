@@ -17,6 +17,7 @@
       "ckbAddressTooltip": "A Transit Address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
     },
     "trade": {
+      "trade": "Trade",
       "pair": "Pair",
       "pay": "Pay",
       "max": "MAX",

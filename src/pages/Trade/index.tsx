@@ -1,15 +1,12 @@
 import React, { useEffect, useRef } from 'react'
 import { useContainer } from 'unstated-next'
-import { Layout, Row, Col } from 'antd'
 import TradeOrderTable from './components/TradeOrderTable'
 import History from './components/History'
 import TradeOrderConfirm from './components/TradeOrderConfirm'
 import TradeOrderResult from './components/TradeOrderResult'
-import { TradePage, TradeMain } from './styled'
+import { TradePage, TradeMain, TradeFrame } from './styled'
 import OrderContainer, { OrderStep } from '../../containers/order'
 import { checkSubmittedTxs } from '../../APIs'
-
-const { Content } = Layout
 
 const Trade = () => {
   const Order = useContainer(OrderContainer)
@@ -52,17 +49,9 @@ const Trade = () => {
   return (
     <TradePage className="trade-page">
       <TradeMain>
-        <Row>
-          <Col span={8}>
-            <div>{traceNavigation()}</div>
-          </Col>
-          <Col span={16}>
-            <Content>
-              <History />
-            </Content>
-          </Col>
-        </Row>
+        <TradeFrame width="360px">{traceNavigation()}</TradeFrame>
       </TradeMain>
+      <History />
     </TradePage>
   )
 }

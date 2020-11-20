@@ -1,27 +1,22 @@
 import styled from 'styled-components'
 
-export const PairOrderFormBox = styled.div`
-  .popover-overlay {
-    width: 100%;
-    .ant-popover-content {
-      margin-top: -10px;
-      border: 1px solid rgba(171, 209, 225, 1);
-    }
-  }
+export const InputNumberContainer = styled.div`
   .ant-form {
     background: #fff;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-radius: 10px;
-    border: 1px solid rgba(171, 209, 225, 1);
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
     .ant-form-item {
-      padding: 0 20px;
       label {
         font-size: 16px;
       }
       input[type='number'] {
         appearance: textfield;
+        padding-left: 14px;
+        font-size: 24px;
+        line-height: 29px;
+        color: #000000;
+        height: 34px;
+      }
+      .ant-input-affix-wrapper-lg {
+        padding: 10px;
       }
       input[type='number']::-webkit-inner-spin-button {
         appearance: none;
@@ -30,27 +25,22 @@ export const PairOrderFormBox = styled.div`
         margin: 0;
       }
     }
-  }
-  .price-box {
-    margin: 0;
-    padding: 0;
-    .ant-form-item {
-      padding: 0;
+    .ant-input-suffix {
+      font-size: 12px;
+      line-height: 14px;
+      color: #888888;
+      align-items: flex-end;
     }
-  }
-  .dividing-line {
-    width: 100%;
-    border-bottom: 1px solid rgba(171, 209, 225, 1);
   }
   .ant-input-affix-wrapper,
   input {
-    border-color: rgba(171, 209, 225, 1);
-    background: #ecf2f4;
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1;
+    border-radius: 16px;
   }
-  input {
-    font-weight: 500;
-    font-size: 20px;
-  }
+`
+
+export const OrderTableContainer = styled(InputNumberContainer)`
   .receiver-box {
     display: flex;
     justify-content: space-between;
@@ -107,6 +97,21 @@ export const PayMeta = styled.div`
       text-decoration: underline;
     }
   }
+
+  button {
+    border: none;
+    background-color: white;
+    color: #5c61da;
+    font-size: 12px;
+    line-height: 14px;
+    text-decoration: underline;
+    margin-right: 4px;
+    cursor: pointer;
+    &:focus {
+      outline: none;
+      box-shadow: none;
+    }
+  }
 `
 
 export const PairBlock = styled.div`
@@ -127,5 +132,18 @@ export const PairBlock = styled.div`
       padding: 0 10px;
       color: rgba(136, 136, 136, 1);
     }
+  }
+`
+
+export const Header = styled.div`
+  h3 {
+    font-size: 18px;
+    font-weight: bold;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    text-align: left;
+    color: #000000;
   }
 `
