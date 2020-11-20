@@ -1,6 +1,6 @@
 /* eslint-disable operator-linebreak */
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { Form, Input, Button, Tooltip, Modal } from 'antd'
+import { Form, Button, Tooltip, Modal, Input } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { Address, Amount, AddressType } from '@lay2/pw-core'
@@ -14,7 +14,7 @@ import {
   SUDT_GLIA,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
-import { PairOrderFormBox, PayMeta } from './styled'
+import { OrderTableContainer, PayMeta, Header } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
@@ -203,13 +203,16 @@ export default function OrderTable() {
   }, [Order.orderType, maxPayOverFlow, isLessThanMiniumReceive])
 
   return (
-    <PairOrderFormBox id="order-box">
+    <OrderTableContainer id="order-box">
+      <Header>
+        <h3>{i18n.t('trade.trade')}</h3>
+      </Header>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
-            <Button type="text" className="form-label-meta-num" onClick={setMaxPay}>
+            <button type="button" onClick={setMaxPay}>
               {`${i18n.t('trade.max')}: ${maxPay}`}
-            </Button>
+            </button>
             <Tooltip title={i18n.t('trade.maxPay')}>
               <i className="ai-question-circle-o" />
             </Tooltip>
@@ -229,10 +232,6 @@ export default function OrderTable() {
               type="number"
               required
               size="large"
-              style={{
-                color: 'rgba(81, 119, 136, 1)',
-                width: '100%',
-              }}
               step="any"
               value={pay}
               onChange={e => setPay(e.target.value)}
@@ -261,9 +260,6 @@ export default function OrderTable() {
               placeholder="0"
               suffix="CKB per DAI"
               size="large"
-              style={{
-                color: 'rgba(81, 119, 136, 1)',
-              }}
               required
               type="number"
               step="any"
@@ -294,7 +290,6 @@ export default function OrderTable() {
             <span>{seller}</span>
           </div>
         </Form.Item>
-        <div className="dividing-line" />
         <Form.Item className="submit-item">
           {insufficientCKB || maxPayOverFlow || isLessThanMiniumReceive ? (
             <Tooltip title={tooltipTitle}>{confirmButton}</Tooltip>
@@ -303,6 +298,6 @@ export default function OrderTable() {
           )}
         </Form.Item>
       </Form>
-    </PairOrderFormBox>
+    </OrderTableContainer>
   )
 }
