@@ -19,7 +19,7 @@
     "trade": {
       "trade": "Trade",
       "pair": "Pair",
-      "pay": "Pay",
+      "pay": "Your Pay",
       "max": "MAX",
       "orderSubmitted": "Order Submitted",
       "viewExplorer": "View on CKB Explorer",
@@ -44,7 +44,7 @@
       "transactionFee": "Transaction fee",
       "executionFeeDesc": "This fee was paid to the dealmaker who matches your order",
       "transactionFeeDesc": "This fee was paid to the CKB miner",
-      "receive": "Receive",
+      "receive": "Your Receive",
       "searchPairPlaceHolder": "Search name or Type ID",
       "TradeSuccess": "New Trade",
       "TradeFailed": "Dismiss",

@@ -1,10 +1,11 @@
 /* eslint-disable operator-linebreak */
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { Form, Button, Tooltip, Modal, Input } from 'antd'
+import { Form, Tooltip, Modal, Input, Divider } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import { Address, Amount, AddressType } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
+import ConfirmButton from 'components/ConfirmButton'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
@@ -14,7 +15,7 @@ import {
   SUDT_GLIA,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
-import { OrderTableContainer, PayMeta, Header } from './styled'
+import { OrderTableContainer, PayMeta, Header, BID_CONFIRM_COLOR, ASK_CONFRIM_COLOR } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
@@ -29,12 +30,27 @@ export default function OrderTable() {
   const [buyer, seller] = Order.pair
   const [collectingCells, setCollectingCells] = useState(false)
 
-  const MIN_VAL = Order.orderType === OrderType.Buy ? SUDT_DECIMAL : PRICE_DECIMAL
-
   // const changePair = () => {
   //   Order.togglePair()
   //   form.resetFields()
   // }
+
+  const isBid = useMemo(() => {
+    return Order.orderType === OrderType.Buy
+  }, [Order.orderType])
+
+  const confirmButtonColor = useMemo(() => {
+    switch (Order.orderType) {
+      case OrderType.Buy:
+        return BID_CONFIRM_COLOR
+      case OrderType.Sell:
+        return ASK_CONFRIM_COLOR
+      default:
+        return BID_CONFIRM_COLOR
+    }
+  }, [Order.orderType])
+
+  const MIN_VAL = isBid ? SUDT_DECIMAL : PRICE_DECIMAL
 
   const walletNotConnected = useMemo(() => {
     return !Wallet.ckbWallet.address
@@ -56,6 +72,13 @@ export default function OrderTable() {
 
     return p.toString()
   }, [Order.maxPay])
+
+  useEffect(() => {
+    // eslint-disable-next-line no-unused-expressions
+    formRef.current?.setFieldsValue({
+      receive,
+    })
+  }, [receive, formRef])
 
   const setMaxPay = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
@@ -102,13 +125,13 @@ export default function OrderTable() {
     [MIN_VAL],
   )
 
-  const setBestPrice = useCallback(() => {
-    // eslint-disable-next-line no-unused-expressions
-    formRef.current?.setFieldsValue({
-      price: Order.bestPrice,
-    })
-    setPrice(Order.bestPrice)
-  }, [Order.bestPrice, formRef, setPrice])
+  // const setBestPrice = useCallback(() => {
+  //   // eslint-disable-next-line no-unused-expressions
+  //   formRef.current?.setFieldsValue({
+  //     price: Order.bestPrice,
+  //   })
+  //   setPrice(Order.bestPrice)
+  // }, [Order.bestPrice, formRef, setPrice])
 
   const maxPayOverFlow = useMemo(() => {
     return new BigNumber(Order.pay).gt(maxPay)
@@ -174,16 +197,12 @@ export default function OrderTable() {
   const isLessThanMiniumReceive = new BigNumber(receive).isLessThan(MINIUM_RECEIVE)
 
   const confirmButton = (
-    <Button
-      htmlType="submit"
-      className="submit-btn"
-      disabled={Wallet.connecting || insufficientCKB || insufficientCKB || maxPayOverFlow || isLessThanMiniumReceive}
-      size="large"
-      type="text"
+    <ConfirmButton
+      text={submitStatus}
+      bgColor={confirmButtonColor}
       loading={collectingCells || Wallet.connecting}
-    >
-      {submitStatus}
-    </Button>
+      disabled={insufficientCKB || maxPayOverFlow || isLessThanMiniumReceive}
+    />
   )
 
   const tooltipTitle = useMemo(() => {
@@ -203,11 +222,11 @@ export default function OrderTable() {
   }, [Order.orderType, maxPayOverFlow, isLessThanMiniumReceive])
 
   return (
-    <OrderTableContainer id="order-box">
-      <Header>
-        <h3>{i18n.t('trade.trade')}</h3>
-      </Header>
+    <OrderTableContainer id="order-box" isBid={Order.orderType === OrderType.Buy}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
+        <Header>
+          <h3>{i18n.t('trade.trade')}</h3>
+        </Header>
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <button type="button" onClick={setMaxPay}>
@@ -239,58 +258,42 @@ export default function OrderTable() {
             />
           </Form.Item>
         </Form.Item>
-        <Form.Item label={i18n.t('trade.price')} className="price-box">
-          <PayMeta>
-            <Button type="text" className="form-label-meta-num" onClick={setBestPrice}>
-              {`${i18n.t('trade.suggestion')}: ${Order.bestPrice}`}
-            </Button>
-            <Tooltip title={i18n.t(`trade.suggestionTooltip`)}>
-              <i className="ai-question-circle-o" />
-            </Tooltip>
-          </PayMeta>
-          <Form.Item
-            name="price"
-            rules={[
-              {
-                validator: checkPrice,
-              },
-            ]}
-          >
-            <Input
-              placeholder="0"
-              suffix="CKB per DAI"
-              size="large"
-              required
-              type="number"
-              step="any"
-              onChange={e => setPrice(e.target.value)}
-              value={price}
-            />
-          </Form.Item>
-        </Form.Item>
         <Form.Item
-          name="caret-down"
-          style={{
-            textAlign: 'center',
-            margin: 0,
-            color: '#517788',
-          }}
+          label={i18n.t('trade.price')}
+          name="price"
+          rules={[
+            {
+              validator: checkPrice,
+            },
+          ]}
         >
-          <i className="ai-caret-down" />
+          <Input
+            placeholder="0"
+            suffix="CKB per DAI"
+            size="large"
+            required
+            type="number"
+            step="any"
+            onChange={e => setPrice(e.target.value)}
+            value={price}
+          />
         </Form.Item>
-        <Form.Item
-          label={i18n.t('trade.receive')}
-          name="receiver"
-          style={{
-            marginBottom: '10px',
-          }}
-        >
-          <div className="receiver-box">
-            <span className="receiver-ckb">{receive}</span>
-            <span>{seller}</span>
-          </div>
+        <Divider />
+        <Form.Item label={i18n.t('trade.receive')} name="receive">
+          <Input
+            className="receive"
+            placeholder="0.00"
+            suffix={seller}
+            size="large"
+            required
+            type="number"
+            step="any"
+            disabled
+            value={receive}
+            readOnly
+          />
         </Form.Item>
-        <Form.Item className="submit-item">
+        <Form.Item className="submit">
           {insufficientCKB || maxPayOverFlow || isLessThanMiniumReceive ? (
             <Tooltip title={tooltipTitle}>{confirmButton}</Tooltip>
           ) : (
