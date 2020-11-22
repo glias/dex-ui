@@ -18,6 +18,14 @@ export const TokenContainer = styled.span`
       max-height: 18px;
     }
   }
+  &.small {
+    .text {
+      font-size: 20px;
+      line-height: 24px;
+      position: relative;
+      top: 0;
+    }
+  }
   .text {
     font-size: 24px;
     font-weight: bold;

@@ -21,6 +21,9 @@
       "pair": "Pair",
       "pay": "Your Pay",
       "max": "MAX",
+      "current": "Current",
+      "selectToken": "Select Token",
+      "searchToken": "Search for token",
       "totalPay": "Total Pay",
       "result": {
         "trade": "Trade",

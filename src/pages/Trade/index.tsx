@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useContainer } from 'unstated-next'
+import SelectToken from 'components/SelectToken'
+import WalletContainer from 'containers/wallet'
 import TradeOrderTable from './components/TradeOrderTable'
 import History from './components/History'
 import TradeOrderConfirm from './components/TradeOrderConfirm'
@@ -10,6 +12,7 @@ import { checkSubmittedTxs } from '../../APIs'
 
 const Trade = () => {
   const Order = useContainer(OrderContainer)
+  const Wallet = useContainer(WalletContainer)
   const submittedOrderTimer = useRef<ReturnType<typeof setInterval> | undefined>()
 
   const { submittedOrders, setAndCacheSubmittedOrders } = Order
@@ -41,6 +44,14 @@ const Trade = () => {
         return <TradeOrderTable />
       case OrderStep.Confirm:
         return <TradeOrderConfirm />
+      case OrderStep.Select:
+        return (
+          <SelectToken
+            onBack={() => Order.setStep(OrderStep.Order)}
+            onSelect={() => {}}
+            currentWallet={Wallet.ckbWallet}
+          />
+        )
       default:
         return <TradeOrderResult />
     }

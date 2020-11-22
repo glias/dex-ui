@@ -13,6 +13,42 @@ export interface ContainerProps {
   isBid: boolean
 }
 
+export const PairContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
+  .left {
+    align-items: flex-start;
+  }
+  .right {
+    align-items: flex-end;
+    margin-left: auto;
+    color: #7e7e7e;
+  }
+`
+
+export const PairsContainer = styled.section`
+  display: flex;
+  flex-direction: row;
+  margin: 24px 0;
+  .pairs {
+    flex: 1;
+  }
+`
+
+export const Swap = styled.div`
+  margin-left: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  svg {
+    position: relative;
+    cursor: pointer;
+    left: 8px;
+  }
+`
+
 export const InputNumberContainer = styled.div`
   .ant-form {
     background: #fff;
@@ -144,5 +180,6 @@ export const Header = styled.div`
     letter-spacing: normal;
     text-align: left;
     color: #000000;
+    margin: 0;
   }
 `

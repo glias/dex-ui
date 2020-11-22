@@ -3,6 +3,7 @@ import PWCore, { Amount, Builder, AmountUnit } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import BigNumber from 'bignumber.js'
 import ConfirmButton from 'components/ConfirmButton'
+import HeaderWithGoback from 'components/HeaderWithGoback'
 import { Divider, Modal } from 'antd'
 import { TradePairConfirmBox, TradePairConfirmContent, OrderResult, Footer } from './styled'
 import i18n from '../../../../utils/i18n'
@@ -12,7 +13,6 @@ import WalletContainer from '../../../../containers/wallet'
 import { calcBuyReceive, calcSellReceive } from '../../../../utils/fee'
 import { COMMISSION_FEE, MAX_TRANSACTION_FEE, ORDER_CELL_CAPACITY } from '../../../../constants'
 import { spentCells } from '../../../../utils'
-import { Header } from './header'
 import { Pairs } from './pairs'
 import { List, Item } from './list'
 import { Meta } from './meta'
@@ -97,7 +97,7 @@ export default function TradePairConfirm() {
     return '0'
   }, [Order.tx])
 
-  const totalPayList = useMemo(() => {
+  const totalPayDetail = useMemo(() => {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.totalPay`),
@@ -110,7 +110,7 @@ export default function TradePairConfirm() {
       list.push({
         desc: '',
         value: new Amount(ORDER_CELL_CAPACITY.toString())
-          .add(new Amount(transactionFee))
+          .sub(new Amount(transactionFee))
           .add(new Amount(`${MAX_TRANSACTION_FEE}`))
           .toString(),
         unit: 'CKB',
@@ -167,12 +167,12 @@ export default function TradePairConfirm() {
 
   return (
     <TradePairConfirmBox>
-      <Header />
+      <HeaderWithGoback title={i18n.t(`trade.reviewOrder`)} onClick={() => Order.setStep(OrderStep.Order)} />
       <TradePairConfirmContent>
         <Pairs pairs={Order.pair} />
         <Divider />
         <OrderResult>
-          <List list={totalPayList} />
+          <List list={totalPayDetail} />
           <List list={tradeDetails} isDeatil />
           <Meta amount={lockedCkbAmount} />
           <List list={payDetail} />
