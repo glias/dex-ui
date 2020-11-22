@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Form, Tooltip, Modal, Input, Divider } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
+import Token from 'components/Token'
 import { Address, Amount, AddressType } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
@@ -15,11 +16,50 @@ import {
   SUDT_GLIA,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
-import { OrderTableContainer, PayMeta, Header } from './styled'
+import { OrderTableContainer, PayMeta, Header, PairContainer, PairsContainer, Swap } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import DEXCollector from '../../../../pw/dexCollector'
+import { ReactComponent as SelectTokenSVG } from '../../../../assets/svg/select-token.svg'
+import { ReactComponent as SwapTokenSVG } from '../../../../assets/svg/swap-token.svg'
+
+// eslint-disable-next-line
+type ElementOnClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+
+const Pair = ({ tokenName, onClick }: { tokenName: string; onClick: ElementOnClick }) => {
+  return (
+    <PairContainer onClick={onClick}>
+      <div className="left">
+        <Token tokenName={tokenName} />
+      </div>
+      <div className="right">
+        <SelectTokenSVG />
+      </div>
+    </PairContainer>
+  )
+}
+interface PairsProps {
+  pairs: [string, string]
+  onSwap: ElementOnClick
+  onSelect: ElementOnClick
+}
+
+const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
+  const [buyer, seller] = pairs
+  return (
+    <PairsContainer>
+      <div className="pairs">
+        <Pair onClick={onSelect} tokenName={buyer} />
+        <Divider style={{ margin: '14px 0' }} />
+        <Pair onClick={onSelect} tokenName={seller} />
+      </div>
+      <Swap onClick={onSwap}>
+        <SwapTokenSVG />
+      </Swap>
+    </PairsContainer>
+  )
+}
 
 export default function OrderTable() {
   const [form] = Form.useForm()
@@ -33,10 +73,11 @@ export default function OrderTable() {
   const [isPriceInvalid, setIsPriceInvalid] = useState(true)
   const disabled = useMemo(() => isPayInvalid || isPriceInvalid, [isPayInvalid, isPriceInvalid])
 
-  // const changePair = () => {
-  //   Order.togglePair()
-  //   form.resetFields()
-  // }
+  const changePair = useCallback(() => {
+    Order.togglePair()
+    form.resetFields()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formRef, form, Order.togglePair])
 
   const isBid = useMemo(() => {
     return Order.orderType === OrderType.Buy
@@ -70,14 +111,16 @@ export default function OrderTable() {
     formRef.current?.setFieldsValue({
       receive,
     })
-  }, [receive, formRef])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [receive])
 
   const setMaxPay = useCallback(() => {
+    setPay(maxPay)
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
       pay: maxPay,
     })
-    setPay(maxPay)
+    setIsPayInvalid(false)
   }, [maxPay, formRef, setPay])
 
   const checkPay = useCallback(
@@ -223,6 +266,7 @@ export default function OrderTable() {
         <Header>
           <h3>{i18n.t('trade.trade')}</h3>
         </Header>
+        <Pairs onSelect={() => Order.setStep(OrderStep.Select)} pairs={Order.pair} onSwap={changePair} />
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <button type="button" onClick={setMaxPay}>
@@ -238,6 +282,7 @@ export default function OrderTable() {
             rules={[
               {
                 validator: checkPay,
+                validateTrigger: ['onChange', 'onBlur'],
               },
             ]}
           >

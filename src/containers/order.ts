@@ -13,6 +13,7 @@ import WalletContainer from './wallet'
 export enum OrderStep {
   Order,
   Confirm,
+  Select,
   Result,
 }
 
@@ -39,8 +40,8 @@ export function useOrder() {
   const [suggestionPrice, setSuggestionPrice] = useState(0)
   const [txHash, setTxHash] = useState('')
   const [orderType, setOrderType] = useState(OrderType.Buy)
-  const sellPair: [string, string] = ['DAI', 'CKB']
-  const buyPair: [string, string] = ['CKB', 'DAI']
+  const sellPair: [string, string] = ['GLIA', 'CKB']
+  const buyPair: [string, string] = ['CKB', 'GLIA']
   const [historyOrders, setHistoryOrders] = useState<any[]>([])
   const { address } = Wallet.ckbWallet
   const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
@@ -84,6 +85,8 @@ export function useOrder() {
       setPair(buyPair)
       setOrderType(OrderType.Buy)
     }
+    setPrice('')
+    setPay('')
     const lockScript = PWCore.provider?.address?.toLockScript()
     if (!lockScript) {
       return
@@ -100,10 +103,14 @@ export function useOrder() {
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()
     const { free } = (await getCkbBalance(lockScript)).data
-    setMaxPay(new BigNumber(free).div(CKB_DECIMAL).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE).toFixed(8, 1))
+    if (orderType === OrderType.Buy) {
+      setMaxPay(
+        new BigNumber(free).div(CKB_DECIMAL).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE).toFixed(8, 1),
+      )
+    }
     const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, OrderType.Sell)
     setBestPrice(new BigNumber(data.price).div(new BigNumber(PRICE_DECIMAL.toString())).toString())
-  }, [])
+  }, [orderType])
 
   const receive = useMemo(() => {
     if (price && pay) {

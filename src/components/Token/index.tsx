@@ -5,13 +5,14 @@ import { TokenContainer } from './styled'
 
 export interface TokenProps {
   tokenName: string
+  className?: string
 }
 
 const SHADOW_ASSET_COLOR = '#FCF0E6'
 const ETH_COLOR = '#E7EAFE'
 const CKB_COLOR = '#D9E8E2'
 
-const Token = ({ tokenName }: TokenProps) => {
+const Token = ({ tokenName, className }: TokenProps) => {
   const logo = TOKEN_LOGOS.get(tokenName)
   const color = useMemo(() => {
     switch (tokenName) {
@@ -35,7 +36,7 @@ const Token = ({ tokenName }: TokenProps) => {
   }, [tokenName])
 
   return (
-    <TokenContainer color={color}>
+    <TokenContainer color={color} className={className ?? ''}>
       <span className="icon">
         <img alt={tokenName} src={logo} />
       </span>

@@ -17,38 +17,41 @@ import {
 import { OrderType } from './order'
 import DEXCollector from '../pw/dexCollector'
 
-interface Wallet {
+export interface Wallet {
   balance: Amount
   lockedOrder: Amount
   address: string
   bestPrice: string
+  tokenName: string
 }
 
-interface CkbWallet extends Wallet {
+export interface CkbWallet extends Wallet {
   inuse: Amount
   free: Amount
 }
 
-interface SudtWallet extends Wallet {
+export interface SudtWallet extends Wallet {
   lockedOrder: Amount
   lockHash: IssuerLockHash
 }
 
-const defaultCkbWallet = {
+const defaultCkbWallet: CkbWallet = {
   balance: Amount.ZERO,
   inuse: Amount.ZERO,
   free: Amount.ZERO,
   lockedOrder: Amount.ZERO,
   address: '',
   bestPrice: '0.00',
+  tokenName: 'CKB',
 }
 
-const defaultSUDTWallet = {
+const defaultSUDTWallet: SudtWallet = {
   balance: Amount.ZERO,
   lockedOrder: Amount.ZERO,
   address: '',
   bestPrice: '0.00',
   lockHash: '',
+  tokenName: '',
 }
 
 const defaultSUDTWallets = [...SUDT_MAP.entries()].map(([, sudt]) => {
@@ -58,11 +61,12 @@ const defaultSUDTWallets = [...SUDT_MAP.entries()].map(([, sudt]) => {
   }
 })
 
-const defaultEthWallet = {
+const defaultEthWallet: Wallet = {
   balance: Amount.ZERO,
   lockedOrder: Amount.ZERO,
   address: '',
   bestPrice: '0.00',
+  tokenName: 'ETH',
 }
 
 export function useWallet() {
@@ -134,6 +138,7 @@ export function useWallet() {
         lockedOrder,
         address,
         bestPrice: new BigNumber(price).div(new BigNumber(PRICE_DECIMAL.toString())).toString(),
+        tokenName: 'CKB',
       })
     },
     [currentSudtLockHash],
@@ -150,6 +155,7 @@ export function useWallet() {
       address: '',
       bestPrice: new BigNumber(price).div(new BigNumber(PRICE_DECIMAL.toString())).toString(),
       lockHash: sudt.issuerLockHash,
+      tokenName: sudt.info?.symbol ?? '',
     }
   }, [])
 
@@ -217,6 +223,10 @@ export function useWallet() {
     setEthWallet(defaultEthWallet)
   }, [])
 
+  const wallets = useMemo(() => {
+    return [ckbWallet, ethWallet, ...sudtWallets]
+  }, [ckbWallet, ethWallet, sudtWallets])
+
   return {
     pw,
     web3,
@@ -242,6 +252,7 @@ export function useWallet() {
     resetWallet,
     setCurrentSudtLockHash,
     currentSudtWallet,
+    wallets,
   }
 }
 

@@ -24,7 +24,7 @@ export interface TradeFrameProps {
 
 export const TradeFrame = styled.div`
   width: ${(p: TradeFrameProps) => p.width};
-  height: ${(p: TradeFrameProps) => p.height ?? '600px'};
+  height: ${(p: TradeFrameProps) => p.height ?? '650px'};
   margin: 0 40px 40px 0;
   padding: 20px 24px;
   border-radius: 16px;

@@ -1,0 +1,81 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useCallback, useMemo, useState } from 'react'
+import BigNumber from 'bignumber.js'
+import { useContainer } from 'unstated-next'
+import { Divider, Input } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
+import i18n from 'utils/i18n'
+import HeaderWithGoback from 'components/HeaderWithGoback'
+import Token from 'components/Token'
+import { Container, TokenContainer } from './styled'
+import { Wallet, WalletContainer } from '../../containers/wallet'
+
+export interface SelectTokenProps {
+  filter?: (value: Wallet, index: number, array: Wallet[]) => value is Wallet
+  onSelect: (wallet: Wallet) => void
+  onBack: () => void
+  currentWallet: Wallet
+}
+
+const Item = ({
+  wallet,
+  onClick,
+}: {
+  wallet: Wallet
+  onClick: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+}) => {
+  return (
+    <TokenContainer key={wallet.tokenName} onClick={onClick}>
+      <div className="left">
+        <Token tokenName={wallet.tokenName} className="small" />
+      </div>
+      <div className="right">
+        <span>{new BigNumber(wallet.balance.toString()).toFixed(4, 1)}</span>
+      </div>
+    </TokenContainer>
+  )
+}
+
+const SelectToken = ({ filter = Boolean as any, onSelect, currentWallet, onBack }: SelectTokenProps) => {
+  const WalletCtx = useContainer(WalletContainer)
+  const [searchValue, setSearchValue] = useState('')
+  const { wallets } = WalletCtx
+  const filteredWallets = useMemo(() => {
+    return wallets
+      .filter(w => w.tokenName !== currentWallet.tokenName)
+      .filter(filter)
+      .sort((w1, w2) => parseFloat(w2.balance.sub(w1.balance).toString()))
+  }, [wallets, filter, currentWallet.tokenName])
+
+  const searchFilter = useCallback(
+    (wallet: Wallet) => {
+      if (searchValue) {
+        return wallet.tokenName.toLowerCase().includes(searchValue.toLowerCase())
+      }
+      return Boolean
+    },
+    [searchValue],
+  )
+
+  return (
+    <Container>
+      <HeaderWithGoback title={i18n.t('trade.selectToken')} onClick={onBack} />
+      <div className="current">
+        <div className="label">{i18n.t('trade.current')}</div>
+        <Item onClick={onBack} wallet={currentWallet} />
+      </div>
+      <Divider style={{ margin: '14px 0' }} />
+      <Input
+        prefix={<SearchOutlined translate="" />}
+        placeholder={i18n.t('trade.searchToken')}
+        onChange={e => setSearchValue(e.target.value)}
+        value={searchValue}
+      />
+      {filteredWallets.filter(searchFilter).map(wallet => {
+        return <Item wallet={wallet} onClick={() => onSelect(wallet)} key={wallet.tokenName} />
+      })}
+    </Container>
+  )
+}
+
+export default SelectToken
