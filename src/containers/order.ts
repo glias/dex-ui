@@ -22,6 +22,9 @@ export enum OrderType {
   Sell,
 }
 
+const BID_CONFIRM_COLOR = '#ff9a6f'
+const ASK_CONFRIM_COLOR = '#72d1a4'
+
 export interface SubmittedOrder extends Pick<OrderRecord, 'isBid' | 'pay' | 'receive' | 'price' | 'key'> {
   status: 'pending'
   createdAt: string
@@ -36,8 +39,8 @@ export function useOrder() {
   const [suggestionPrice, setSuggestionPrice] = useState(0)
   const [txHash, setTxHash] = useState('')
   const [orderType, setOrderType] = useState(OrderType.Buy)
-  const sellPair = ['DAI', 'CKB']
-  const buyPair = ['CKB', 'DAI']
+  const sellPair: [string, string] = ['DAI', 'CKB']
+  const buyPair: [string, string] = ['CKB', 'DAI']
   const [historyOrders, setHistoryOrders] = useState<any[]>([])
   const { address } = Wallet.ckbWallet
   const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
@@ -139,6 +142,17 @@ export function useOrder() {
     [address, setSubmittedOrders],
   )
 
+  const confirmButtonColor = useMemo(() => {
+    switch (orderType) {
+      case OrderType.Buy:
+        return BID_CONFIRM_COLOR
+      case OrderType.Sell:
+        return ASK_CONFRIM_COLOR
+      default:
+        return BID_CONFIRM_COLOR
+    }
+  }, [orderType])
+
   function reset() {
     setPay('')
     setPrice('')
@@ -174,6 +188,7 @@ export function useOrder() {
     initPrice,
     tx,
     setTx,
+    confirmButtonColor,
   }
 }
 
