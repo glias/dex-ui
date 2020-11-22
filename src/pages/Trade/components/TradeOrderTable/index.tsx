@@ -15,7 +15,7 @@ import {
   SUDT_GLIA,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
-import { OrderTableContainer, PayMeta, Header, BID_CONFIRM_COLOR, ASK_CONFRIM_COLOR } from './styled'
+import { OrderTableContainer, PayMeta, Header } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
@@ -29,6 +29,9 @@ export default function OrderTable() {
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
   const [collectingCells, setCollectingCells] = useState(false)
+  const [isPayInvalid, setIsPayInvalid] = useState(true)
+  const [isPriceInvalid, setIsPriceInvalid] = useState(true)
+  const disabled = useMemo(() => isPayInvalid || isPriceInvalid, [isPayInvalid, isPriceInvalid])
 
   // const changePair = () => {
   //   Order.togglePair()
@@ -37,17 +40,6 @@ export default function OrderTable() {
 
   const isBid = useMemo(() => {
     return Order.orderType === OrderType.Buy
-  }, [Order.orderType])
-
-  const confirmButtonColor = useMemo(() => {
-    switch (Order.orderType) {
-      case OrderType.Buy:
-        return BID_CONFIRM_COLOR
-      case OrderType.Sell:
-        return ASK_CONFRIM_COLOR
-      default:
-        return BID_CONFIRM_COLOR
-    }
   }, [Order.orderType])
 
   const MIN_VAL = isBid ? SUDT_DECIMAL : PRICE_DECIMAL
@@ -88,20 +80,37 @@ export default function OrderTable() {
     setPay(maxPay)
   }, [maxPay, formRef, setPay])
 
-  const checkPay = useCallback((_: any, value: string): Promise<void> => {
-    const val = new BigNumber(value)
-    const decimal = 8
+  const checkPay = useCallback(
+    (_: any, value: string): Promise<void> => {
+      const val = new BigNumber(value)
+      const decimal = 8
 
-    if (Number.isNaN(parseFloat(value))) {
-      return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
-    }
+      if (val.isLessThan(0)) {
+        setIsPayInvalid(true)
+        return Promise.reject(i18n.t(`trade.greaterThanZero`))
+      }
 
-    if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
-      return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
-    }
+      if (Number.isNaN(parseFloat(value))) {
+        setIsPayInvalid(true)
+        return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
+      }
 
-    return Promise.resolve()
-  }, [])
+      if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
+        setIsPayInvalid(true)
+        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
+      }
+
+      if (new BigNumber(value).gt(maxPay)) {
+        setIsPayInvalid(true)
+        return Promise.reject(i18n.t('trade.lessThanMax'))
+      }
+
+      setIsPayInvalid(false)
+
+      return Promise.resolve()
+    },
+    [maxPay],
+  )
 
   const checkPrice = useCallback(
     (_: any, value: string) => {
@@ -109,21 +118,39 @@ export default function OrderTable() {
       const decimal = 8
 
       if (Number.isNaN(parseFloat(value))) {
+        setIsPriceInvalid(true)
         return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
       }
 
+      if (val.isLessThan(0)) {
+        setIsPriceInvalid(true)
+        return Promise.reject(i18n.t(`trade.greaterThanZero`))
+      }
+
       if (!val.multipliedBy(`${MIN_VAL}`).isGreaterThan(0.1)) {
+        setIsPriceInvalid(true)
         return Promise.reject(i18n.t(`trade.tooSmallNumber`))
       }
 
       if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
+        setIsPriceInvalid(true)
         return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
       }
+
+      setIsPriceInvalid(false)
 
       return Promise.resolve()
     },
     [MIN_VAL],
   )
+
+  const checkReceive = useCallback(() => {
+    if (new BigNumber(receive).isLessThan(MINIUM_RECEIVE)) {
+      return Promise.reject(i18n.t('trade.miniumReceive'))
+    }
+
+    return Promise.resolve()
+  }, [receive])
 
   // const setBestPrice = useCallback(() => {
   //   // eslint-disable-next-line no-unused-expressions
@@ -132,10 +159,6 @@ export default function OrderTable() {
   //   })
   //   setPrice(Order.bestPrice)
   // }, [Order.bestPrice, formRef, setPrice])
-
-  const maxPayOverFlow = useMemo(() => {
-    return new BigNumber(Order.pay).gt(maxPay)
-  }, [Order.pay, maxPay])
 
   const submitStatus = useMemo(() => {
     if (Wallet.connecting) {
@@ -193,33 +216,6 @@ export default function OrderTable() {
     Order.pay,
     Order.orderType,
   ])
-
-  const isLessThanMiniumReceive = new BigNumber(receive).isLessThan(MINIUM_RECEIVE)
-
-  const confirmButton = (
-    <ConfirmButton
-      text={submitStatus}
-      bgColor={confirmButtonColor}
-      loading={collectingCells || Wallet.connecting}
-      disabled={insufficientCKB || maxPayOverFlow || isLessThanMiniumReceive}
-    />
-  )
-
-  const tooltipTitle = useMemo(() => {
-    if (isLessThanMiniumReceive) {
-      return i18n.t('trade.miniumReceive')
-    }
-
-    if (OrderType.Buy === Order.orderType) {
-      return i18n.t('trade.insufficientCKBBalance')
-    }
-
-    if (maxPayOverFlow) {
-      return i18n.t('trade.insufficientSUDTBalance')
-    }
-
-    return i18n.t('trade.insufficientCKBBalance')
-  }, [Order.orderType, maxPayOverFlow, isLessThanMiniumReceive])
 
   return (
     <OrderTableContainer id="order-box" isBid={Order.orderType === OrderType.Buy}>
@@ -279,7 +275,7 @@ export default function OrderTable() {
           />
         </Form.Item>
         <Divider />
-        <Form.Item label={i18n.t('trade.receive')} name="receive">
+        <Form.Item label={i18n.t('trade.receive')} name="receive" rules={[{ validator: checkReceive }]}>
           <Input
             className="receive"
             placeholder="0.00"
@@ -289,16 +285,16 @@ export default function OrderTable() {
             type="number"
             step="any"
             disabled
-            value={receive}
             readOnly
           />
         </Form.Item>
         <Form.Item className="submit">
-          {insufficientCKB || maxPayOverFlow || isLessThanMiniumReceive ? (
-            <Tooltip title={tooltipTitle}>{confirmButton}</Tooltip>
-          ) : (
-            confirmButton
-          )}
+          <ConfirmButton
+            text={submitStatus}
+            bgColor={Order.confirmButtonColor}
+            loading={collectingCells || Wallet.connecting}
+            disabled={disabled || insufficientCKB}
+          />
         </Form.Item>
       </Form>
     </OrderTableContainer>

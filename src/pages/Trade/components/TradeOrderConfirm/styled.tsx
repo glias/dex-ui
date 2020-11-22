@@ -2,22 +2,8 @@ import styled from 'styled-components'
 
 export const TradePairConfirmBox = styled.div`
   height: 100%;
-  background: #fff;
-  border-radius: 10px;
-  border: 1px solid #abd1e1;
-  box-sizing: border-box;
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  .confirm-btn {
-    font-size: 17px;
-    font-weight: 500;
-    color: #006a97;
-    text-align: center;
-    display: flex;
-    border: 0;
-    width: 100%;
-    justify-content: center;
-  }
+  display: flex;
+  flex-direction: column;
 `
 
 export const OrderButton = styled.div`
@@ -40,107 +26,113 @@ export const OrderButton = styled.div`
   }
 `
 
-export const TradePairConfirmHeader = styled.div`
-  height: 48px;
-  line-height: 48px;
-  background: rgba(0, 106, 151, 1);
-  color: #fff;
-  padding: 0 10px 0 0;
-  font-size: 16px;
-  box-sizing: border-box;
+export const ConfirmHeader = styled.div`
   text-align: center;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
+  color: #000;
   button {
     float: left;
     color: #fff;
     position: absolute;
-    top: 4px;
+    top: 0;
     left: 0;
+    background: none;
+    border: none;
+    color: black;
+    cursor: pointer;
+    &:focus {
+      outline: none;
+      box-shadow: none;
+    }
   }
   span {
     display: inline-block;
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: bold;
   }
 `
 
-export const TradePairConfirmContent = styled.div`
+export const PairsContainer = styled.section`
+  height: 88px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .pairs {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    .svg {
+      margin-left: 14px;
+      margin-right: 14px;
+      color: #888888;
+    }
+  }
+`
+
+export const ListContainer = styled.div`
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 22px;
+  color: #000;
+  .item {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 8px;
+    .left {
+      align-items: flex-start;
+    }
+    .right {
+      align-items: flex-end;
+      margin-left: auto;
+      .value {
+        margin-right: 4px;
+      }
+    }
+  }
+  &.detail {
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 17px;
+    color: #666666;
+  }
+`
+
+export const TradePairConfirmContent = styled.main`
   .circle-icon {
     width: 100px;
     color: rgba(136, 136, 136, 1);
     display: block;
     text-align: center;
   }
-`
-
-export const PairOrder = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 86px;
-  font-size: 20px;
-  background: rgba(241, 241, 241, 1);
-  color: rgba(0, 0, 0, 1);
-  button {
-    width: 100px;
-    color: rgba(136, 136, 136, 1);
+  .ant-divider-horizontal {
+    margin: 0;
+    border-top-color: #e1e1e1;
   }
 `
 
-export const OrderBox = styled.div`
-  background: #fff;
+export const MetaContainer = styled.div`
+  margin-top: 20px;
+  margin-bottom: 20px;
   padding: 10px;
-  ul {
-    .ant-divider {
-      min-width: 80%;
-      width: 80%;
-      margin: 20px auto;
-      background: rgba(171, 209, 225, 1);
-    }
-    .execution-fee {
-      color: rgba(81, 119, 136, 1) !important;
-      i {
-        font-size: 12px;
-      }
-      span {
-        color: rgba(81, 119, 136, 1) !important;
-      }
-    }
-    li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      line-height: 40px;
-      div {
-        display: inline-block;
-        text-align: right;
-        font-weight: 300;
-        i {
-          display: inline;
-          margin-left: 5px;
-        }
-        &:first-child {
-          text-align: left;
-          text-indent: 10px;
-        }
-        &:last-child {
-          font-weight: 400;
-        }
-        span {
-          &:first-child {
-            color: rgba(0, 0, 0, 1);
-            font-weight: 500;
-          }
-          &:last-child {
-            width: 60px;
-            margin-left: 5px;
-            font-size: 14px;
-            display: inline-block;
-            text-align: left;
-          }
-        }
-      }
-    }
+  background-color: #f6f6f6;
+  font-size: 14px;
+  line-height: 17px;
+  color: #000;
+  a {
+    text-decoration: underline;
+    color: #5c61da;
   }
+`
+
+export const OrderResult = styled.div`
+  margin-top: 24px;
+`
+
+export const Footer = styled.div`
+  margin-top: auto;
+  align-items: flex-end;
 `

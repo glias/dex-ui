@@ -1,7 +1,7 @@
 {
   "translation": {
     "header": {
-      "Trade": "Trade",
+      "Trade": "Swap",
       "Pool": "Pool",
       "Match": "Match",
       "wallet": "Connect Wallet",
@@ -17,16 +17,27 @@
       "ckbAddressTooltip": "A Transit Address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
     },
     "trade": {
-      "trade": "Trade",
+      "trade": "Swap",
       "pair": "Pair",
       "pay": "Your Pay",
       "max": "MAX",
+      "totalPay": "Total Pay",
+      "result": {
+        "trade": "Trade",
+        "tradeFee": "Trade fee",
+        "transactionFee": "Transaction Fee",
+        "learnWhy": "Learn why",
+        "receive": "Receive",
+        "orderMeta": "Placing this Order will lock your additional {{amount}} CKB in the Order. "
+      },
       "orderSubmitted": "Order Submitted",
       "viewExplorer": "View on CKB Explorer",
       "maxIntro": "Free capacity in your current account",
       "insufficientSUDTBalance": "Insufficient sUDT balance",
-      "insufficientCKBBalance": "Insufficient CKB balance",
+      "insufficientBalance": "Insufficient {{token}} balance",
+      "lessThanMax": "Your pay amount should be less than MAX amount",
       "miniumReceive": "The receive value is too small",
+      "greaterThanZero": "The value must be bigger than 0",
       "unEffectiveNumber": "Please fill in a valid number",
       "lessThanMaxNumber": "The value should be less than MAX",
       "maximumDecimal": "The value up to {{decimal}} precision",
