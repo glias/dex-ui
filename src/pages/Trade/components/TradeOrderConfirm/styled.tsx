@@ -122,6 +122,25 @@ export const MetaContainer = styled.div`
   font-size: 14px;
   line-height: 17px;
   color: #000;
+  .meta {
+    display: flex;
+    flex-direction: row;
+    .image {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 10px;
+      img {
+        width: 54px;
+      }
+    }
+
+    svg {
+      rect {
+        fill: url(#pattern0);
+      }
+    }
+  }
   a {
     text-decoration: underline;
     color: #5c61da;

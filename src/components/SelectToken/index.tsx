@@ -57,12 +57,16 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentWallet, onBack 
     [searchValue],
   )
 
+  const current = useMemo(() => {
+    return wallets.find(w => w.tokenName === currentWallet.tokenName) ?? currentWallet
+  }, [currentWallet, wallets])
+
   return (
     <Container>
       <HeaderWithGoback title={i18n.t('trade.selectToken')} onClick={onBack} />
       <div className="current">
         <div className="label">{i18n.t('trade.current')}</div>
-        <Item onClick={onBack} wallet={currentWallet} />
+        <Item onClick={onBack} wallet={current} />
       </div>
       <Divider style={{ margin: '14px 0' }} />
       <Input

@@ -18,7 +18,7 @@ import {
 import i18n from '../../../../utils/i18n'
 import { OrderTableContainer, PayMeta, Header, PairContainer, PairsContainer, Swap } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
-import WalletContainer from '../../../../containers/wallet'
+import WalletContainer, { Wallet as IWallet } from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import DEXCollector from '../../../../pw/dexCollector'
 import { ReactComponent as SelectTokenSVG } from '../../../../assets/svg/select-token.svg'
@@ -40,19 +40,34 @@ const Pair = ({ tokenName, onClick }: { tokenName: string; onClick: ElementOnCli
   )
 }
 interface PairsProps {
-  pairs: [string, string]
+  pairs: [IWallet, IWallet]
   onSwap: ElementOnClick
   onSelect: ElementOnClick
 }
 
 const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
   const [buyer, seller] = pairs
+  const Order = useContainer(OrderContainer)
   return (
     <PairsContainer>
       <div className="pairs">
-        <Pair onClick={onSelect} tokenName={buyer} />
+        <Pair
+          onClick={e => {
+            Order.setSelectingToken(OrderType.Buy)
+            Order.setCurrentPairWallet(buyer)
+            onSelect(e)
+          }}
+          tokenName={buyer.tokenName}
+        />
         <Divider style={{ margin: '14px 0' }} />
-        <Pair onClick={onSelect} tokenName={seller} />
+        <Pair
+          onClick={e => {
+            Order.setSelectingToken(OrderType.Sell)
+            Order.setCurrentPairWallet(seller)
+            onSelect(e)
+          }}
+          tokenName={seller.tokenName}
+        />
       </div>
       <Swap onClick={onSwap}>
         <SwapTokenSVG />
@@ -260,13 +275,27 @@ export default function OrderTable() {
     Order.orderType,
   ])
 
+  const perSuffix = useMemo(() => {
+    if (Order.pair.includes('ETH')) {
+      return `CKB per ETH`
+    }
+    return `CKB per ${Wallet.currentSudtWallet.tokenName}`
+  }, [Order.pair, Wallet.currentSudtWallet.tokenName])
+
+  const pairsWallet: [IWallet, IWallet] = useMemo(() => {
+    if (OrderType.Buy === Order.orderType) {
+      return [Order.buyPairWallet, Order.sellPairWallet]
+    }
+    return [Order.sellPairWallet, Order.buyPairWallet]
+  }, [Order.orderType, Order.sellPairWallet, Order.buyPairWallet])
+
   return (
     <OrderTableContainer id="order-box" isBid={Order.orderType === OrderType.Buy}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Header>
           <h3>{i18n.t('trade.trade')}</h3>
         </Header>
-        <Pairs onSelect={() => Order.setStep(OrderStep.Select)} pairs={Order.pair} onSwap={changePair} />
+        <Pairs onSelect={() => Order.setStep(OrderStep.Select)} pairs={pairsWallet} onSwap={changePair} />
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <button type="button" onClick={setMaxPay}>
@@ -310,7 +339,7 @@ export default function OrderTable() {
         >
           <Input
             placeholder="0"
-            suffix="CKB per DAI"
+            suffix={perSuffix}
             size="large"
             required
             type="number"

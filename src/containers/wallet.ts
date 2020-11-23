@@ -51,7 +51,7 @@ const defaultSUDTWallet: SudtWallet = {
   address: '',
   bestPrice: '0.00',
   lockHash: '',
-  tokenName: '',
+  tokenName: 'GLIA',
 }
 
 const defaultSUDTWallets = [...SUDT_MAP.entries()].map(([, sudt]) => {
@@ -84,10 +84,11 @@ export function useWallet() {
   }, [currentSudtLockHash, sudtWallets])
 
   const setEthBalance = useCallback(
-    (balance: Amount) => {
+    (balance: Amount, addr: string) => {
       setEthWallet({
         ...ethWallet,
         balance,
+        address: addr,
       })
     },
     [ethWallet, setEthWallet],
@@ -191,18 +192,23 @@ export function useWallet() {
       )
 
       const [ethAddr] = await newWeb3.eth.getAccounts()
+      const ethBalance = await newWeb3.eth.getBalance(ethAddr)
+      // eslint-disable-next-line no-console
       const ckbAddr = PWCore.provider.address.toCKBAddress()
 
       setWeb3(newWeb3)
       setPw(newPw)
 
-      setEthAddress(ethAddr.toLowerCase())
+      setEthBalance(
+        new Amount(new BigNumber(ethBalance).div(new BigNumber(10).pow(18)).toString()),
+        ethAddr.toLowerCase(),
+      )
       setCkbAddress(ckbAddr)
       reloadWallet(ckbAddr)
     } finally {
       setConnecting(false)
     }
-  }, [reloadWallet, setEthAddress, setCkbAddress])
+  }, [reloadWallet, setCkbAddress, setEthBalance])
 
   const disconnectWallet = useCallback(
     async (cb?: Function) => {

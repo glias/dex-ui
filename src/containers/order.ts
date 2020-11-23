@@ -7,7 +7,7 @@ import { CKB_DECIMAL, PRICE_DECIMAL, SUDT_TYPE_SCRIPT, ORDER_CELL_CAPACITY, MAX_
 import { submittedOrders as submittedOrdersCache } from '../utils'
 import type { OrderRecord } from '../utils'
 import { calcBuyReceive, calcSellReceive } from '../utils/fee'
-import WalletContainer from './wallet'
+import WalletContainer, { Wallet as IWallet } from './wallet'
 
 // eslint-disable-next-line no-shadow
 export enum OrderStep {
@@ -40,8 +40,6 @@ export function useOrder() {
   const [suggestionPrice, setSuggestionPrice] = useState(0)
   const [txHash, setTxHash] = useState('')
   const [orderType, setOrderType] = useState(OrderType.Buy)
-  const sellPair: [string, string] = ['GLIA', 'CKB']
-  const buyPair: [string, string] = ['CKB', 'GLIA']
   const [historyOrders, setHistoryOrders] = useState<any[]>([])
   const { address } = Wallet.ckbWallet
   const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
@@ -49,6 +47,17 @@ export function useOrder() {
   const [maxPay, setMaxPay] = useState(ckbBalance)
   const [bestPrice, setBestPrice] = useState('0.00')
   const [tx, setTx] = useState<Transaction | null>(null)
+  const [buyPairWallet, setBuyPairWallet] = useState<IWallet>(() => Wallet.ckbWallet)
+  const [sellPairWallet, setSellPairWallet] = useState<IWallet>(() => Wallet.currentSudtWallet)
+  const [selectingToken, setSelectingToken] = useState(OrderType.Buy)
+  const [currentPairWallet, setCurrentPairWallet] = useState<IWallet>(Wallet.ckbWallet)
+
+  const buyPair: [string, string] = useMemo(() => {
+    return [buyPairWallet.tokenName, sellPairWallet.tokenName]
+  }, [buyPairWallet, sellPairWallet])
+  const sellPair: [string, string] = useMemo(() => {
+    return [sellPairWallet.tokenName, buyPairWallet.tokenName]
+  }, [buyPairWallet, sellPairWallet])
 
   useEffect(() => {
     if (!address) {
@@ -65,7 +74,12 @@ export function useOrder() {
     [historyOrders],
   )
 
-  const [pair, setPair] = useState(buyPair)
+  const pair = useMemo(() => {
+    if (orderType === OrderType.Buy) {
+      return buyPair
+    }
+    return sellPair
+  }, [orderType, buyPair, sellPair])
 
   const ckbMax = useMemo(() => {
     return new BigNumber(Wallet.ckbWallet.free.toString())
@@ -79,10 +93,8 @@ export function useOrder() {
 
   const togglePair = useCallback(async () => {
     if (orderType === OrderType.Buy) {
-      setPair(sellPair)
       setOrderType(OrderType.Sell)
     } else {
-      setPair(buyPair)
       setOrderType(OrderType.Buy)
     }
     setPrice('')
@@ -95,10 +107,15 @@ export function useOrder() {
     if (orderType === OrderType.Sell) {
       setMaxPay(ckbMax)
     } else {
-      setMaxPay(Wallet.currentSudtWallet.balance.toString())
+      // eslint-disable-next-line no-lonely-if
+      if (pair.includes('ETH')) {
+        setMaxPay(Wallet.ethWallet.balance.toString())
+      } else {
+        setMaxPay(Wallet.currentSudtWallet.balance.toString())
+      }
     }
     setBestPrice(OrderType.Sell === orderType ? ckbBestPrice.toString() : sudtBestPrice.toString())
-  }, [orderType, sellPair, buyPair, Wallet.currentSudtWallet.balance, ckbMax, ckbBestPrice, sudtBestPrice])
+  }, [orderType, Wallet.currentSudtWallet.balance, ckbMax, ckbBestPrice, sudtBestPrice, pair, Wallet.ethWallet.balance])
 
   const initPrice = useCallback(async () => {
     const lockScript = PWCore.provider.address.toLockScript()
@@ -196,6 +213,14 @@ export function useOrder() {
     tx,
     setTx,
     confirmButtonColor,
+    setBuyPairWallet,
+    setSellPairWallet,
+    buyPairWallet,
+    sellPairWallet,
+    selectingToken,
+    setSelectingToken,
+    currentPairWallet,
+    setCurrentPairWallet,
   }
 }
 
