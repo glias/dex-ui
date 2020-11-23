@@ -28,9 +28,11 @@
       "result": {
         "trade": "Trade",
         "tradeFee": "Trade fee",
+        "crossFee": "CrossChain fee",
         "transactionFee": "Transaction Fee",
         "learnWhy": "Learn why",
         "receive": "Receive",
+        "crossMeta": "You will receive additional 179 CKB given free by Crosschain Relayer. ",
         "orderMeta": "Placing this Order will lock your additional {{amount}} CKB in the Order. "
       },
       "orderSubmitted": "Order Submitted",

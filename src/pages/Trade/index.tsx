@@ -1,18 +1,17 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { useContainer } from 'unstated-next'
 import SelectToken from 'components/SelectToken'
-import WalletContainer from 'containers/wallet'
+import { Wallet } from 'containers/wallet'
 import TradeOrderTable from './components/TradeOrderTable'
 import History from './components/History'
 import TradeOrderConfirm from './components/TradeOrderConfirm'
 import TradeOrderResult from './components/TradeOrderResult'
 import { TradePage, TradeMain, TradeFrame } from './styled'
-import OrderContainer, { OrderStep } from '../../containers/order'
+import OrderContainer, { OrderStep, OrderType } from '../../containers/order'
 import { checkSubmittedTxs } from '../../APIs'
 
 const Trade = () => {
   const Order = useContainer(OrderContainer)
-  const Wallet = useContainer(WalletContainer)
   const submittedOrderTimer = useRef<ReturnType<typeof setInterval> | undefined>()
 
   const { submittedOrders, setAndCacheSubmittedOrders } = Order
@@ -38,6 +37,20 @@ const Trade = () => {
     }
   }, [submittedOrderTimer, submittedOrders, setAndCacheSubmittedOrders])
 
+  const { selectingToken, setBuyPairWallet, setSellPairWallet, setStep } = Order
+
+  const onTokenSelect = useCallback(
+    (wallet: Wallet) => {
+      if (selectingToken === OrderType.Buy) {
+        setBuyPairWallet(wallet)
+      } else {
+        setSellPairWallet(wallet)
+      }
+      setStep(OrderStep.Order)
+    },
+    [selectingToken, setBuyPairWallet, setSellPairWallet, setStep],
+  )
+
   const traceNavigation = () => {
     switch (Order.step) {
       case OrderStep.Order:
@@ -48,8 +61,8 @@ const Trade = () => {
         return (
           <SelectToken
             onBack={() => Order.setStep(OrderStep.Order)}
-            onSelect={() => {}}
-            currentWallet={Wallet.ckbWallet}
+            onSelect={onTokenSelect}
+            currentWallet={Order.currentPairWallet}
           />
         )
       default:

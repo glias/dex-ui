@@ -16,6 +16,7 @@ import { spentCells } from '../../../../utils'
 import { Pairs } from './pairs'
 import { List, Item } from './list'
 import { Meta } from './meta'
+import CrossChain from './CrossChain'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
@@ -146,12 +147,12 @@ export default function TradePairConfirm() {
       {
         desc: i18n.t(`trade.price`),
         value: Order.price,
-        unit: `${seller} per ${buyer}`,
+        unit: `CKB per ${Wallet.currentSudtWallet.tokenName}`,
       },
     ]
 
     return list
-  }, [Order.price, seller, buyer])
+  }, [Order.price, Wallet.currentSudtWallet.tokenName])
 
   const receiveDetail = useMemo(() => {
     const list: Item[] = [
@@ -165,20 +166,28 @@ export default function TradePairConfirm() {
     return list
   }, [Order.receive, seller])
 
+  let table = (
+    <OrderResult>
+      <List list={totalPayDetail} />
+      <List list={tradeDetails} isDeatil />
+      <Meta amount={lockedCkbAmount} />
+      <List list={payDetail} />
+      <Divider style={{ margin: '20px 0' }} />
+      <List list={receiveDetail} />
+    </OrderResult>
+  )
+
+  if (Order.pair.includes('ETH')) {
+    table = <CrossChain />
+  }
+
   return (
     <TradePairConfirmBox>
       <HeaderWithGoback title={i18n.t(`trade.reviewOrder`)} onClick={() => Order.setStep(OrderStep.Order)} />
       <TradePairConfirmContent>
         <Pairs pairs={Order.pair} />
         <Divider />
-        <OrderResult>
-          <List list={totalPayDetail} />
-          <List list={tradeDetails} isDeatil />
-          <Meta amount={lockedCkbAmount} />
-          <List list={payDetail} />
-          <Divider style={{ margin: '20px 0' }} />
-          <List list={receiveDetail} />
-        </OrderResult>
+        {table}
       </TradePairConfirmContent>
       <Footer>
         <ConfirmButton
