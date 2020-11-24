@@ -10,7 +10,7 @@ import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
-import { calcBuyReceive, calcSellReceive } from '../../../../utils/fee'
+import { calcBuyReceive, calcSellReceive, toFormatWithoutTrailingZero } from '../../../../utils/fee'
 import { COMMISSION_FEE, MAX_TRANSACTION_FEE, ORDER_CELL_CAPACITY } from '../../../../constants'
 import { spentCells } from '../../../../utils'
 import { Pairs } from './pairs'
@@ -79,7 +79,7 @@ export default function TradePairConfirm() {
   }, [Order.tx])
 
   const tradeFee = useMemo(() => {
-    return new BigNumber(Order.pay).times(COMMISSION_FEE).toString()
+    return toFormatWithoutTrailingZero(new BigNumber(Order.pay).times(COMMISSION_FEE).toString())
   }, [Order.pay])
 
   const totalPay = useMemo(() => {
@@ -87,7 +87,7 @@ export default function TradePairConfirm() {
     if (buyer === 'CKB') {
       pay = pay.plus(new BigNumber(transactionFee))
     }
-    return pay.toString()
+    return toFormatWithoutTrailingZero(pay.toString())
   }, [Order.pay, buyer, tradeFee, transactionFee])
 
   const lockedCkbAmount = useMemo(() => {
@@ -125,17 +125,17 @@ export default function TradePairConfirm() {
     const list: Item[] = [
       {
         desc: i18n.t('trade.result.trade'),
-        value: Order.pay,
+        value: toFormatWithoutTrailingZero(Order.pay),
         unit: buyer,
       },
       {
         desc: i18n.t('trade.result.tradeFee'),
-        value: tradeFee,
+        value: toFormatWithoutTrailingZero(tradeFee),
         unit: buyer,
       },
       {
         desc: i18n.t('trade.result.transactionFee'),
-        value: transactionFee,
+        value: toFormatWithoutTrailingZero(transactionFee),
         unit: 'CKB',
       },
     ]
@@ -146,7 +146,7 @@ export default function TradePairConfirm() {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.price`),
-        value: Order.price,
+        value: toFormatWithoutTrailingZero(Order.price),
         unit: `CKB per ${Wallet.currentSudtWallet.tokenName}`,
       },
     ]
@@ -158,7 +158,7 @@ export default function TradePairConfirm() {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.result.receive`),
-        value: Order.receive,
+        value: new BigNumber(Order.receive).toFormat(8),
         unit: seller,
       },
     ]

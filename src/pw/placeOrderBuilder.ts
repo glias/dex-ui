@@ -73,7 +73,6 @@ export class PlaceOrderBuilder extends Builder {
     const orderOutput = new Cell(neededCapacity, this.orderLock, this.sudt.toTypeScript())
 
     const cells = await this.collector.collectSUDT(this.sudt, this.address, { neededAmount: this.pay })
-
     cells.forEach(cell => {
       // TODO: decimal
       sudtSumAmount = sudtSumAmount.add(cell.getSUDTAmount())

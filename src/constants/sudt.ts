@@ -14,7 +14,19 @@ export const SUDT_GLIA = new SUDT(process.env.REACT_APP_SUDT_TYPE_ARGS!, {
   decimals: 8,
 })
 
+export const SUDT_CK_ETH = new SUDT(process.env.REACT_APP_SUDT_TYPE_ARGS!, {
+  symbol: 'ckETH',
+  name: 'ckETH',
+  decimals: 8,
+})
+
+export const ERC20_LIST = ['DAI', 'USDT', 'USDC']
+
 export type IssuerLockHash = string
 
+export const SUDT_LIST = [SUDT_GLIA, SUDT_CK_ETH]
+
 export const SUDT_MAP = new Map<IssuerLockHash, SUDT>()
-SUDT_MAP.set(SUDT_GLIA.issuerLockHash, SUDT_GLIA)
+SUDT_LIST.forEach(sudt => {
+  SUDT_MAP.set(sudt.issuerLockHash, sudt)
+})

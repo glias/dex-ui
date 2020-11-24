@@ -11,10 +11,10 @@ import { Container, TokenContainer } from './styled'
 import { Wallet, WalletContainer } from '../../containers/wallet'
 
 export interface SelectTokenProps {
-  filter?: (value: Wallet, index: number, array: Wallet[]) => value is Wallet
+  filter?: (value: Wallet, index: number, array: Wallet[]) => boolean
   onSelect: (wallet: Wallet) => void
   onBack: () => void
-  currentWallet: Wallet
+  currentToken: string
 }
 
 const Item = ({
@@ -36,16 +36,16 @@ const Item = ({
   )
 }
 
-const SelectToken = ({ filter = Boolean as any, onSelect, currentWallet, onBack }: SelectTokenProps) => {
+const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }: SelectTokenProps) => {
   const WalletCtx = useContainer(WalletContainer)
   const [searchValue, setSearchValue] = useState('')
   const { wallets } = WalletCtx
   const filteredWallets = useMemo(() => {
     return wallets
-      .filter(w => w.tokenName !== currentWallet.tokenName)
+      .filter(w => w.tokenName !== currentToken)
       .filter(filter)
       .sort((w1, w2) => parseFloat(w2.balance.sub(w1.balance).toString()))
-  }, [wallets, filter, currentWallet.tokenName])
+  }, [wallets, filter, currentToken])
 
   const searchFilter = useCallback(
     (wallet: Wallet) => {
@@ -58,8 +58,8 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentWallet, onBack 
   )
 
   const current = useMemo(() => {
-    return wallets.find(w => w.tokenName === currentWallet.tokenName) ?? currentWallet
-  }, [currentWallet, wallets])
+    return wallets.find(w => w.tokenName === currentToken)!
+  }, [currentToken, wallets])
 
   return (
     <Container>

@@ -14,18 +14,19 @@ import {
   MAX_TRANSACTION_FEE,
   MINIUM_RECEIVE,
   SUDT_GLIA,
+  ERC20_LIST,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
 import { OrderTableContainer, PayMeta, Header, PairContainer, PairsContainer, Swap } from './styled'
 import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
-import WalletContainer, { Wallet as IWallet } from '../../../../containers/wallet'
+import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import DEXCollector from '../../../../pw/dexCollector'
 import { ReactComponent as SelectTokenSVG } from '../../../../assets/svg/select-token.svg'
 import { ReactComponent as SwapTokenSVG } from '../../../../assets/svg/swap-token.svg'
 
 // eslint-disable-next-line
-type ElementOnClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+type ElementOnClick = (event: React.MouseEvent<any, MouseEvent>) => void
 
 const Pair = ({ tokenName, onClick }: { tokenName: string; onClick: ElementOnClick }) => {
   return (
@@ -40,7 +41,7 @@ const Pair = ({ tokenName, onClick }: { tokenName: string; onClick: ElementOnCli
   )
 }
 interface PairsProps {
-  pairs: [IWallet, IWallet]
+  pairs: [string, string]
   onSwap: ElementOnClick
   onSelect: ElementOnClick
 }
@@ -48,29 +49,43 @@ interface PairsProps {
 const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
   const [buyer, seller] = pairs
   const Order = useContainer(OrderContainer)
+  const disabled = useMemo(() => {
+    if ((buyer === 'ETH' || ERC20_LIST.includes(buyer)) && seller === 'CKB') {
+      return true
+    }
+    return false
+  }, [buyer, seller])
   return (
     <PairsContainer>
       <div className="pairs">
         <Pair
           onClick={e => {
             Order.setSelectingToken(OrderType.Buy)
-            Order.setCurrentPairWallet(buyer)
+            Order.setCurrentPairToken(buyer)
             onSelect(e)
           }}
-          tokenName={buyer.tokenName}
+          tokenName={buyer}
         />
         <Divider style={{ margin: '14px 0' }} />
         <Pair
           onClick={e => {
             Order.setSelectingToken(OrderType.Sell)
-            Order.setCurrentPairWallet(seller)
+            Order.setCurrentPairToken(seller)
             onSelect(e)
           }}
-          tokenName={seller.tokenName}
+          tokenName={seller}
         />
       </div>
-      <Swap onClick={onSwap}>
-        <SwapTokenSVG />
+      <Swap>
+        <SwapTokenSVG
+          onClick={e => {
+            if (disabled) {
+              return
+            }
+            onSwap(e)
+          }}
+          className={disabled ? 'disabled' : ''}
+        />
       </Swap>
     </PairsContainer>
   )
@@ -227,15 +242,6 @@ export default function OrderTable() {
   }, [Wallet.connecting])
 
   useEffect(() => {
-    if (Wallet.ckbWallet.address === '') {
-      return
-    }
-
-    Order.initPrice()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Wallet.ckbWallet.address])
-
-  useEffect(() => {
     Order.reset()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Order.step])
@@ -282,20 +288,13 @@ export default function OrderTable() {
     return `CKB per ${Wallet.currentSudtWallet.tokenName}`
   }, [Order.pair, Wallet.currentSudtWallet.tokenName])
 
-  const pairsWallet: [IWallet, IWallet] = useMemo(() => {
-    if (OrderType.Buy === Order.orderType) {
-      return [Order.buyPairWallet, Order.sellPairWallet]
-    }
-    return [Order.sellPairWallet, Order.buyPairWallet]
-  }, [Order.orderType, Order.sellPairWallet, Order.buyPairWallet])
-
   return (
     <OrderTableContainer id="order-box" isBid={Order.orderType === OrderType.Buy}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Header>
           <h3>{i18n.t('trade.trade')}</h3>
         </Header>
-        <Pairs onSelect={() => Order.setStep(OrderStep.Select)} pairs={pairsWallet} onSwap={changePair} />
+        <Pairs onSelect={() => Order.setStep(OrderStep.Select)} pairs={Order.pair} onSwap={changePair} />
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <button type="button" onClick={setMaxPay}>

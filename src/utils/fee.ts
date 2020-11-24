@@ -19,6 +19,10 @@ export function calcBuyAmount(pay: string) {
   return new BigNumber(pay).plus(new BigNumber(ORDER_CELL_CAPACITY)).toString()
 }
 
+export function toFormatWithoutTrailingZero(n: string, decimal = 8) {
+  return new BigNumber(n).toFormat(decimal, 1).replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1')
+}
+
 export default {
   calcBuyReceive,
   calcSellReceive,
