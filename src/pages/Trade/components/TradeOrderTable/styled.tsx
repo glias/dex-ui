@@ -67,6 +67,7 @@ export const InputNumberContainer = styled.div`
       label {
         font-size: 16px;
       }
+      input[type='text'],
       input[type='number'] {
         appearance: textfield;
         padding-left: 14px;

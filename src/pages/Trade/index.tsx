@@ -8,7 +8,7 @@ import History from './components/History'
 import TradeOrderConfirm from './components/TradeOrderConfirm'
 import TradeOrderResult from './components/TradeOrderResult'
 import { TradePage, TradeMain, TradeFrame } from './styled'
-import OrderContainer, { OrderStep, OrderType } from '../../containers/order'
+import OrderContainer, { OrderStep } from '../../containers/order'
 import { checkSubmittedTxs } from '../../APIs'
 
 const Trade = () => {
@@ -41,7 +41,7 @@ const Trade = () => {
   const { selectingToken, setBuyerToken, setSellerToken, setStep, togglePair } = Order
   const [buyerToken, sellerToken] = Order.pair
 
-  const onBuyerTokenSelect = useCallback(
+  const onFirstTokenSelect = useCallback(
     (selectedToken: string) => {
       const isSelectingSUDT = SUDT_LIST.some(
         sudt => sudt.info?.symbol === selectedToken && !selectedToken.startsWith('ck'),
@@ -103,36 +103,38 @@ const Trade = () => {
     [togglePair, sellerToken, setBuyerToken, setSellerToken, buyerToken],
   )
 
-  const onSellerTokenSelect = useCallback(
+  const onSecondTokenSelect = useCallback(
     (selectedToken: string) => {
       const isBuyerETH = buyerToken === 'ETH'
       const isBuyerERC20 = ERC20_LIST.includes(buyerToken)
-      if (selectedToken === 'CKB' && (isBuyerETH || isBuyerERC20)) {
+      if (selectedToken === buyerToken) {
+        togglePair()
+      } else if (selectedToken === 'CKB' && (isBuyerETH || isBuyerERC20)) {
         setBuyerToken(sellerToken)
         setSellerToken('CKB')
       } else {
         setSellerToken(selectedToken)
       }
     },
-    [sellerToken, buyerToken, setBuyerToken, setSellerToken],
+    [sellerToken, buyerToken, setBuyerToken, setSellerToken, togglePair],
   )
 
   const onTokenSelect = useCallback(
     (wallet: Wallet) => {
-      if (selectingToken === OrderType.Buy) {
-        onBuyerTokenSelect(wallet.tokenName)
+      if (selectingToken === 'first') {
+        onFirstTokenSelect(wallet.tokenName)
       } else {
-        onSellerTokenSelect(wallet.tokenName)
+        onSecondTokenSelect(wallet.tokenName)
       }
       setStep(OrderStep.Order)
     },
-    [onBuyerTokenSelect, onSellerTokenSelect, setStep, selectingToken],
+    [onFirstTokenSelect, onSecondTokenSelect, setStep, selectingToken],
   )
 
   const selectTokenFilter = useCallback(
     (wallet: Wallet) => {
-      // for bid token, all token can be selected
-      if (selectingToken === OrderType.Buy) {
+      // for first token, all token can be selected
+      if (selectingToken === 'first') {
         return true
       }
 
@@ -141,7 +143,7 @@ const Trade = () => {
       )
       const isBuyerShadowAssert = SUDT_LIST.some(sudt => sudt.info?.symbol.startsWith('ck'))
       const isCurrentCKB = wallet.tokenName === 'CKB'
-
+      const isSwapable = buyerToken === wallet.tokenName
       switch (buyerToken) {
         case 'CKB':
           return true
@@ -149,10 +151,10 @@ const Trade = () => {
           return wallet.tokenName === 'ckETH' || isCurrentCKB
         default:
           if (isBuyerSUDT) {
-            return isCurrentCKB
+            return isCurrentCKB || isSwapable
           }
           if (isBuyerShadowAssert) {
-            return wallet.tokenName === buyerToken.slice(2) || isCurrentCKB
+            return wallet.tokenName === buyerToken.slice(2) || isCurrentCKB || isSwapable
           }
           if (ERC20_LIST.includes(buyerToken)) {
             return wallet.tokenName.slice(2) === buyerToken || isCurrentCKB

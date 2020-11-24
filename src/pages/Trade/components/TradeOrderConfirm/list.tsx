@@ -20,8 +20,8 @@ export const List = ({ list, isDeatil = false }: ListProps) => {
           <div className="item" key={Math.random()}>
             <div className="left">{item.desc ?? ''}</div>
             <div className="right">
-              <span className="value">{item.value}</span>
-              <span>{item.unit}</span>
+              <span className={item.unit ? 'value' : ''}>{item.value}</span>
+              {item.unit ? <span>{item.unit}</span> : null}
             </div>
           </div>
         )

@@ -136,7 +136,7 @@ export class PlaceOrderBuilder extends Builder {
   }
 
   async build(fee: Amount = Amount.ZERO): Promise<Transaction> {
-    if (this.orderType === OrderType.Sell) {
+    if (this.orderType === OrderType.Ask) {
       return this.buildSellTx()
     }
 

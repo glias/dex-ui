@@ -1,11 +1,11 @@
-import PWCore, { Transaction } from '@lay2/pw-core'
+import { Amount, Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
-import { ORDER_CELL_CAPACITY, MAX_TRANSACTION_FEE } from '../constants'
+import { ORDER_CELL_CAPACITY, MAX_TRANSACTION_FEE, COMMISSION_FEE } from '../constants'
 import { submittedOrders as submittedOrdersCache } from '../utils'
 import type { OrderRecord } from '../utils'
-import { calcBuyReceive, calcSellReceive } from '../utils/fee'
+import { calcAskReceive, calcBidReceive } from '../utils/fee'
 import WalletContainer from './wallet'
 
 // eslint-disable-next-line no-shadow
@@ -18,8 +18,15 @@ export enum OrderStep {
 
 // eslint-disable-next-line no-shadow
 export enum OrderType {
-  Buy,
-  Sell,
+  Bid = 'Bid',
+  Ask = 'Ask',
+}
+// eslint-disable-next-line no-shadow
+export enum OrderMode {
+  Order = 'Order',
+  CrossChain = 'CrossChain',
+  CrossIn = 'CrossIn',
+  CrossOut = 'CrossOut',
 }
 
 const BID_CONFIRM_COLOR = '#ff9a6f'
@@ -32,31 +39,22 @@ export interface SubmittedOrder extends Pick<OrderRecord, 'isBid' | 'pay' | 'rec
 
 export function useOrder() {
   const Wallet = useContainer(WalletContainer)
+  const { ethWallet, sudtWallets } = Wallet
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
-  const [maximumPayable, setMaximumPayable] = useState('-')
-  const [suggestionPrice, setSuggestionPrice] = useState(0)
   const [txHash, setTxHash] = useState('')
-  const [orderType, setOrderType] = useState(OrderType.Buy)
   const [historyOrders, setHistoryOrders] = useState<any[]>([])
   const { address } = Wallet.ckbWallet
   const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
   const ckbBalance = Wallet.ckbWallet.free.toString()
   const [maxPay, setMaxPay] = useState(ckbBalance)
-  const [bestPrice, setBestPrice] = useState('0.00')
+  const [bestPrice] = useState('0.00')
   const [tx, setTx] = useState<Transaction | null>(null)
-  const [buyerToken, setBuyerToken] = useState(() => Wallet.ethWallet.tokenName)
-  const [sellerToken, setSellerToken] = useState(() => Wallet.ckbWallet.tokenName)
-  const [selectingToken, setSelectingToken] = useState(OrderType.Buy)
-  const [currentPairToken, setCurrentPairToken] = useState(Wallet.ckbWallet.tokenName)
-
-  const buyPair: [string, string] = useMemo(() => {
-    return [buyerToken, sellerToken]
-  }, [buyerToken, sellerToken])
-  const sellPair: [string, string] = useMemo(() => {
-    return [sellerToken, buyerToken]
-  }, [buyerToken, sellerToken])
+  const [firstToken, setBuyerToken] = useState(() => Wallet.ethWallet.tokenName)
+  const [secondToken, setSellerToken] = useState(() => Wallet.ckbWallet.tokenName)
+  const [selectingToken, setSelectingToken] = useState<'first' | 'second'>('first')
+  const [currentPairToken, setCurrentPairToken] = useState(Wallet.ethWallet.tokenName)
 
   useEffect(() => {
     if (!address) {
@@ -73,59 +71,90 @@ export function useOrder() {
     [historyOrders],
   )
 
-  const pair = useMemo(() => {
-    if (orderType === OrderType.Buy) {
-      return buyPair
+  const pair: [string, string] = useMemo(() => {
+    return [firstToken, secondToken]
+  }, [firstToken, secondToken])
+
+  const orderMode = useMemo(() => {
+    const [buyer, seller] = pair
+    const sudtWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && !seller.startsWith('ck'))
+    const shadowWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && seller.startsWith('ck'))
+    switch (buyer) {
+      case 'CKB':
+        return OrderMode.Order
+      case 'ETH':
+        if (seller.slice(2) === buyer) {
+          return OrderMode.CrossIn
+        }
+        return OrderMode.CrossChain
+      default:
+        if (sudtWallet) {
+          return OrderMode.Order
+        }
+        if (shadowWallet) {
+          if (seller === 'CKB') {
+            return OrderMode.Order
+          }
+          return OrderMode.CrossOut
+        }
+        return OrderMode.Order
     }
-    return sellPair
-  }, [orderType, buyPair, sellPair])
+  }, [pair, sudtWallets])
+
+  const orderType = useMemo(() => {
+    const [p1] = pair
+    switch (orderMode) {
+      case OrderMode.Order:
+        if (p1 === 'CKB') {
+          return OrderType.Bid
+        }
+        return OrderType.Ask
+      case OrderMode.CrossChain:
+        return OrderType.Ask
+      case OrderMode.CrossIn:
+        return OrderType.Ask
+      case OrderMode.CrossOut:
+        return OrderType.Bid
+      default:
+        return OrderType.Bid
+    }
+  }, [orderMode, pair])
 
   const ckbMax = useMemo(() => {
     return new BigNumber(Wallet.ckbWallet.free.toString())
-      .minus(ORDER_CELL_CAPACITY)
       .minus(MAX_TRANSACTION_FEE)
+      .div(1 + COMMISSION_FEE)
+      .minus(ORDER_CELL_CAPACITY)
       .toFixed(8, 1)
   }, [Wallet.ckbWallet.free])
 
-  const sudtBestPrice = Wallet.currentSudtWallet.bestPrice
-  const ckbBestPrice = Wallet.ckbWallet.bestPrice
-
   const togglePair = useCallback(async () => {
-    if (orderType === OrderType.Buy) {
-      setOrderType(OrderType.Sell)
-    } else {
-      setOrderType(OrderType.Buy)
-    }
+    setBuyerToken(secondToken)
+    setSellerToken(firstToken)
     setPrice('')
     setPay('')
-    const lockScript = PWCore.provider?.address?.toLockScript()
-    if (!lockScript) {
-      return
-    }
-
-    if (orderType === OrderType.Sell) {
-      setMaxPay(ckbMax)
-    } else {
-      // eslint-disable-next-line no-lonely-if
-      if (pair.includes('ETH')) {
-        setMaxPay(Wallet.ethWallet.balance.toString())
-      } else {
-        setMaxPay(Wallet.currentSudtWallet.balance.toString())
-      }
-    }
-    setBestPrice(OrderType.Sell === orderType ? ckbBestPrice.toString() : sudtBestPrice.toString())
-  }, [orderType, Wallet.currentSudtWallet.balance, ckbMax, ckbBestPrice, sudtBestPrice, pair, Wallet.ethWallet.balance])
+  }, [firstToken, secondToken])
 
   const receive = useMemo(() => {
-    if (price && pay) {
-      if (orderType === OrderType.Buy) {
-        return calcBuyReceive(pay, price)
-      }
-      return calcSellReceive(pay, price)
+    const [buyToken] = pair
+    if (!pay || !price) {
+      return '0'
     }
-
-    return '0.00'
-  }, [price, pay, orderType])
+    switch (orderMode) {
+      case OrderMode.Order:
+        if (buyToken === 'CKB') {
+          return calcBidReceive(pay, price)
+        }
+        return calcAskReceive(pay, price)
+      case OrderMode.CrossChain:
+        return calcAskReceive(pay, price)
+      case OrderMode.CrossIn:
+      case OrderMode.CrossOut:
+        return pay
+      default:
+        return '0.00'
+    }
+  }, [price, pay, orderMode, pair])
 
   const setLoading = useCallback(
     (key: string) => {
@@ -154,15 +183,36 @@ export function useOrder() {
   )
 
   // TODO: max pay
-  // useEffect(() => {
-  //   const [buyer] = pair
-  // }, [pair])
+  useEffect(() => {
+    const [buyer, seller] = pair
+    const sudtWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && !buyer.startsWith('ck'))
+    const shadowWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && buyer.startsWith('ck'))
+    switch (buyer) {
+      case 'CKB':
+        setMaxPay(ckbMax)
+        break
+      case 'ETH':
+        setMaxPay(ethWallet.balance.sub(new Amount('0.1')).toString())
+        break
+      default:
+        if (sudtWallet) {
+          setMaxPay(new BigNumber(sudtWallet.balance.toString()).div(1 + COMMISSION_FEE).toString())
+        } else if (shadowWallet) {
+          if (seller === 'CKB') {
+            setMaxPay(new BigNumber(shadowWallet.balance.toString()).div(1 + COMMISSION_FEE).toString())
+          } else {
+            setMaxPay(shadowWallet.balance.toString())
+          }
+        }
+        break
+    }
+  }, [ethWallet.balance, ckbMax, pair, sudtWallets])
 
   const confirmButtonColor = useMemo(() => {
     switch (orderType) {
-      case OrderType.Buy:
+      case OrderType.Bid:
         return BID_CONFIRM_COLOR
-      case OrderType.Sell:
+      case OrderType.Ask:
         return ASK_CONFRIM_COLOR
       default:
         return BID_CONFIRM_COLOR
@@ -175,10 +225,6 @@ export function useOrder() {
   }
 
   return {
-    suggestionPrice,
-    setSuggestionPrice,
-    maximumPayable,
-    setMaximumPayable,
     step,
     setStep,
     pay,
@@ -189,9 +235,8 @@ export function useOrder() {
     reset,
     txHash,
     setTxHash,
-    orderType,
-    setOrderType,
     togglePair,
+    orderType,
     pair,
     concatHistoryOrders,
     historyOrders,
@@ -210,6 +255,7 @@ export function useOrder() {
     setSelectingToken,
     currentPairToken,
     setCurrentPairToken,
+    orderMode,
   }
 }
 
