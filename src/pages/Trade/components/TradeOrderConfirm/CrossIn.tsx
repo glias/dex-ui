@@ -22,13 +22,10 @@ const CrossChain = () => {
     return toFormatWithoutTrailingZero(pay.toString())
   }, [Order.pay, tradeFee])
 
+  // TODO: pay/receive/price as props
   const pay = useMemo(() => {
     return toFormatWithoutTrailingZero(Order.pay)
   }, [Order.pay])
-
-  const price = useMemo(() => {
-    return toFormatWithoutTrailingZero(Order.price)
-  }, [Order.price])
 
   const receive = useMemo(() => {
     return toFormatWithoutTrailingZero(Order.receive)
@@ -49,8 +46,8 @@ const CrossChain = () => {
   const tradeDetails = useMemo(() => {
     const list: Item[] = [
       {
-        desc: i18n.t('trade.result.trade'),
-        value: pay,
+        desc: i18n.t('trade.result.crossChain'),
+        value: toFormatWithoutTrailingZero(pay),
         unit: buyer,
       },
       {
@@ -58,26 +55,9 @@ const CrossChain = () => {
         value: i18n.t('trade.result.freeNow'),
         unit: '',
       },
-      {
-        desc: i18n.t('trade.result.tradeFee'),
-        value: tradeFee,
-        unit: buyer,
-      },
     ]
     return list
-  }, [tradeFee, buyer, pay])
-
-  const priceDetail = useMemo(() => {
-    const list: Item[] = [
-      {
-        desc: i18n.t(`trade.price`),
-        value: price,
-        unit: `CKB per ETH`,
-      },
-    ]
-
-    return list
-  }, [price])
+  }, [buyer, pay])
 
   const receiveDetail = useMemo(() => {
     const list: Item[] = [
@@ -100,7 +80,6 @@ const CrossChain = () => {
     <OrderResult>
       <List list={totalPayDetail} />
       <List list={tradeDetails} isDeatil />
-      <List list={priceDetail} />
       <Divider style={{ margin: '20px 0' }} />
       <List list={receiveDetail} />
       <CrossMeta />

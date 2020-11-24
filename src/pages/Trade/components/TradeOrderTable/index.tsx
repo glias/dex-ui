@@ -290,6 +290,9 @@ export default function OrderTable() {
         <Header>
           <h3>{i18n.t('trade.trade')}</h3>
         </Header>
+        {insufficientCKB && Wallet.ckbWallet.address && disabled ? (
+          <span className="alert">{i18n.t('trade.insufficientAmount')}</span>
+        ) : null}
         <Pairs onSelect={() => Order.setStep(OrderStep.Select)} pairs={Order.pair} onSwap={changePair} />
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>

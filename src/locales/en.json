@@ -32,9 +32,12 @@
         "transactionFee": "Transaction Fee",
         "learnWhy": "Learn why",
         "receive": "Receive",
+        "freeNow": "❤️ Free Now",
+        "crossChain": "Cross Chain",
         "crossMeta": "You will receive additional 179 CKB given free by Crosschain Relayer. ",
         "orderMeta": "Placing this Order will lock your additional {{amount}} CKB in the Order. "
       },
+      "insufficientAmount": "Insufficient CKB balance. Please keep at least 179.1 CKB in your wallet.",
       "orderSubmitted": "Order Submitted",
       "viewExplorer": "View on CKB Explorer",
       "maxIntro": "Free capacity in your current account",

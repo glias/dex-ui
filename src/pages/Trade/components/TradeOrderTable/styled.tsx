@@ -119,6 +119,12 @@ export const InputNumberContainer = styled.div`
 
 export const OrderTableContainer = styled(InputNumberContainer)`
   height: 100%;
+  .alert {
+    font-size: 14px;
+    line-height: 16px;
+    color: #ff4d4f;
+    margin-top: 10px;
+  }
 `
 
 export const OrderSelectPopover = styled.div`
