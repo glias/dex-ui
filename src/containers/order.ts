@@ -2,12 +2,11 @@ import PWCore, { Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
-import { getBestPrice, getCkbBalance } from '../APIs'
-import { CKB_DECIMAL, PRICE_DECIMAL, SUDT_TYPE_SCRIPT, ORDER_CELL_CAPACITY, MAX_TRANSACTION_FEE } from '../constants'
+import { ORDER_CELL_CAPACITY, MAX_TRANSACTION_FEE } from '../constants'
 import { submittedOrders as submittedOrdersCache } from '../utils'
 import type { OrderRecord } from '../utils'
 import { calcBuyReceive, calcSellReceive } from '../utils/fee'
-import WalletContainer, { Wallet as IWallet } from './wallet'
+import WalletContainer from './wallet'
 
 // eslint-disable-next-line no-shadow
 export enum OrderStep {
@@ -47,17 +46,17 @@ export function useOrder() {
   const [maxPay, setMaxPay] = useState(ckbBalance)
   const [bestPrice, setBestPrice] = useState('0.00')
   const [tx, setTx] = useState<Transaction | null>(null)
-  const [buyPairWallet, setBuyPairWallet] = useState<IWallet>(() => Wallet.ckbWallet)
-  const [sellPairWallet, setSellPairWallet] = useState<IWallet>(() => Wallet.currentSudtWallet)
+  const [buyerToken, setBuyerToken] = useState(() => Wallet.ethWallet.tokenName)
+  const [sellerToken, setSellerToken] = useState(() => Wallet.ckbWallet.tokenName)
   const [selectingToken, setSelectingToken] = useState(OrderType.Buy)
-  const [currentPairWallet, setCurrentPairWallet] = useState<IWallet>(Wallet.ckbWallet)
+  const [currentPairToken, setCurrentPairToken] = useState(Wallet.ckbWallet.tokenName)
 
   const buyPair: [string, string] = useMemo(() => {
-    return [buyPairWallet.tokenName, sellPairWallet.tokenName]
-  }, [buyPairWallet, sellPairWallet])
+    return [buyerToken, sellerToken]
+  }, [buyerToken, sellerToken])
   const sellPair: [string, string] = useMemo(() => {
-    return [sellPairWallet.tokenName, buyPairWallet.tokenName]
-  }, [buyPairWallet, sellPairWallet])
+    return [sellerToken, buyerToken]
+  }, [buyerToken, sellerToken])
 
   useEffect(() => {
     if (!address) {
@@ -117,18 +116,6 @@ export function useOrder() {
     setBestPrice(OrderType.Sell === orderType ? ckbBestPrice.toString() : sudtBestPrice.toString())
   }, [orderType, Wallet.currentSudtWallet.balance, ckbMax, ckbBestPrice, sudtBestPrice, pair, Wallet.ethWallet.balance])
 
-  const initPrice = useCallback(async () => {
-    const lockScript = PWCore.provider.address.toLockScript()
-    const { free } = (await getCkbBalance(lockScript)).data
-    if (orderType === OrderType.Buy) {
-      setMaxPay(
-        new BigNumber(free).div(CKB_DECIMAL).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE).toFixed(8, 1),
-      )
-    }
-    const { data } = await getBestPrice(SUDT_TYPE_SCRIPT, OrderType.Sell)
-    setBestPrice(new BigNumber(data.price).div(new BigNumber(PRICE_DECIMAL.toString())).toString())
-  }, [orderType])
-
   const receive = useMemo(() => {
     if (price && pay) {
       if (orderType === OrderType.Buy) {
@@ -165,6 +152,11 @@ export function useOrder() {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [address, setSubmittedOrders],
   )
+
+  // TODO: max pay
+  // useEffect(() => {
+  //   const [buyer] = pair
+  // }, [pair])
 
   const confirmButtonColor = useMemo(() => {
     switch (orderType) {
@@ -209,18 +201,15 @@ export function useOrder() {
     setLoading,
     maxPay,
     bestPrice,
-    initPrice,
     tx,
     setTx,
     confirmButtonColor,
-    setBuyPairWallet,
-    setSellPairWallet,
-    buyPairWallet,
-    sellPairWallet,
+    setBuyerToken,
+    setSellerToken,
     selectingToken,
     setSelectingToken,
-    currentPairWallet,
-    setCurrentPairWallet,
+    currentPairToken,
+    setCurrentPairToken,
   }
 }
 

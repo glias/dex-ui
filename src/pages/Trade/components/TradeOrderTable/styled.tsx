@@ -36,6 +36,11 @@ export const PairsContainer = styled.section`
   }
 `
 
+export interface SwapProps {
+  disabled: boolean
+  onClick: any
+}
+
 export const Swap = styled.div`
   margin-left: 12px;
   display: flex;
@@ -46,6 +51,9 @@ export const Swap = styled.div`
     position: relative;
     cursor: pointer;
     left: 8px;
+    &.disabled {
+      cursor: not-allowed;
+    }
   }
 `
 
