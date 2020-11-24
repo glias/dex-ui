@@ -35,8 +35,8 @@ export const ButtonContainer = styled.div`
     width: 100%;
     &.ant-btn-text {
       &:disabled {
-        background-color: #ddd;
-        color: #888;
+        background-color: #ddd !important;
+        color: #888 !important;
       }
       &:hover {
         color: white;

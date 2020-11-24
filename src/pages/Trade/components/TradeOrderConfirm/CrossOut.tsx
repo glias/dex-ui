@@ -1,34 +1,19 @@
 import React, { useMemo } from 'react'
 import { Divider } from 'antd'
-import BigNumber from 'bignumber.js'
 import { toFormatWithoutTrailingZero } from 'utils/fee'
 import i18n from 'utils/i18n'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
-import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from 'constants/number'
 import { List, Item } from './list'
 import { OrderResult } from './styled'
-import { CrossMeta } from './CrossMeta'
 
 const CrossChain = () => {
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
-  const tradeFee = useMemo(() => {
-    return toFormatWithoutTrailingZero(new BigNumber(Order.pay).times(COMMISSION_FEE).toString())
-  }, [Order.pay])
-
-  const totalPay = useMemo(() => {
-    const pay = new BigNumber(Order.pay).plus(new BigNumber(tradeFee))
-    return toFormatWithoutTrailingZero(pay.toString())
-  }, [Order.pay, tradeFee])
 
   const pay = useMemo(() => {
     return toFormatWithoutTrailingZero(Order.pay)
   }, [Order.pay])
-
-  const price = useMemo(() => {
-    return toFormatWithoutTrailingZero(Order.price)
-  }, [Order.price])
 
   const receive = useMemo(() => {
     return toFormatWithoutTrailingZero(Order.receive)
@@ -38,19 +23,24 @@ const CrossChain = () => {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.totalPay`),
-        value: totalPay,
+        value: pay,
         unit: buyer,
+      },
+      {
+        desc: '',
+        value: '0',
+        unit: 'CKB',
       },
     ]
 
     return list
-  }, [totalPay, buyer])
+  }, [pay, buyer])
 
   const tradeDetails = useMemo(() => {
     const list: Item[] = [
       {
-        desc: i18n.t('trade.result.trade'),
-        value: pay,
+        desc: i18n.t('trade.result.crossChain'),
+        value: toFormatWithoutTrailingZero(pay),
         unit: buyer,
       },
       {
@@ -59,25 +49,13 @@ const CrossChain = () => {
         unit: '',
       },
       {
-        desc: i18n.t('trade.result.tradeFee'),
-        value: tradeFee,
-        unit: buyer,
+        desc: i18n.t('trade.result.transactionFee'),
+        value: '0',
+        unit: 'CKB',
       },
     ]
     return list
-  }, [tradeFee, buyer, pay])
-
-  const priceDetail = useMemo(() => {
-    const list: Item[] = [
-      {
-        desc: i18n.t(`trade.price`),
-        value: price,
-        unit: `CKB per ETH`,
-      },
-    ]
-
-    return list
-  }, [price])
+  }, [buyer, pay])
 
   const receiveDetail = useMemo(() => {
     const list: Item[] = [
@@ -85,11 +63,6 @@ const CrossChain = () => {
         desc: i18n.t(`trade.result.receive`),
         value: receive,
         unit: seller,
-      },
-      {
-        desc: '',
-        value: `+ ${ORDER_CELL_CAPACITY}`,
-        unit: 'CKB',
       },
     ]
 
@@ -100,10 +73,8 @@ const CrossChain = () => {
     <OrderResult>
       <List list={totalPayDetail} />
       <List list={tradeDetails} isDeatil />
-      <List list={priceDetail} />
       <Divider style={{ margin: '20px 0' }} />
       <List list={receiveDetail} />
-      <CrossMeta />
     </OrderResult>
   )
 }

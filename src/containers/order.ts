@@ -77,8 +77,8 @@ export function useOrder() {
 
   const orderMode = useMemo(() => {
     const [buyer, seller] = pair
-    const sudtWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && !seller.startsWith('ck'))
-    const shadowWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && seller.startsWith('ck'))
+    const sudtWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && !buyer.startsWith('ck'))
+    const shadowWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && buyer.startsWith('ck'))
     switch (buyer) {
       case 'CKB':
         return OrderMode.Order

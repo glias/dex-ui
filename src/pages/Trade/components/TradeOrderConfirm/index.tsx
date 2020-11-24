@@ -7,7 +7,7 @@ import HeaderWithGoback from 'components/HeaderWithGoback'
 import { Divider, Modal } from 'antd'
 import { TradePairConfirmBox, TradePairConfirmContent, OrderResult, Footer } from './styled'
 import i18n from '../../../../utils/i18n'
-import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
+import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import { calcBuyReceive, calcSellReceive, toFormatWithoutTrailingZero } from '../../../../utils/fee'
@@ -17,6 +17,8 @@ import { Pairs } from './pairs'
 import { List, Item } from './list'
 import { Meta } from './meta'
 import CrossChain from './CrossChain'
+import CrossIn from './CrossIn'
+import CrossOut from './CrossOut'
 
 export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
@@ -155,31 +157,36 @@ export default function TradePairConfirm() {
     return list
   }, [Order.price, Wallet.currentSudtWallet.tokenName])
 
+  const receive = useMemo(() => {
+    return toFormatWithoutTrailingZero(Order.receive)
+  }, [Order.receive])
+
   const receiveDetail = useMemo(() => {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.result.receive`),
-        value: new BigNumber(Order.receive).toFormat(8),
+        value: receive,
         unit: seller,
       },
     ]
 
     return list
-  }, [Order.receive, seller])
+  }, [receive, seller])
 
-  let table = (
-    <OrderResult>
-      <List list={totalPayDetail} />
-      <List list={tradeDetails} isDeatil />
-      <Meta amount={lockedCkbAmount} />
-      <List list={payDetail} />
-      <Divider style={{ margin: '20px 0' }} />
-      <List list={receiveDetail} />
-    </OrderResult>
-  )
-
-  if (Order.pair.includes('ETH')) {
-    table = <CrossChain />
+  const result: Record<OrderMode, JSX.Element> = {
+    [OrderMode.Order]: (
+      <OrderResult>
+        <List list={totalPayDetail} />
+        <List list={tradeDetails} isDeatil />
+        <Meta amount={lockedCkbAmount} />
+        <List list={payDetail} />
+        <Divider style={{ margin: '20px 0' }} />
+        <List list={receiveDetail} />
+      </OrderResult>
+    ),
+    [OrderMode.CrossChain]: <CrossChain />,
+    [OrderMode.CrossIn]: <CrossIn />,
+    [OrderMode.CrossOut]: <CrossOut />,
   }
 
   return (
@@ -188,7 +195,7 @@ export default function TradePairConfirm() {
       <TradePairConfirmContent>
         <Pairs pairs={Order.pair} />
         <Divider />
-        {table}
+        {result[Order.orderMode]}
       </TradePairConfirmContent>
       <Footer>
         <ConfirmButton
