@@ -41,7 +41,7 @@ export default function TradePairConfirm() {
       const txHash = await Wallet.pw?.sendTransaction(tx)
       spentCells.add(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
 
-      const isBid = Order.orderType === OrderType.Buy
+      const isBid = Order.orderType === OrderType.Bid
       const receiveCalc = isBid ? calcBuyReceive : calcSellReceive
 
       const submittedOrder: SubmittedOrder = {
@@ -72,6 +72,7 @@ export default function TradePairConfirm() {
     Order.price,
     Wallet.pw,
     Order.tx,
+    Order.orderType,
   ])
 
   const transactionFee = useMemo(() => {
@@ -107,7 +108,7 @@ export default function TradePairConfirm() {
       },
     ]
 
-    if (Order.tx && Order.orderType === OrderType.Sell) {
+    if (Order.tx && Order.orderType === OrderType.Ask) {
       list.push({
         desc: '',
         value: new Amount(ORDER_CELL_CAPACITY.toString())

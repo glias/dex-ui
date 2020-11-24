@@ -5,7 +5,7 @@ import { createContainer } from 'unstated-next'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
 import { getCkbBalance, getSudtBalance } from '../APIs'
-import { CKB_NODE_URL, IssuerLockHash, IS_DEVNET, PW_DEV_CHAIN_CONFIG, SUDT_GLIA, SUDT_MAP } from '../constants'
+import { CKB_NODE_URL, IssuerLockHash, IS_DEVNET, PW_DEV_CHAIN_CONFIG, SUDT_GLIA, SUDT_LIST } from '../constants'
 import DEXCollector from '../pw/dexCollector'
 
 export interface Wallet {
@@ -45,7 +45,7 @@ const defaultSUDTWallet: SudtWallet = {
   tokenName: 'GLIA',
 }
 
-const defaultSUDTWallets = [...SUDT_MAP.entries()].map(([, sudt]) => {
+const defaultSUDTWallets = SUDT_LIST.map(sudt => {
   return {
     ...defaultSUDTWallet,
     lockHash: sudt.issuerLockHash,
@@ -147,7 +147,7 @@ export function useWallet() {
   }, [])
 
   const reloadSudtWallets = useCallback(async () => {
-    const wallets = await Promise.all([...SUDT_MAP.entries()].map(([, sudt]) => reloadSudtWallet(sudt)))
+    const wallets = await Promise.all(SUDT_LIST.map(sudt => reloadSudtWallet(sudt)))
     setSudtWallets(wallets)
   }, [reloadSudtWallet])
 

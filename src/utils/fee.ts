@@ -15,12 +15,20 @@ export function calcSellReceive(pay: string, price: string) {
     .toFixed(8, 1)
 }
 
+export function calcAskReceive(pay: string, price: string) {
+  return new BigNumber(pay).times(price).toFixed(8, 1)
+}
+
+export function calcBidReceive(pay: string, price: string) {
+  return new BigNumber(pay).div(price).toFixed(8, 1)
+}
+
 export function calcBuyAmount(pay: string) {
   return new BigNumber(pay).plus(new BigNumber(ORDER_CELL_CAPACITY)).toString()
 }
 
 export function toFormatWithoutTrailingZero(n: string, decimal = 8) {
-  return new BigNumber(n).toFormat(decimal, 1).replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, '$1')
+  return new BigNumber(n).toFormat(decimal, 1).replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1')
 }
 
 export default {

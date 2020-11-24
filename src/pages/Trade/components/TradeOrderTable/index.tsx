@@ -7,6 +7,7 @@ import Token from 'components/Token'
 import { Address, Amount, AddressType } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
+import { toFormatWithoutTrailingZero } from 'utils/fee'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
@@ -60,7 +61,7 @@ const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
       <div className="pairs">
         <Pair
           onClick={e => {
-            Order.setSelectingToken(OrderType.Buy)
+            Order.setSelectingToken('first')
             Order.setCurrentPairToken(buyer)
             onSelect(e)
           }}
@@ -69,7 +70,7 @@ const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
         <Divider style={{ margin: '14px 0' }} />
         <Pair
           onClick={e => {
-            Order.setSelectingToken(OrderType.Sell)
+            Order.setSelectingToken('second')
             Order.setCurrentPairToken(seller)
             onSelect(e)
           }}
@@ -95,13 +96,17 @@ export default function OrderTable() {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
-  const { price, pay, setPrice, setPay, receive, setStep } = Order
+  const { price, pay, setPrice, setPay, receive: originalReceive, setStep } = Order
   const formRef = React.createRef<FormInstance>()
   const [buyer, seller] = Order.pair
   const [collectingCells, setCollectingCells] = useState(false)
   const [isPayInvalid, setIsPayInvalid] = useState(true)
   const [isPriceInvalid, setIsPriceInvalid] = useState(true)
   const disabled = useMemo(() => isPayInvalid || isPriceInvalid, [isPayInvalid, isPriceInvalid])
+
+  const receive = useMemo(() => {
+    return originalReceive === '0' ? '' : toFormatWithoutTrailingZero(originalReceive)
+  }, [originalReceive])
 
   const changePair = useCallback(() => {
     Order.togglePair()
@@ -110,7 +115,7 @@ export default function OrderTable() {
   }, [formRef, form, Order.togglePair])
 
   const isBid = useMemo(() => {
-    return Order.orderType === OrderType.Buy
+    return Order.orderType === OrderType.Bid
   }, [Order.orderType])
 
   const MIN_VAL = isBid ? SUDT_DECIMAL : PRICE_DECIMAL
@@ -133,7 +138,7 @@ export default function OrderTable() {
       return '0'
     }
 
-    return p.toString()
+    return toFormatWithoutTrailingZero(p.toString(), 4)
   }, [Order.maxPay])
 
   useEffect(() => {
@@ -250,16 +255,16 @@ export default function OrderTable() {
     if (walletNotConnected) {
       Wallet.connectWallet()
     } else {
-      const builder = new PlaceOrderBuilder(
-        new Address(Wallet.ckbWallet.address, AddressType.ckb),
-        new Amount(Order.pay),
-        Order.orderType,
-        Order.price,
-        SUDT_GLIA,
-        new DEXCollector(),
-      )
       try {
         setCollectingCells(true)
+        const builder = new PlaceOrderBuilder(
+          new Address(Wallet.ckbWallet.address, AddressType.ckb),
+          new Amount(Order.pay),
+          Order.orderType,
+          Order.price,
+          SUDT_GLIA,
+          new DEXCollector(),
+        )
         const tx = await builder.build()
         Order.setTx(tx)
         setStep(OrderStep.Confirm)
@@ -270,16 +275,7 @@ export default function OrderTable() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    setStep,
-    walletNotConnected,
-    Wallet.connectWallet,
-    Order.orderType,
-    Order.setTx,
-    Order.price,
-    Order.pay,
-    Order.orderType,
-  ])
+  }, [setStep, walletNotConnected, Wallet.connectWallet, Order.setTx, Order.price, Order.pay, Order.orderType])
 
   const perSuffix = useMemo(() => {
     if (Order.pair.includes('ETH')) {
@@ -289,7 +285,7 @@ export default function OrderTable() {
   }, [Order.pair, Wallet.currentSudtWallet.tokenName])
 
   return (
-    <OrderTableContainer id="order-box" isBid={Order.orderType === OrderType.Buy}>
+    <OrderTableContainer id="order-box" isBid={isBid}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Header>
           <h3>{i18n.t('trade.trade')}</h3>
@@ -355,7 +351,7 @@ export default function OrderTable() {
             suffix={seller}
             size="large"
             required
-            type="number"
+            type="text"
             step="any"
             disabled
             readOnly
