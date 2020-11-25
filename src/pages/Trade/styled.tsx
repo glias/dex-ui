@@ -2,15 +2,23 @@ import styled from 'styled-components'
 
 export const TradePage = styled.div`
   min-height: calc(100% - 93px);
-  padding: 0 120px;
-  padding-top: 220px;
-  padding-bottom: 60px;
   background-image: linear-gradient(to top, #eeeeee, #e8e8e8);
+  padding-top: 220px;
+  width: 100%;
+  padding-bottom: 60px;
 `
 
 export const TradeMain = styled.div`
   margin: 0 auto;
+`
+
+export const TradeContainer = styled.div`
+  margin: 0 auto;
+  max-width: 1440px;
+  padding: 0 120px;
   position: relative;
+  width: 100%;
+  z-index: 666;
 `
 
 export const TradeContent = styled.div`
