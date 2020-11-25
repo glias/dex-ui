@@ -13,7 +13,7 @@ import {
   SUDT_DECIMAL,
   ORDER_CELL_CAPACITY,
   MAX_TRANSACTION_FEE,
-  MINIUM_RECEIVE,
+  // MINIUM_RECEIVE,
   SUDT_GLIA,
   ERC20_LIST,
 } from '../../../../constants'
@@ -237,20 +237,12 @@ export default function OrderTable() {
   )
 
   const checkReceive = useCallback(() => {
-    if (new BigNumber(Order.receive).isLessThan(MINIUM_RECEIVE)) {
-      return Promise.reject(i18n.t('trade.miniumReceive'))
-    }
+    // if (new BigNumber(Order.receive).isLessThan(MINIUM_RECEIVE)) {
+    //   return Promise.reject(i18n.t('trade.miniumReceive'))
+    // }
 
     return Promise.resolve()
-  }, [Order.receive])
-
-  // const setBestPrice = useCallback(() => {
-  //   // eslint-disable-next-line no-unused-expressions
-  //   formRef.current?.setFieldsValue({
-  //     price: Order.bestPrice,
-  //   })
-  //   setPrice(Order.bestPrice)
-  // }, [Order.bestPrice, formRef, setPrice])
+  }, [])
 
   const submitStatus = useMemo(() => {
     if (Wallet.connecting) {
@@ -265,22 +257,26 @@ export default function OrderTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Order.step])
 
+  const isNormalOrder = useMemo(() => OrderMode.Order === Order.orderMode, [Order.orderMode])
+
   const onSubmit = useCallback(async () => {
     if (walletNotConnected) {
       Wallet.connectWallet()
     } else {
       try {
         setCollectingCells(true)
-        const builder = new PlaceOrderBuilder(
-          new Address(Wallet.ckbWallet.address, AddressType.ckb),
-          new Amount(Order.pay),
-          Order.orderType,
-          Order.price,
-          SUDT_GLIA,
-          new DEXCollector(),
-        )
-        const tx = await builder.build()
-        Order.setTx(tx)
+        if (isNormalOrder) {
+          const builder = new PlaceOrderBuilder(
+            new Address(Wallet.ckbWallet.address, AddressType.ckb),
+            new Amount(Order.pay),
+            Order.orderType,
+            Order.price,
+            SUDT_GLIA,
+            new DEXCollector(),
+          )
+          const tx = await builder.build()
+          Order.setTx(tx)
+        }
         setStep(OrderStep.Confirm)
       } catch (error) {
         Modal.error({ title: 'Build transaction:\n', content: error.message })
@@ -289,7 +285,16 @@ export default function OrderTable() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setStep, walletNotConnected, Wallet.connectWallet, Order.setTx, Order.price, Order.pay, Order.orderType])
+  }, [
+    setStep,
+    walletNotConnected,
+    Wallet.connectWallet,
+    Order.setTx,
+    Order.price,
+    Order.pay,
+    Order.orderType,
+    isNormalOrder,
+  ])
 
   const perSuffix = useMemo(() => {
     if (Order.pair.includes('ETH')) {
