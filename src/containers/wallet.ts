@@ -179,7 +179,6 @@ export function useWallet() {
 
       const [ethAddr] = await newWeb3.eth.getAccounts()
       const ethBalance = await newWeb3.eth.getBalance(ethAddr)
-      // eslint-disable-next-line no-console
       const ckbAddr = PWCore.provider.address.toCKBAddress()
 
       setWeb3(newWeb3)
