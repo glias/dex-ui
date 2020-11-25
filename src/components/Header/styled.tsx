@@ -1,14 +1,32 @@
 import styled from 'styled-components'
 
 export const HeaderBox = styled.div`
-  color: rgba(81, 119, 136, 1);
   padding: 0 120px;
+  max-width: 1440px;
+  margin: 0 auto;
   background-color: #6b70e0;
-  box-shadow: 3px 3px 8px 0 rgba(0, 0, 0, 0.08);
   color: white;
+  width: 100%;
+  .bg-img {
+    position: absolute;
+    width: 100%;
+    height: 340px;
+    top: 0;
+    z-index: -1;
+    svg {
+      rect {
+        fill: url(#pattern0);
+      }
+    }
+  }
+`
+
+export const HeaderContainer = styled.div`
   position: absolute;
   width: 100%;
-  z-index: 999;
+  box-shadow: 3px 3px 8px 0 rgba(0, 0, 0, 0.08);
+  background-color: #6b70e0;
+  z-index: 1;
 `
 
 export const MenuLiText = styled.span`
@@ -21,6 +39,9 @@ export const HeaderPanel = styled.div`
   justify-content: space-between;
   align-items: center;
   margin: 0 auto;
+  background-color: #6b70e0;
+  z-index: 2;
+  position: relative;
   .ant-menu {
     background-color: #6b70e0;
     border-bottom: 1px solid transparent;
@@ -270,12 +291,20 @@ export const HeaderMeta = styled.div`
 export const Background = styled.div`
   position: absolute;
   width: 100%;
-  height: 340px;
+  height: 341px;
   top: 0;
+  display: flex;
+  flex-direction: row;
 
-  svg {
-    rect {
-      fill: url(#pattern0);
-    }
+  .left {
+    width: 50%;
+    height: 341px;
+    background: linear-gradient(180deg, #cb9fbb 0%, #f0ad79 100%);
+  }
+
+  .right {
+    width: 50%;
+    height: 341px;
+    background: linear-gradient(180deg, #bcb1ff 0%, #c9bdff 100%);
   }
 `
