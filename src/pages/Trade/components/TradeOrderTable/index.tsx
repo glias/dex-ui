@@ -7,7 +7,7 @@ import Token from 'components/Token'
 import { Address, Amount, AddressType } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
-import { toFormatWithoutTrailingZero } from 'utils/fee'
+import { removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
@@ -19,7 +19,7 @@ import {
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
 import { OrderTableContainer, PayMeta, Header, PairContainer, PairsContainer, Swap } from './styled'
-import OrderContainer, { OrderStep, OrderType } from '../../../../containers/order'
+import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import DEXCollector from '../../../../pw/dexCollector'
@@ -102,11 +102,24 @@ export default function OrderTable() {
   const [collectingCells, setCollectingCells] = useState(false)
   const [isPayInvalid, setIsPayInvalid] = useState(true)
   const [isPriceInvalid, setIsPriceInvalid] = useState(true)
-  const disabled = useMemo(() => isPayInvalid || isPriceInvalid, [isPayInvalid, isPriceInvalid])
 
-  const receive = useMemo(() => {
+  const isCrossInOrOut = useMemo(() => {
+    return Order.orderMode === OrderMode.CrossIn || Order.orderMode === OrderMode.CrossOut
+  }, [Order.orderMode])
+
+  const disabled = useMemo(() => {
+    if (isCrossInOrOut) {
+      return isPayInvalid
+    }
+    return isPayInvalid || isPriceInvalid
+  }, [isPayInvalid, isPriceInvalid, isCrossInOrOut])
+
+  const formatedReceive = useMemo(() => {
+    if (isCrossInOrOut) {
+      return toFormatWithoutTrailingZero(Order.pay)
+    }
     return originalReceive === '0' ? '' : toFormatWithoutTrailingZero(originalReceive)
-  }, [originalReceive])
+  }, [originalReceive, isCrossInOrOut, Order.pay])
 
   const changePair = useCallback(() => {
     Order.togglePair()
@@ -138,22 +151,23 @@ export default function OrderTable() {
       return '0'
     }
 
-    return toFormatWithoutTrailingZero(p.toString(), 4)
+    return removeTrailingZero(p.toFixed(8, 1))
   }, [Order.maxPay])
 
   useEffect(() => {
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
-      receive,
+      receive: formatedReceive,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [receive])
+  }, [formatedReceive])
 
   const setMaxPay = useCallback(() => {
-    setPay(maxPay)
+    const max = new BigNumber(maxPay).toFixed(8, 1)
+    setPay(max)
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
-      pay: maxPay,
+      pay: max,
     })
     setIsPayInvalid(false)
   }, [maxPay, formRef, setPay])
@@ -223,12 +237,12 @@ export default function OrderTable() {
   )
 
   const checkReceive = useCallback(() => {
-    if (new BigNumber(receive).isLessThan(MINIUM_RECEIVE)) {
+    if (new BigNumber(Order.receive).isLessThan(MINIUM_RECEIVE)) {
       return Promise.reject(i18n.t('trade.miniumReceive'))
     }
 
     return Promise.resolve()
-  }, [receive])
+  }, [Order.receive])
 
   // const setBestPrice = useCallback(() => {
   //   // eslint-disable-next-line no-unused-expressions
@@ -326,26 +340,28 @@ export default function OrderTable() {
             />
           </Form.Item>
         </Form.Item>
-        <Form.Item
-          label={i18n.t('trade.price')}
-          name="price"
-          rules={[
-            {
-              validator: checkPrice,
-            },
-          ]}
-        >
-          <Input
-            placeholder="0"
-            suffix={perSuffix}
-            size="large"
-            required
-            type="number"
-            step="any"
-            onChange={e => setPrice(e.target.value)}
-            value={price}
-          />
-        </Form.Item>
+        {isCrossInOrOut ? null : (
+          <Form.Item
+            label={i18n.t('trade.price')}
+            name="price"
+            rules={[
+              {
+                validator: checkPrice,
+              },
+            ]}
+          >
+            <Input
+              placeholder="0"
+              suffix={perSuffix}
+              size="large"
+              required
+              type="number"
+              step="any"
+              onChange={e => setPrice(e.target.value)}
+              value={price}
+            />
+          </Form.Item>
+        )}
         <Divider />
         <Form.Item label={i18n.t('trade.receive')} name="receive" rules={[{ validator: checkReceive }]}>
           <Input

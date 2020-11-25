@@ -112,6 +112,9 @@ const Trade = () => {
       } else if (selectedToken === 'CKB' && (isBuyerETH || isBuyerERC20)) {
         setBuyerToken(sellerToken)
         setSellerToken('CKB')
+      } else if ((selectedToken === 'ETH' || ERC20_LIST.includes(selectedToken)) && buyerToken === 'CKB') {
+        setBuyerToken(selectedToken)
+        setSellerToken('CKB')
       } else {
         setSellerToken(selectedToken)
       }

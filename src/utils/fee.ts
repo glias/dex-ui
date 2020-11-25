@@ -28,7 +28,14 @@ export function calcBuyAmount(pay: string) {
 }
 
 export function toFormatWithoutTrailingZero(n: string, decimal = 8) {
+  if (!n) {
+    return '0.00'
+  }
   return new BigNumber(n).toFormat(decimal, 1).replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1')
+}
+
+export function removeTrailingZero(str: string) {
+  return str.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1')
 }
 
 export default {
