@@ -16,8 +16,8 @@ const CrossChain = () => {
   }, [Order.pay])
 
   const receive = useMemo(() => {
-    return toFormatWithoutTrailingZero(Order.receive)
-  }, [Order.receive])
+    return toFormatWithoutTrailingZero(Order.pay)
+  }, [Order.pay])
 
   const totalPayDetail = useMemo(() => {
     const list: Item[] = [
