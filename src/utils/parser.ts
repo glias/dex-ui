@@ -5,6 +5,16 @@ export type RawOrder = Record<'order_amount' | 'traded_amount' | 'turnover_rate'
   is_bid: boolean
   status: 'opening' | 'completed' | 'aborted' | 'claimed' | 'claimable' | null
   last_order_cell_outpoint: Record<'tx_hash' | 'index', string>
+  block_hash: string
+}
+
+function pad(n: number) {
+  return n < 10 ? `0${n}` : n
+}
+
+export const getTimeString = (timestemp: string) => {
+  const date = new Date(Number(timestemp))
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
 /**
@@ -41,6 +51,8 @@ export const parseOrderRecord = ({
     executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
     price: `${priceInNum}`,
     status: status === 'claimable' ? 'completed' : status,
+    tokenName: '',
+    createdAt: '',
     ...rest,
   }
 }

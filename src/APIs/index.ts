@@ -1,13 +1,16 @@
-import { Script } from '@lay2/pw-core'
+import CKB from '@nervosnetwork/ckb-sdk-core'
+import { Script, SUDT } from '@lay2/pw-core'
 import type { Cell } from '@ckb-lumos/base'
 import axios, { AxiosResponse } from 'axios'
 import { OrderType } from '../containers/order'
-import { EXPLORER_API, SUDT_GLIA } from '../constants'
+import { CKB_NODE_URL, EXPLORER_API, SUDT_GLIA } from '../constants'
 import { spentCells } from '../utils'
 
 export * from './checkSubmittedTxs'
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL!
+
+export const ckb = new CKB(CKB_NODE_URL)
 
 export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHash: string, lockArgs: string) {
   return axios.get(`${SERVER_URL}/cells`, {
@@ -94,8 +97,8 @@ export async function getBestPrice(type: Script, orderType: OrderType) {
   }
 }
 
-export function getHistoryOrders(lockArgs: string) {
-  const TypeScript = SUDT_GLIA.toTypeScript()
+export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA) {
+  const TypeScript = sudt.toTypeScript()
 
   const params = {
     order_lock_args: lockArgs,
@@ -104,7 +107,6 @@ export function getHistoryOrders(lockArgs: string) {
     type_args: TypeScript.args,
   }
 
-  // TODO: order history should get all sudt
   return axios.get(`${SERVER_URL}/order-history`, {
     params,
   })
@@ -125,4 +127,9 @@ export function getCkbTransactions(address: string, page: number = 1, pageSize: 
     },
     data: null,
   })
+}
+
+export async function getTransactionHeader(blockHashes: string[]) {
+  const requests: Array<['getHeader', any]> = blockHashes.map(hash => ['getHeader', hash])
+  return ckb.rpc.createBatchRequest(requests).exec()
 }

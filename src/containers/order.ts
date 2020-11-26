@@ -32,7 +32,7 @@ export enum OrderMode {
 const BID_CONFIRM_COLOR = '#ff9a6f'
 const ASK_CONFRIM_COLOR = '#72d1a4'
 
-export interface SubmittedOrder extends Pick<OrderRecord, 'isBid' | 'pay' | 'receive' | 'price' | 'key'> {
+export interface SubmittedOrder extends Pick<OrderRecord, 'isBid' | 'pay' | 'receive' | 'price' | 'key' | 'tokenName'> {
   status: 'pending'
   createdAt: string
 }

@@ -54,6 +54,7 @@ export default function TradePairConfirm() {
         receive: receiveCalc(Order.pay, Order.price),
         price: Order.price,
         createdAt: `${Date.now()}`,
+        tokenName: Order.pair.find(t => t !== 'CKB')! ?? '',
       }
       Order.setAndCacheSubmittedOrders(orders => [submittedOrder, ...orders])
       Order.setTxHash(txHash!)

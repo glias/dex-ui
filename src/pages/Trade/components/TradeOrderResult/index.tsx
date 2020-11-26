@@ -26,12 +26,7 @@ export default function Trade() {
           </a>
         </div>
       </Result>
-      <ConfirmButton
-        htmlType="button"
-        text={i18n.t('trade.dismiss')}
-        bgColor={Order.confirmButtonColor}
-        onClick={handleClickSubmit}
-      />
+      <ConfirmButton htmlType="button" text={i18n.t('trade.dismiss')} onClick={handleClickSubmit} />
     </Container>
   )
 }

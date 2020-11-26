@@ -1,6 +1,6 @@
 import { useEffect, MutableRefObject, useCallback } from 'react'
-import { Address, OutPoint, AddressType } from '@lay2/pw-core'
-import { getHistoryOrders } from '../../../../APIs'
+import { Address, OutPoint, AddressType, SUDT } from '@lay2/pw-core'
+import { getHistoryOrders, getTransactionHeader } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import { REJECT_ERROR_CODE } from '../../../../constants'
@@ -58,25 +58,33 @@ export const usePollOrderList = ({
   lockArgs,
   dispatch,
   fetchListRef,
+  sudt,
 }: {
   lockArgs: string
   dispatch: React.Dispatch<HistoryAction>
   fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
+  sudt: SUDT
 }) => {
   useEffect(() => {
     dispatch({ type: ActionType.UpdateOrderList, value: [] as Array<Order> })
 
     if (lockArgs) {
       const fetchData = () =>
-        getHistoryOrders(lockArgs)
-          .then(res => {
+        getHistoryOrders(lockArgs, sudt)
+          .then(async res => {
             const parsed = res.data.reverse().map((item: RawOrder) => {
               const order = parseOrderRecord(item)
               if (['aborted', 'claimed'].includes(order.status ?? '')) {
                 pendingOrders.remove(order.key)
               }
+              order.tokenName = sudt.info?.symbol ?? ''
               return order
             })
+            const resList = await getTransactionHeader(res.data.map((item: RawOrder) => item.block_hash))
+            for (let i = 0; i < resList.length; i++) {
+              const blockHeader = resList[i]
+              parsed[i].createdAt = blockHeader.timestamp
+            }
             dispatch({ type: ActionType.UpdateOrderList, value: parsed })
           })
           .catch(err => {
@@ -87,7 +95,7 @@ export const usePollOrderList = ({
           })
 
       dispatch({ type: ActionType.UpdateLoading, value: true })
-      const TIMER = 3000
+      const TIMER = 10000
       fetchData()
       /* eslint-disable-next-line no-param-reassign */
       fetchListRef.current = setInterval(fetchData, TIMER)
@@ -100,7 +108,7 @@ export const usePollOrderList = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [lockArgs, dispatch, fetchListRef])
+  }, [lockArgs, dispatch, fetchListRef, sudt])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {
