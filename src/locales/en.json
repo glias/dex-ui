@@ -25,6 +25,7 @@
       "selectToken": "Select Token",
       "searchToken": "Search for token",
       "totalPay": "Total Pay",
+      "dismiss": "Dismiss",
       "result": {
         "trade": "Trade",
         "tradeFee": "Trade fee",

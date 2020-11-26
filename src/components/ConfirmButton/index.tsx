@@ -9,12 +9,20 @@ export interface ConfirmButtonProps {
   // eslint-disable-next-line
   onClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
   loading?: boolean
+  htmlType?: 'button' | 'submit' | 'reset'
 }
 
-export default function ConfirmButton({ bgColor, text, disabled = false, onClick, loading }: ConfirmButtonProps) {
+export default function ConfirmButton({
+  bgColor,
+  text,
+  disabled = false,
+  onClick,
+  loading,
+  htmlType = 'submit',
+}: ConfirmButtonProps) {
   return (
     <ButtonContainer bgColor={bgColor}>
-      <Button htmlType="submit" size="large" type="text" disabled={disabled} onClick={onClick} loading={loading}>
+      <Button htmlType={htmlType} size="large" type="text" disabled={disabled} onClick={onClick} loading={loading}>
         {text}
       </Button>
     </ButtonContainer>

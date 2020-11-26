@@ -101,12 +101,12 @@ svg.full-width-and-height {
   fill: currentColor;
 }
 
-svg rect {
+/* svg rect {
   fill: currentColor;
 }
 svg path {
   fill: currentColor;
-}
+} */
 
 svg.walletconnect-qrcode__image path {
   fill: transparent;

@@ -12,6 +12,34 @@ export const TracePairResultBox = styled.div`
   overflow: hidden;
 `
 
+export const Container = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+`
+
+export const Result = styled.form`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  .success {
+    text-align: center;
+  }
+  .order-tip {
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  a {
+    font-size: 14px;
+    color: #5c61da;
+    text-decoration: underline;
+    margin-top: 20px;
+  }
+`
+
 export const TradePairConfirmBox = styled.div`
   height: 100%;
   background: #fff;
