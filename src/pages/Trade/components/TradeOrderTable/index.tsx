@@ -155,14 +155,20 @@ export default function OrderTable() {
   }, [Order.maxPay])
 
   useEffect(() => {
+    if (insufficientCKB) {
+      return
+    }
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
       receive: formatedReceive,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formatedReceive])
+  }, [formatedReceive, insufficientCKB])
 
   useEffect(() => {
+    if (insufficientCKB) {
+      return
+    }
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
       price,
@@ -171,9 +177,12 @@ export default function OrderTable() {
       setIsPriceInvalid(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [price])
+  }, [price, insufficientCKB])
 
   const setMaxPay = useCallback(() => {
+    if (insufficientCKB) {
+      return
+    }
     const max = removeTrailingZero(new BigNumber(maxPay).toFixed(8, 1))
     setPay(max)
     // eslint-disable-next-line no-unused-expressions
@@ -181,7 +190,7 @@ export default function OrderTable() {
       pay: max,
     })
     setIsPayInvalid(false)
-  }, [maxPay, formRef, setPay])
+  }, [maxPay, formRef, setPay, insufficientCKB])
 
   const checkPay = useCallback(
     (_: any, value: string): Promise<void> => {
