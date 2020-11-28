@@ -26,6 +26,12 @@
       "searchToken": "Search for token",
       "totalPay": "Total Pay",
       "dismiss": "Dismiss",
+      "priceTable": {
+        "pay": "Pay ({{token}})",
+        "price": "Price (CKB per {{token}})",
+        "receive": "Receive ({{token}})",
+        "title": "Order Book ({{token}}/CKB)"
+      },
       "result": {
         "trade": "Trade",
         "tradeFee": "Trade fee",

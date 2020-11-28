@@ -151,3 +151,23 @@ export function getOrCreateBridgeCell(
     bridge_fee: bridgeFee,
   })
 }
+
+export type Orders = Record<'order_amount' | 'sudt_amount' | 'price', string>[]
+export interface OrdersResult {
+  bid_orders: Orders
+  ask_orders: Orders
+}
+
+export function getOrders(sudt: SUDT = SUDT_GLIA): Promise<AxiosResponse<OrdersResult>> {
+  const TypeScript = sudt.toTypeScript()
+
+  const params = {
+    type_code_hash: TypeScript.codeHash,
+    type_hash_type: TypeScript.hashType,
+    type_args: TypeScript.args,
+  }
+
+  return axios.get(`${SERVER_URL}/orders`, {
+    params,
+  })
+}

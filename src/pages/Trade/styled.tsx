@@ -9,6 +9,8 @@ export const TradePage = styled.div`
 `
 
 export const TradeMain = styled.div`
+  display: flex;
+  flex-direction: row;
   margin: 0 auto;
 `
 
@@ -38,4 +40,9 @@ export const TradeFrame = styled.div`
   border-radius: 16px;
   box-shadow: 3px 3px 8px 0 rgba(0, 0, 0, 0.08);
   background-color: #ffffff;
+`
+
+export const OrderBookFrame = styled(TradeFrame)`
+  margin-right: 0;
+  flex: 1;
 `

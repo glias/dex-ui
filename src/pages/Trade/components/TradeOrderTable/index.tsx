@@ -162,8 +162,19 @@ export default function OrderTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formatedReceive])
 
+  useEffect(() => {
+    // eslint-disable-next-line no-unused-expressions
+    formRef.current?.setFieldsValue({
+      price,
+    })
+    if (price) {
+      setIsPriceInvalid(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price])
+
   const setMaxPay = useCallback(() => {
-    const max = new BigNumber(maxPay).toFixed(8, 1)
+    const max = removeTrailingZero(new BigNumber(maxPay).toFixed(8, 1))
     setPay(max)
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
@@ -338,6 +349,7 @@ export default function OrderTable() {
               type="number"
               required
               size="large"
+              disabled={insufficientCKB}
               step="any"
               value={pay}
               onChange={e => setPay(e.target.value)}
@@ -359,6 +371,7 @@ export default function OrderTable() {
               placeholder="0"
               suffix={perSuffix}
               size="large"
+              disabled={insufficientCKB}
               required
               type="number"
               step="any"
