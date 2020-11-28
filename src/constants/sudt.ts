@@ -18,7 +18,7 @@ export const SUDT_GLIA = new SUDT(process.env.REACT_APP_SUDT_TYPE_ARGS!, {
 export const SUDT_CK_ETH = buildShadowAssetSUDT({
   symbol: 'ckETH',
   name: 'ckETH',
-  decimals: 8,
+  decimals: 18,
 })
 
 export const ERC20_LIST = ['DAI', 'USDT', 'USDC']

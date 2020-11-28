@@ -85,11 +85,12 @@ export const BestPrice = styled.div`
   background: #c4c4c4;
   height: 44px;
   font-weight: bold;
-  font-size: 20px;
   line-height: 24px;
   color: #000000;
+  cursor: ${(props: { cursor?: 'pointer' | 'auto' }) => props.cursor ?? 'auto'};
   .price {
     background: #e0e0e0;
+    cursor: ${(props: { cursor?: 'pointer' | 'auto' }) => (props.cursor === 'pointer' ? '20px' : '14px')};
     height: 100%;
     width: calc(100% - 8px);
     padding-left: 10px;

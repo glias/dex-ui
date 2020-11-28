@@ -1,6 +1,7 @@
 import { useEffect, MutableRefObject, useCallback } from 'react'
-import { Address, OutPoint, AddressType, SUDT } from '@lay2/pw-core'
-import { getHistoryOrders, getTransactionHeader } from '../../../../APIs'
+import { Address, OutPoint, AddressType } from '@lay2/pw-core'
+import BigNumber from 'bignumber.js'
+import { getAllHistoryOrders, getTransactionHeader } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import { REJECT_ERROR_CODE } from '../../../../constants'
@@ -58,34 +59,36 @@ export const usePollOrderList = ({
   lockArgs,
   dispatch,
   fetchListRef,
-  sudt,
 }: {
   lockArgs: string
   dispatch: React.Dispatch<HistoryAction>
   fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
-  sudt: SUDT
 }) => {
   useEffect(() => {
     dispatch({ type: ActionType.UpdateOrderList, value: [] as Array<Order> })
 
     if (lockArgs) {
       const fetchData = () =>
-        getHistoryOrders(lockArgs, sudt)
+        getAllHistoryOrders(lockArgs)
           .then(async res => {
-            const parsed = res.data.reverse().map((item: RawOrder) => {
+            const parsed = res.map((item: RawOrder) => {
               const order = parseOrderRecord(item)
               if (['aborted', 'claimed'].includes(order.status ?? '')) {
                 pendingOrders.remove(order.key)
               }
-              order.tokenName = sudt.info?.symbol ?? ''
+              // @ts-ignore
+              order.tokenName = item.tokenName
               return order
             })
-            const resList = await getTransactionHeader(res.data.map((item: RawOrder) => item.block_hash))
+            const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
             for (let i = 0; i < resList.length; i++) {
               const blockHeader = resList[i]
               parsed[i].createdAt = blockHeader.timestamp
             }
-            dispatch({ type: ActionType.UpdateOrderList, value: parsed })
+            dispatch({
+              type: ActionType.UpdateOrderList,
+              value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+            })
           })
           .catch(err => {
             console.warn(`[History Polling]: ${err.message}`)
@@ -108,7 +111,7 @@ export const usePollOrderList = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [lockArgs, dispatch, fetchListRef, sudt])
+  }, [lockArgs, dispatch, fetchListRef])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {

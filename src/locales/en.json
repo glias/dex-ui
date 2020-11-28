@@ -21,6 +21,7 @@
       "pair": "Pair",
       "pay": "Your Pay",
       "max": "MAX",
+      "relaying": "Please wait a few seconds. We are creating the bridge cell for you.",
       "current": "Current",
       "selectToken": "Select Token",
       "searchToken": "Search for token",
@@ -30,7 +31,8 @@
         "pay": "Pay ({{token}})",
         "price": "Price (CKB per {{token}})",
         "receive": "Receive ({{token}})",
-        "title": "Order Book ({{token}}/CKB)"
+        "title": "Order Book ({{token}}/CKB)",
+        "empty": "Current trade pair does not have any completed orders."
       },
       "result": {
         "trade": "Trade",

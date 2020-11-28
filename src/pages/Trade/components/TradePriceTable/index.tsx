@@ -1,13 +1,13 @@
 import OrderContainer from 'containers/order'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import i18n from 'utils/i18n'
-import { getOrders, Orders } from 'APIs'
+import { getOrders, Orders, getCurrentPrice } from 'APIs'
 import { useContainer } from 'unstated-next'
 import { ERC20_LIST, SUDT_LIST } from 'constants/sudt'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
 import { PRICE_DECIMAL, CKB_DECIMAL } from 'constants/number'
-import { calcBidReceive, removeTrailingZero, calcAskReceive } from 'utils/fee'
+import { calcTotalPay, removeTrailingZero } from 'utils/fee'
 import PWCore, { SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
 
@@ -45,12 +45,12 @@ const TableHead = ({ price, pay, receive, isBid }: Omit<ListProps, 'progress' & 
 
 const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => {
   const payElement = (
-    <Td position={!isBid ? 'center' : 'left'} fontWeight="normal" color="#606060">
+    <Td position={isBid ? 'center' : 'left'} fontWeight="normal" color="#606060">
       <span>{pay}</span>
     </Td>
   )
   const receiveElement = (
-    <Td position={isBid ? 'center' : 'left'} color="#606060" fontWeight="normal">
+    <Td position={!isBid ? 'center' : 'left'} color="#606060" fontWeight="normal">
       <span>{receive}</span>
     </Td>
   )
@@ -67,8 +67,8 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
   return (
     <Tr onClick={isEmpty ? undefined : onClick} cursor={isEmpty ? 'auto' : 'pointer'}>
       <Progress isBid={isBid} width={!progress ? undefined : `${progress}%`}>
-        {isBid ? payElement : receiveElement}
         {!isBid ? payElement : receiveElement}
+        {isBid ? payElement : receiveElement}
         <Td position="flex-end" fontWeight="bold">
           <span>{price}</span>
         </Td>
@@ -108,17 +108,34 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
           return <List price={empty} pay={empty} receive={empty} key={key} isBid={isBid} />
         }
         const price = removeTrailingZero(new BigNumber(order.price).div(PRICE_DECIMAL).toString())
-        const ckbPay = new BigNumber(order.order_amount).div(CKB_DECIMAL).toString()
-        const sudtPay = new BigNumber(order.sudt_amount).div(base.pow(decimal)).toString()
-        const pay = removeTrailingZero(isBid ? ckbPay : sudtPay)
         const progress = new BigNumber(order.price).dividedBy(maxPrice).div(PRICE_DECIMAL).times(100).toFixed(0)
-        const receive = removeTrailingZero(isBid ? calcBidReceive(pay, price) : calcAskReceive(pay, price))
+
+        if (isBid) {
+          const receive = new BigNumber(order.order_amount).div(base.pow(decimal))
+          const ckbPay = receive.times(price)
+          const totalPay = calcTotalPay(ckbPay.toString())
+          const pay = new BigNumber(totalPay).toFixed(4)
+          return (
+            <List
+              setPrice={setPrice}
+              progress={progress}
+              price={price}
+              pay={removeTrailingZero(pay)}
+              receive={removeTrailingZero(receive.toFixed(4))}
+              key={key}
+              isBid={isBid}
+            />
+          )
+        }
+        const sudtPay = new BigNumber(order.sudt_amount).div(base.pow(decimal)).toFixed(4)
+        const receive = removeTrailingZero(new BigNumber(order.order_amount).div(CKB_DECIMAL).toFixed(4))
+
         return (
           <List
             setPrice={setPrice}
             progress={progress}
             price={price}
-            pay={pay}
+            pay={sudtPay}
             receive={receive}
             key={key}
             isBid={isBid}
@@ -132,6 +149,7 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
 const TradePriceTable = () => {
   const Order = useContainer(OrderContainer)
   const Wallet = useContainer(WalletContainer)
+  const { setPrice } = useContainer(OrderContainer)
   const { address } = Wallet.ckbWallet
   const { pair } = Order
   const [orders, setOrders] = useState<{ bidOrders: Orders; askOrders: Orders }>({
@@ -152,6 +170,8 @@ const TradePriceTable = () => {
 
   const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
+  const [currentPrice, setCurrentPrice] = useState('--')
+
   useEffect(() => {
     if (!lockHash) {
       return
@@ -163,7 +183,26 @@ const TradePriceTable = () => {
         bidOrders: data.bid_orders,
       })
     })
+    getCurrentPrice(sudt)
+      .then(res => {
+        const { data } = res
+        const price = new BigNumber(data).div(PRICE_DECIMAL).toString()
+        setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : removeTrailingZero(price))
+      })
+      .catch(() => {
+        setCurrentPrice(i18n.t('trade.priceTable.empty'))
+      })
   }, [sudt, lockHash])
+
+  const hasCurrentPrice = useMemo(() => {
+    return currentPrice !== i18n.t('trade.priceTable.empty')
+  }, [currentPrice])
+
+  const bestPriceOnClick = useCallback(() => {
+    if (hasCurrentPrice) {
+      setPrice(currentPrice)
+    }
+  }, [hasCurrentPrice, currentPrice, setPrice])
 
   return (
     <Container>
@@ -177,8 +216,8 @@ const TradePriceTable = () => {
         />
         <TableBody isBid={false} orders={orders.askOrders} sudt={sudt} />
       </AskTable>
-      <BestPrice>
-        <div className="price">0.00</div>
+      <BestPrice onClick={bestPriceOnClick} cursor={hasCurrentPrice ? 'pointer' : 'auto'}>
+        <div className="price">{currentPrice}</div>
       </BestPrice>
       <BidTable>
         <TableBody isBid orders={orders.bidOrders} sudt={sudt} />

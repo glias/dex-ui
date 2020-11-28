@@ -11,7 +11,7 @@ import WalletContainer from '../../../../containers/wallet'
 import OrderContainer from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import { getTimeString, pendingOrders } from '../../../../utils'
-import { HISTORY_QUERY_KEY, SUDT_GLIA } from '../../../../constants'
+import { HISTORY_QUERY_KEY } from '../../../../constants'
 import type { OrderRecord } from '../../../../utils'
 import { reducer, usePollOrderList, useHandleWithdrawOrder } from './hooks'
 import styles from './history.module.css'
@@ -44,9 +44,9 @@ const columns = [
       showTitle: false,
     },
     render: (_: any, order: OrderInList) => {
-      const bid = ['CKB', order.tokenName].join(' -> ')
-      const ask = [order.tokenName, 'CKB'].join(' -> ')
-      return <span>{order.isBid ? bid : ask}</span>
+      const bid = ['CKB', order.tokenName].join(' ➜ ')
+      const ask = [order.tokenName, 'CKB'].join(' ➜ ')
+      return <span style={{ textTransform: 'none' }}>{order.isBid ? bid : ask}</span>
     },
   },
   {
@@ -94,7 +94,7 @@ const columns = [
       const unit = `${order.isBid ? order.tokenName : 'CKB'}`
       return (
         <Tooltip title={amount}>
-          {amount}
+          {removeTrailingZero(amount)}
           <div className={styles.unit}>{unit}</div>
         </Tooltip>
       )
@@ -120,7 +120,10 @@ const columns = [
       const unit = `CKB per ${order.tokenName}`
       let result = '-'
       if (paidAmount && paidAmount !== '0' && tradedAmount && tradedAmount !== '0') {
-        result = removeTrailingZero(new BigNumber(paidAmount).div(tradedAmount).toFixed(10, 1))
+        const price = order.isBid
+          ? new BigNumber(paidAmount).div(tradedAmount)
+          : new BigNumber(tradedAmount).div(paidAmount)
+        result = removeTrailingZero(price.toFixed(10, 1))
       }
       return (
         <Tooltip title={result}>
@@ -178,7 +181,7 @@ const History = () => {
 
   const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
-  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch, sudt: SUDT_GLIA })
+  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch })
 
   const actionColumn = {
     title: 'action',

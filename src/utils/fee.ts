@@ -15,6 +15,11 @@ export function calcSellReceive(pay: string, price: string) {
     .toFixed(8, 1)
 }
 
+export function calcTotalPay(pay: string) {
+  const amount = new BigNumber(pay.toString())
+  return amount.plus(amount.times(COMMISSION_FEE)).toString()
+}
+
 export function calcAskReceive(pay: string, price: string) {
   return new BigNumber(pay).times(price).toFixed(8, 1)
 }

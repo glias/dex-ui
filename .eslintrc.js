@@ -94,6 +94,7 @@ module.exports = {
     ],
     'import/prefer-default-export': 0,
     "react/display-name": 0,
+    'operator-linebreak': 0,
     'no-console': [2, { allow: ['warn', 'error'] }],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',

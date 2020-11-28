@@ -4,6 +4,7 @@ export const COMMISSION_FEE = 0.003
 export const PRICE_DECIMAL = new BigNumber(10).pow(new BigNumber(10))
 export const SUDT_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
 export const CKB_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
+export const ETH_DECIMAL = new BigNumber(10).pow(18)
 
 //  @TODO: comments
 export const ORDER_CELL_CAPACITY = 179

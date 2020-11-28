@@ -44,7 +44,7 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }
     return wallets
       .filter(w => w.tokenName !== currentToken)
       .filter(filter)
-      .sort((w1, w2) => parseFloat(w2.balance.sub(w1.balance).toString()))
+      .sort((w1, w2) => parseFloat(w2.balance.minus(w1.balance).toString()))
   }, [wallets, filter, currentToken])
 
   const searchFilter = useCallback(
