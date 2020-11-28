@@ -1,14 +1,15 @@
 import CKB from '@nervosnetwork/ckb-sdk-core'
-import { Script, SUDT } from '@lay2/pw-core'
+import { Address, AddressType, Script, SUDT } from '@lay2/pw-core'
 import type { Cell } from '@ckb-lumos/base'
 import axios, { AxiosResponse } from 'axios'
 import { OrderType } from '../containers/order'
-import { CKB_NODE_URL, EXPLORER_API, SUDT_GLIA } from '../constants'
+import { CKB_NODE_URL, EXPLORER_API, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA } from '../constants'
 import { spentCells } from '../utils'
 
 export * from './checkSubmittedTxs'
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL!
+const FORCE_BRIDGER_SERVER_URL = 'http://121.196.29.165:3003'
 
 export const ckb = new CKB(CKB_NODE_URL)
 
@@ -129,7 +130,24 @@ export function getCkbTransactions(address: string, page: number = 1, pageSize: 
   })
 }
 
-export async function getTransactionHeader(blockHashes: string[]) {
+export function getTransactionHeader(blockHashes: string[]) {
   const requests: Array<['getHeader', any]> = blockHashes.map(hash => ['getHeader', hash])
   return ckb.rpc.createBatchRequest(requests).exec()
+}
+
+export function getOrCreateBridgeCell(
+  ckbAddress: string,
+  ethAddress = '0x0000000000000000000000000000000000000000',
+  bridgeFee = '0x0',
+) {
+  const orderLock = new Script(
+    ORDER_BOOK_LOCK_SCRIPT.codeHash,
+    new Address(ckbAddress, AddressType.ckb).toLockScript().toHash(),
+    ORDER_BOOK_LOCK_SCRIPT.hashType,
+  )
+  return axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_or_create_bridge_cell`, {
+    recipient_address: orderLock.toAddress().toCKBAddress(),
+    eth_token_address: ethAddress,
+    bridge_fee: bridgeFee,
+  })
 }

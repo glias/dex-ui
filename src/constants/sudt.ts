@@ -1,4 +1,5 @@
 import { CellDep, DepType, OutPoint, Script, HashType, SUDT } from '@lay2/pw-core'
+import { buildShadowAssetSUDT } from './erc20'
 
 export const SUDT_DEP = new CellDep(DepType.code, new OutPoint(process.env.REACT_APP_SUDT_DEP_OUT_POINT!, '0x0'))
 
@@ -14,7 +15,7 @@ export const SUDT_GLIA = new SUDT(process.env.REACT_APP_SUDT_TYPE_ARGS!, {
   decimals: 8,
 })
 
-export const SUDT_CK_ETH = new SUDT(process.env.REACT_APP_SUDT_TYPE_ARGS!, {
+export const SUDT_CK_ETH = buildShadowAssetSUDT({
   symbol: 'ckETH',
   name: 'ckETH',
   decimals: 8,

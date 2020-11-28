@@ -59,6 +59,7 @@ export class PlaceOrderBuilder extends Builder {
       this.address.toLockScript().toHash(),
       ORDER_BOOK_LOCK_SCRIPT.hashType,
     )
+
     this.inputLock = this.address.toLockScript()
   }
 
