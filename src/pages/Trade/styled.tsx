@@ -18,7 +18,6 @@ export const TradeContainer = styled.div`
   padding: 0 120px;
   position: relative;
   width: 100%;
-  z-index: 1;
 `
 
 export const TradeContent = styled.div`

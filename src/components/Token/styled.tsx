@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 export const TokenContainer = styled.span`
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   align-items: center;
   .icon {
