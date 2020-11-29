@@ -35,8 +35,7 @@ module.exports = {
       'error',
       {
         vars: 'local',
-        args: 'after-used',
-        ignoreRestSiblings: false,
+        args: 'after-used'
       },
     ],
     'operator-linebreak': [2, 'after'],
@@ -92,8 +91,9 @@ module.exports = {
         exceptions: [''],
       },
     ],
+    'no-shadow': 0,
     'import/prefer-default-export': 0,
-    "react/display-name": 0,
+    'react/display-name': 0,
     'no-console': [2, { allow: ['warn', 'error'] }],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
