@@ -74,6 +74,7 @@ export const Send: React.FC = () => {
   const wallet = wallets.find(wallet => wallet.tokenName === tokenName)
 
   const [inputAllValidated, setInputAllValidated] = useState(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedValidateInput = useCallback(
     debounce(() => {
       const fieldsAllTouched = form.isFieldsTouched(['amount', 'to'], true)
@@ -81,7 +82,7 @@ export const Send: React.FC = () => {
       const isValidated = !!(fieldsAllTouched && noInputError)
       setInputAllValidated(isValidated)
     }, 200),
-    [form],
+    [form, setInputAllValidated],
   )
 
   function validateInput() {
