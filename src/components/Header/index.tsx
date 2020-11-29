@@ -4,10 +4,10 @@ import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Button, Popover, Menu, Badge, Modal } from 'antd'
-import WalletBox from './HeaderWalletBox'
+// import WalletBox from './HeaderWalletBox'
+import { AssetManager } from './AssetsManager'
 import { ReactComponent as HeaderMoreSVG } from '../../assets/svg/more.svg'
 import { ReactComponent as HeaderMetaSVG } from '../../assets/svg/Component12.svg'
-import { ReactComponent as BackgroundSVG } from '../../assets/svg/dex-background.svg'
 import i18n from '../../utils/i18n'
 import { thirdPartyLinks } from '../../constants'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
@@ -49,7 +49,7 @@ const Header = () => {
   const updateWalletTimer = useRef<ReturnType<typeof setInterval> | undefined>()
 
   const { web3ModalRef } = Wallet
-  const { connectWallet, disconnectWallet, resetWallet } = Wallet
+  const { connectWallet, /* disconnectWallet, */ resetWallet } = Wallet
 
   const handleWalletConnect = useCallback(
     () =>
@@ -107,10 +107,10 @@ const Header = () => {
     history.push('/')
   }
 
-  const disconnect = useCallback(() => {
-    disconnectWallet(() => setVisibleWallet(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disconnectWallet])
+  // const disconnect = useCallback(() => {
+  //   disconnectWallet(() => setVisibleWallet(false))
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [disconnectWallet])
 
   return (
     <>
@@ -153,7 +153,7 @@ const Header = () => {
                     visible={visibleWallet}
                     onVisibleChange={() => setVisibleWallet(!visibleWallet)}
                     getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
-                    content={<WalletBox disconnect={disconnect} addresses={[ckbAddress, ethAddress]} />}
+                    content={<AssetManager />}
                   >
                     <Badge count="">
                       <Button
@@ -198,9 +198,7 @@ const Header = () => {
               </Popover>
             </HeaderMeta>
           </HeaderPanel>
-          <div className="bg-img">
-            <BackgroundSVG />
-          </div>
+          {/* <div className="bg-img" /> */}
         </HeaderBox>
       </HeaderContainer>
       <Background>

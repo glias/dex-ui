@@ -9,7 +9,7 @@ export interface TokenProps {
 }
 
 const SHADOW_ASSET_COLOR = '#FCF0E6'
-const ETH_COLOR = '#E7EAFE'
+// const ETH_COLOR = '#E7EAFE'
 const CKB_COLOR = '#D9E8E2'
 
 const Token = ({ tokenName, className }: TokenProps) => {
@@ -18,8 +18,8 @@ const Token = ({ tokenName, className }: TokenProps) => {
     switch (tokenName) {
       case 'CKB':
         return CKB_COLOR
-      case 'ETH':
-        return ETH_COLOR
+      // case 'ETH':
+      //   return ETH_COLOR
       default: {
         let hex = CKB_COLOR
         SUDT_MAP.forEach(sudt => {

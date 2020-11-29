@@ -1,8 +1,8 @@
-import { Script } from '@lay2/pw-core'
 import type { Cell } from '@ckb-lumos/base'
+import { Script } from '@lay2/pw-core'
 import axios, { AxiosResponse } from 'axios'
-import { OrderType } from '../containers/order'
 import { EXPLORER_API, SUDT_GLIA } from '../constants'
+import { OrderType } from '../containers/order'
 import { spentCells } from '../utils'
 
 export * from './checkSubmittedTxs'
@@ -125,4 +125,95 @@ export function getCkbTransactions(address: string, page: number = 1, pageSize: 
     },
     data: null,
   })
+}
+
+interface SudtIncomingTransaction {
+  hash: string
+  income: string
+}
+
+interface SudtOutgoingTransaction {
+  hash: string
+  outgoing: string
+}
+
+export type SudtTransaction = SudtIncomingTransaction | SudtOutgoingTransaction
+
+export function isSudtIncomingTransaction(
+  sudtTransaction: SudtTransaction,
+): sudtTransaction is SudtIncomingTransaction {
+  return sudtTransaction && 'income' in sudtTransaction
+}
+
+export function isSudtOutgoingTransaction(
+  sudtTransaction: SudtTransaction,
+): sudtTransaction is SudtOutgoingTransaction {
+  return sudtTransaction && 'outgoing' in sudtTransaction
+}
+
+export function getSudtTransactions(type: Script, lock: Script): Promise<AxiosResponse<SudtTransaction[]>> {
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+  }
+
+  return axios.get(`${SERVER_URL}/sudt-transactions`, { params })
+}
+
+export interface TransactionDetailModel {
+  txHash: string
+  from: string
+  to: string
+  amount: string
+  fee: string
+  blockNo: string
+  blockNumber: number
+  status: string
+  token: string
+  transactionFee: string
+  direction: string
+}
+
+interface GetCkbTransactionDetailOptions {
+  lock: Script
+  txHash: string
+}
+
+export async function getCkbTransactionDetail(
+  options: GetCkbTransactionDetailOptions,
+): Promise<AxiosResponse<TransactionDetailModel>> {
+  const { lock } = options
+
+  const params = {
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+    tx_hash: options.txHash,
+  }
+  return axios.get(`${SERVER_URL}/transactions-tx-hash`, { params })
+}
+
+interface GetSudtTransactionDetailOptions {
+  txHash: string
+  type: Script
+  lock: Script
+}
+
+export async function getSudtTransactionDetail(options: GetSudtTransactionDetailOptions) {
+  const { lock, type, txHash } = options
+
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+    tx_hash: txHash,
+  }
+  return axios.get(`${SERVER_URL}/transactions-tx-hash`, { params })
 }

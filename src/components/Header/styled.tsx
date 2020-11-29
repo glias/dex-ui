@@ -1,8 +1,10 @@
 import styled from 'styled-components'
+import BackGroundImage from '../../assets/svg/Component12.svg'
 
 export const HeaderBox = styled.div`
   padding: 0 120px;
   max-width: 1440px;
+  position:
   margin: 0 auto;
   background-color: #6b70e0;
   color: white;
@@ -12,12 +14,10 @@ export const HeaderBox = styled.div`
     width: 100%;
     height: 340px;
     top: 0;
-    z-index: -1;
-    svg {
-      rect {
-        fill: url(#pattern0);
-      }
-    }
+    background-image: url(${BackGroundImage});
+    background-repeat: repeat;
+    background-position: center;
+    background-size: cover;
   }
 `
 
@@ -137,7 +137,6 @@ export const HeaderMeta = styled.div`
   .ant-popover-content {
     overflow: hidden;
     border-radius: 10px;
-    border: 1px solid rgba(0, 106, 151, 1);
   }
   .btn-meta {
     width: 28px;
