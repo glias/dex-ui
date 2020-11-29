@@ -8,6 +8,7 @@ interface AssetStyleProps {
   /**
    * should show the asset icon, defaults to true
    */
+  // eslint-disable-next-line react/no-unused-prop-types
   showIcon?: boolean
 }
 
