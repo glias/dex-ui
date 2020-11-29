@@ -70,7 +70,7 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }
       </div>
       <Divider style={{ margin: '14px 0' }} />
       <Input
-        prefix={<SearchOutlined translate="" />}
+        prefix={<SearchOutlined translate="search" />}
         placeholder={i18n.t('trade.searchToken')}
         onChange={e => setSearchValue(e.target.value)}
         value={searchValue}

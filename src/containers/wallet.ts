@@ -1,6 +1,6 @@
 import PWCore, { Amount, AmountUnit, SUDT, Web3ModalProvider } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
-import { useCallback, useState, useRef, useMemo } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { createContainer } from 'unstated-next'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
@@ -19,6 +19,10 @@ export interface Wallet {
 export interface CkbWallet extends Wallet {
   inuse: Amount
   free: Amount
+}
+
+export function isCkbWallet(wallet: Wallet): wallet is CkbWallet {
+  return wallet.tokenName === 'CKB'
 }
 
 export interface SudtWallet extends Wallet {
