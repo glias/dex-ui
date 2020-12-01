@@ -1,12 +1,13 @@
-import PWCore, { Address, AddressType, Amount, AmountUnit } from '@lay2/pw-core'
+import PWCore, { Address, AddressType, Amount, AmountUnit, SimpleBuilder, SimpleSUDTBuilder } from '@lay2/pw-core'
 import { Divider } from 'antd'
 import Token from 'components/Token'
 import { isCkbWallet, WalletContainer } from 'containers/wallet'
 import { parse } from 'query-string'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation, useParams, useRouteMatch } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { spentCells } from 'utils'
 import { AssetManagerHeader } from '../AssetManagerHeader'
 import { Balance } from '../Balance'
 import { Button } from '../components/Button'
@@ -47,7 +48,6 @@ export const SendConfirm = () => {
   const wallet = useWallet()
   const sudt = useSudt()
   const { replace } = useHistory()
-  const match = useRouteMatch()
 
   const { amount, fee, to } = payload
   const from = PWCore.provider.address.toCKBAddress()
@@ -55,18 +55,24 @@ export const SendConfirm = () => {
   async function onConfirm() {
     const addressType = to.startsWith('ck') ? AddressType.ckb : AddressType.eth
     const toAddress = new Address(to, addressType)
+
     if (!wallet || !pw) return
     if (isCkbWallet(wallet)) {
-      const txHash = await pw.send(toAddress, new Amount(amount, AmountUnit.shannon))
-      replace(`${match.url}/transactions/${txHash}`)
+      const builder = new SimpleBuilder(toAddress, new Amount(amount, AmountUnit.ckb))
+      const txHash = await pw.sendTransaction(builder)
+      const built = await builder.build()
+      spentCells.add(built.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
+      replace(`/assets/${tokenName}/transactions/${txHash}`)
       return
     }
 
     if (!sudt) return
 
-    // TODO check the unit
-    const txHash = await pw.sendSUDT(sudt, toAddress, new Amount(amount, AmountUnit.shannon))
-    replace(`${match.url}/transactions/${txHash}`)
+    const sudtBuilder = new SimpleSUDTBuilder(sudt, toAddress, new Amount(amount, AmountUnit.shannon))
+
+    spentCells.add(sudtBuilder.inputCells.map(input => input.serializeJson()) as any)
+    const txHash = await pw.sendTransaction(sudtBuilder)
+    replace(`/assets/${tokenName}/transactions/${txHash}`)
   }
 
   return (

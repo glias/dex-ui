@@ -21,7 +21,7 @@ const Control = () => {
         <Route exact path="/assets/:tokenName/receive" component={Receive} />
         <Route exact path="/assets/:tokenName/send/confirm" component={SendConfirm} />
         <Route exact path="/assets/:tokenName/send" component={Send} />
-        <Route exact path="/assets/:tokenName/transactions/:hash" component={TransactionDetail} />
+        <Route exact path="/assets/:tokenName/transactions/:txHash" component={TransactionDetail} />
       </Switch>
     </>
   )

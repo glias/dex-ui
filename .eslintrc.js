@@ -31,11 +31,12 @@ module.exports = {
     'no-undef': 'off',
     'react/require-default-props': 'off',
     'implicit-arrow-linebreak': 'off',
+    '@typescript-eslint/no-unused-expressions': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
         vars: 'local',
-        args: 'after-used'
+        args: 'after-used',
       },
     ],
     'operator-linebreak': [2, 'after'],

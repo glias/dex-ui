@@ -93,13 +93,17 @@ export const Send: React.FC = () => {
   if (!wallet) return null
 
   async function validateAmount(_: any, input: any): Promise<void> {
+    const isCkb = tokenName === 'CKB'
     asserts(wallet)
     const inputNumber = new BigNumber(input)
     asserts(input && !inputNumber.isNaN(), t(`Amount should be a valid number`))
-    asserts(inputNumber.gte(61), t('Amount should large than 61'))
 
     const balance = new BigNumber(wallet.balance.toString())
     asserts(inputNumber.lt(balance), t('Amount should less than the MAX'))
+    asserts(inputNumber.gt(0), t('Amount should more than 0'))
+    if (!isCkb) return
+
+    asserts(inputNumber.gte(61), t('Amount should large than 61'))
     asserts(
       balance.minus(inputNumber).gte(61),
       t(
@@ -164,7 +168,7 @@ export const Send: React.FC = () => {
           </Form.Item>
           {amountLabel}
           <Form.Item rules={[{ validator: validateAmount }]} name="amount">
-            <Input suffix={tokenName} placeholder={t('Minimal amount is 61 CKB')} type="number" size="large" />
+            <Input suffix={tokenName} placeholder={t('Amount')} type="number" size="large" />
           </Form.Item>
           <Divider />
           {transactionFeeTip}
