@@ -33,6 +33,13 @@ export const Receive: React.FC = () => {
 
   if (!wallet) return null
 
+  const qrCodeContent = wallet.address && (
+    <>
+      <QRCode style={{ width: '200px', height: '200px' }} className="qr-code" value={wallet.address} />
+      <Text strong>{wallet.address}</Text>
+    </>
+  )
+
   function changeWallet(inputType: string) {
     setReceiveWalletType(inputType)
   }
@@ -46,8 +53,7 @@ export const Receive: React.FC = () => {
           <RadioItem key="portal">{t('Portal Wallet')}</RadioItem>
           <RadioItem key="ckb">{t('Wallets or Exchanges')}</RadioItem>
         </RadioTabs>
-        <QRCode style={{ width: '200px', height: '200px' }} className="qr-code" value={wallet.address} />
-        <Text strong>{wallet.address}</Text>
+        {qrCodeContent}
       </ReceiveWrapper>
     </>
   )

@@ -1,35 +1,39 @@
-import React from 'react'
+import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons'
+import React, { HTMLAttributes } from 'react'
 import styled from 'styled-components'
-import { TransactionStatus, TransferDirection } from '../api'
+import { TransactionDirection, TransactionStatus } from '../api'
 
-interface TransactionDirectionStatus {
+interface TransactionDirectionStatusProps extends HTMLAttributes<HTMLDivElement> {
   status: TransactionStatus
-  direction: TransferDirection
+  direction: TransactionDirection
+  width?: number
+  height?: number
+  filled?: boolean
 }
 
-const TransactionStatusIconWrapper = styled.div<{ status: string }>`
+const TransactionStatusIconWrapper = styled.div<{ status: string; width?: number; height?: number; filled?: boolean }>`
+  display: inline-flex;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  padding: 2px;
-  display: flex;
-  color: #fff;
   justify-content: center;
   align-items: center;
-  background: ${({ status }) => {
-    if (status === 'pending') return `#FF9C72`
-    if (status === 'failed') return `#F35252`
-    if (status === 'success') return `#72D1A4`
-    return '#888'
-  }};
+  padding: ${props => (props.width || 18) + 4};
+  ${({ status, filled }) => {
+    const color = status === TransactionStatus.Committed ? '#72D1A4' : '#FF9C72'
+
+    if (filled) return `background: ${color}; color: #fff`
+    return `color: ${color}; border: 4px solid ${color}`
+  }}
 `
 
-export const TransactionStatusIcon: React.FC<TransactionDirectionStatus> = (props: TransactionDirectionStatus) => {
-  const { status, direction } = props
+export const TransactionStatusIcon: React.FC<TransactionDirectionStatusProps> = (
+  props: TransactionDirectionStatusProps,
+) => {
+  const { status, direction, width, height, filled } = props
 
   return (
-    <TransactionStatusIconWrapper status={status}>
-      {(direction === 'in' && '↓') || (direction === 'out' && '↑')}
+    <TransactionStatusIconWrapper filled={filled} status={status} width={width || height} height={height || width}>
+      {(direction === 'in' && <ArrowDownOutlined style={{ fontSize: width || height }} translate="in" />) ||
+        (direction === 'out' && <ArrowUpOutlined style={{ fontSize: width || height }} translate="out" />)}
     </TransactionStatusIconWrapper>
   )
 }

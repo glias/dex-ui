@@ -2,14 +2,16 @@ import { QuestionCircleFilled } from '@ant-design/icons'
 import PWCore from '@lay2/pw-core'
 import { Divider, Result, Spin } from 'antd'
 import { getCkbTransactionDetail, getSudtTransactionDetail, TransactionDetailModel } from 'APIs'
+import Token from 'components/Token'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { TransactionStatus, TransferDirection } from '../api'
+import { EXPLORER_URL } from '../../../../constants'
+import { TransactionDirection, TransactionStatus } from '../api'
 import { AssetManagerHeader } from '../AssetManagerHeader'
-import { Asset } from '../components/Asset'
+import { Balance } from '../Balance'
 import { TransactionStatusIcon } from '../components/TransactionStatus'
 import { asserts } from '../helper'
 import { AssetManagerContainer } from '../hooks'
@@ -24,14 +26,27 @@ const TransactionDetailWrapper = styled.div`
   th {
     color: #666666;
     white-space: nowrap;
-    padding: 8px;
+    padding: 10px 16px;
     width: 100px;
+  }
+
+  td {
+    word-break: break-all;
+    padding: 10px 16px;
+  }
+
+  .ant-divider {
+    margin-top: 0;
+  }
+
+  a {
+    text-decoration: underline;
   }
 `
 
 interface ResultMainProps {
   status: TransactionStatus
-  direction: TransferDirection
+  direction: TransactionDirection
 }
 
 const UnknownResultMain: React.FC = () => {
@@ -44,37 +59,50 @@ const ResultMain: React.FC<ResultMainProps> = (props: ResultMainProps) => {
   const { status, direction } = props
   const { t } = useTranslation()
 
-  const unknownStatus = ['pending', 'success', 'failed'].includes(status) ? status : 'unknown'
+  let displayStatus = ''
+  if (status === TransactionStatus.Committed) {
+    if (direction === TransactionDirection.In) displayStatus = t('Received')
+    if (direction === TransactionDirection.Out) displayStatus = t('Sent')
+  } else {
+    if (direction === TransactionDirection.In) displayStatus = t('Receiving')
+    if (direction === TransactionDirection.Out) displayStatus = t('Sending')
+  }
 
+  // return <Result icon={icon} title={displayStatus} />
   return (
-    <Result icon={<TransactionStatusIcon status={status} direction={direction} />} title={status}>
-      {t(unknownStatus)}
-    </Result>
+    <Result
+      icon={<TransactionStatusIcon direction={direction} status={status} width={48} height={48} />}
+      title={displayStatus}
+    />
   )
 }
 
-const TransactionDescription = (props: { transaction: TransactionDetailModel }) => {
+const TransactionDescription = (props: { transaction: TransactionDetailModel; txHash: string; tokenName: string }) => {
   const { t } = useTranslation()
-  const { transaction: tx } = props
-  const { amount, from, to, blockNumber, token, transactionFee, txHash } = tx
+  const { transaction: tx, txHash, tokenName } = props
+  const { amount, from, to, blockNumber, transactionFee } = tx
 
   return (
     <table>
       <tr>
         <th>{t('Token')}</th>
         <td>
-          <Asset type={token} />
+          <Token tokenName={tokenName} className="small" />
         </td>
       </tr>
 
       <tr>
         <th>{t('Amount')}</th>
-        {amount}
+        <td>
+          <Balance value={amount} />
+        </td>
       </tr>
 
       <tr>
         <th>{t('Transaction fee')}</th>
-        <td>{transactionFee}</td>
+        <td>
+          <Balance value={transactionFee} />
+        </td>
       </tr>
 
       <tr>
@@ -88,13 +116,27 @@ const TransactionDescription = (props: { transaction: TransactionDetailModel }) 
       </tr>
 
       <tr>
+        <td colSpan={2}>
+          <Divider />
+        </td>
+      </tr>
+
+      <tr>
         <th>{t('Hash')}</th>
-        <td>{txHash}</td>
+        <td>
+          <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}transaction/${txHash}`}>
+            {txHash}
+          </a>
+        </td>
       </tr>
 
       <tr>
         <th>{t('Block No.')}</th>
-        <td>{blockNumber}</td>
+        <td>
+          <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}block/${blockNumber}`}>
+            {blockNumber}
+          </a>
+        </td>
       </tr>
     </table>
   )
@@ -107,9 +149,9 @@ export const TransactionDetail: React.FC = () => {
 
   const { data: tx, isLoading } = useQuery<TransactionDetailModel>(['transactions', tokenName, txHash], () => {
     const lock = PWCore.provider.address.toLockScript()
-    if (tokenName === 'CKB') return getCkbTransactionDetail({ lock, txHash }).then(res => res.data)
+    if (tokenName === 'CKB') return getCkbTransactionDetail({ lock, txHash })
     asserts(sudt)
-    return getSudtTransactionDetail({ lock, type: sudt.toTypeScript(), txHash }).then(res => res.data)
+    return getSudtTransactionDetail({ lock, type: sudt.toTypeScript(), txHash })
   })
   const { t } = useTranslation()
 
@@ -119,9 +161,9 @@ export const TransactionDetail: React.FC = () => {
   } else if (tx) {
     descriptions = (
       <>
-        <ResultMain status={tx.status as TransactionStatus} direction={tx.direction as TransferDirection} />
+        <ResultMain status={tx.status as TransactionStatus} direction={tx.direction as TransactionDirection} />
         <Divider />
-        <TransactionDescription transaction={tx} />
+        <TransactionDescription transaction={tx} txHash={txHash} tokenName={tokenName} />
       </>
     )
   } else {

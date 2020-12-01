@@ -1,43 +1,55 @@
 import PWCore, { Provider, SUDT } from '@lay2/pw-core'
-import { getSudtTransactions, isSudtIncomingTransaction } from 'APIs'
+import { getSudtTransactions } from 'APIs'
+import { getCkbTransactions } from 'APIs/explorer'
+import { DateTime } from 'luxon'
 
-export type TransactionStatus = 'pending' | 'success' | 'failed'
-export type TransferDirection = 'in' | 'out'
+export enum TransactionStatus {
+  Pending = 'pending',
+  Proposed = 'proposed',
+  Committed = 'committed',
+}
 
-export interface TransferSummary {
+export enum TransactionDirection {
+  In = 'in',
+  Out = 'out',
+}
+
+interface DirectedAmount {
+  amount: string
+  direction: TransactionDirection
+}
+
+export interface TransactionSummary extends DirectedAmount {
   tokenName: string
-  direction: TransferDirection
   status: TransactionStatus
   date: string
-  amount: string
   txHash: string
 }
 
 interface GetSudtTransferSummariesOptions {
   sudt: SUDT
-  direction?: TransferDirection
+  direction?: TransactionDirection
   provider?: Provider
 }
 
-export async function getSudtTransferSummaries(options: GetSudtTransferSummariesOptions): Promise<TransferSummary[]> {
+function formatDateTime(timestamp: string | number): string {
+  return DateTime.fromMillis(Number(timestamp)).toFormat('yyyy-MM-dd HH:mm:ss')
+}
+
+export async function getSudtTransferSummaries(
+  options: GetSudtTransferSummariesOptions,
+): Promise<TransactionSummary[]> {
   const { sudt, provider = PWCore.provider, direction } = options
   const sudtTxRes = await getSudtTransactions(sudt.toTypeScript(), provider.address.toLockScript())
   const sudtTxs = sudtTxRes.data
   if (!sudtTxs.length) return []
 
-  // TODO
-  //   const ckbTxs = await getCkbTransactions(provider.address.toCKBAddress())
-
-  // eslint-disable-next-line no-console
-  //   console.log(ckbTxs)
-
-  const transfers = sudtTxs.map<TransferSummary>(tx => ({
-    amount: isSudtIncomingTransaction(tx) ? tx.income : tx.outgoing,
-    direction: isSudtIncomingTransaction(tx) ? 'in' : 'out',
+  const transfers = sudtTxs.map<TransactionSummary>(tx => ({
+    ...signedAmountToDirectedAmount(tx.income),
     tokenName: sudt.info?.name ?? '',
     txHash: tx.hash,
-    date: '1970-01-01 00:00:00',
-    status: 'pending',
+    date: formatDateTime(tx.timestamp),
+    status: TransactionStatus.Committed,
   }))
 
   if (!direction) return transfers
@@ -45,12 +57,34 @@ export async function getSudtTransferSummaries(options: GetSudtTransferSummaries
   return transfers.filter(t => t.direction === direction)
 }
 
-// interface GetCkbTransferSummariesOptions {
-//   provider?: Provider
-// }
+function signedAmountToDirectedAmount(amount: string): DirectedAmount {
+  if (amount.startsWith('-')) return { direction: TransactionDirection.Out, amount: amount.substring(1) }
 
-export async function getCkbTransferSummaries(): Promise<TransferSummary[]> {
-  // const transactions = getCkbTransactions(provider.address.toCKBAddress())
+  return { amount, direction: TransactionDirection.In }
+}
 
-  return []
+interface GetCkbTransferSummariesOptions {
+  direction?: TransactionDirection
+}
+
+export async function getCkbTransferSummaries(options?: GetCkbTransferSummariesOptions): Promise<TransactionSummary[]> {
+  const transactions = await getCkbTransactions(PWCore.provider.address.toCKBAddress())
+
+  const transfers = transactions.data.data.map<TransactionSummary>(tx => {
+    const { amount, direction } = signedAmountToDirectedAmount(tx.attributes.income)
+
+    return {
+      amount,
+      direction,
+      date: formatDateTime(tx.attributes.block_timestamp),
+      txHash: tx.attributes.transaction_hash,
+      tokenName: 'CKB',
+      status: TransactionStatus.Committed,
+    }
+  })
+
+  const direction = options?.direction
+  if (!direction) return transfers
+
+  return transfers.filter(t => t.direction === direction)
 }
