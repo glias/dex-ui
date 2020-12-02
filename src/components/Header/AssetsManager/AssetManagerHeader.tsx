@@ -7,6 +7,10 @@ import styled from 'styled-components'
 const AssetManagerHeaderWrapper = styled.header`
   height: 40px;
   padding: 8px 16px;
+
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
 `
 
 interface AssetManagerHeaderProps extends HTMLAttributes<HTMLDivElement> {
@@ -22,11 +26,7 @@ export const AssetManagerHeader: React.FC<AssetManagerHeaderProps> = (props: Ass
       <Row align="middle">
         <Col flex="24px">{showGoBack && <LeftOutlined translate="" onClick={() => goBack()} />}</Col>
         {children && <Col flex="auto">{children}</Col>}
-        {!children && title && (
-          <Col flex="auto" style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '18px' }}>
-            {title}
-          </Col>
-        )}
+        {!children && title && <Col flex="auto">{title}</Col>}
       </Row>
     </AssetManagerHeaderWrapper>
   )

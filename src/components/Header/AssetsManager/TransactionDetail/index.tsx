@@ -68,7 +68,6 @@ const ResultMain: React.FC<ResultMainProps> = (props: ResultMainProps) => {
     if (direction === TransactionDirection.Out) displayStatus = t('Sending')
   }
 
-  // return <Result icon={icon} title={displayStatus} />
   return (
     <Result
       icon={<TransactionStatusIcon direction={direction} status={status} width={48} height={48} />}
@@ -142,9 +141,13 @@ const TransactionDescription = (props: { transaction: TransactionDetailModel; tx
         <tr>
           <th>{t('Block No.')}</th>
           <td>
-            <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}block/${blockNumber}`}>
-              {blockNumber}
-            </a>
+            {blockNumber ? (
+              <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}block/${blockNumber}`}>
+                {blockNumber}
+              </a>
+            ) : (
+              '-'
+            )}
           </td>
         </tr>
       </tbody>
