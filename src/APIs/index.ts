@@ -1,6 +1,8 @@
 import type { Cell } from '@ckb-lumos/base'
 import { Script } from '@lay2/pw-core'
 import axios, { AxiosResponse } from 'axios'
+import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
+import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
 import { SUDT_GLIA } from '../constants'
 import { OrderType } from '../containers/order'
 import { spentCells } from '../utils'
@@ -138,7 +140,7 @@ interface RawResponseTransactionDetail {
   block_no: number
   from: string
   hash: string
-  status: 'committed' | 'pending' | 'proposed'
+  status: TransactionStatus
   to: string
   transaction_fee: string
 }
@@ -149,13 +151,13 @@ export interface TransactionDetailModel {
   amount: string
   fee: string
   blockNumber: number
-  status: string
-  transactionFee: string
-  direction: string
+  status: TransactionStatus
+  direction: TransactionDirection
+  txHash: string
 }
 
 function transformResponseTransactionDetail(res: AxiosResponse<RawResponseTransactionDetail>): TransactionDetailModel {
-  const direction = res.data.amount.startsWith('-') ? 'out' : 'in'
+  const direction = res.data.amount.startsWith('-') ? TransactionDirection.Out : TransactionDirection.In
 
   return {
     amount: res.data.amount,
@@ -165,7 +167,7 @@ function transformResponseTransactionDetail(res: AxiosResponse<RawResponseTransa
     from: res.data.from,
     to: res.data.to,
     status: res.data.status,
-    transactionFee: res.data.transaction_fee,
+    txHash: res.data.hash,
   }
 }
 
@@ -174,20 +176,26 @@ interface GetCkbTransactionDetailOptions {
   txHash: string
 }
 
+async function unwrapGetTransactionByTxHash(txHash: string, params: any): Promise<TransactionDetailModel> {
+  const res = await axios.get<RawResponseTransactionDetail>(`${SERVER_URL}/transactions-tx-hash`, { params })
+  if (!res.data) return findByTxHash(txHash)!
+
+  return transformResponseTransactionDetail(res)
+}
+
 export async function getCkbTransactionDetail(
   options: GetCkbTransactionDetailOptions,
 ): Promise<TransactionDetailModel> {
-  const { lock } = options
+  const { lock, txHash } = options
 
   const params = {
     lock_code_hash: lock.codeHash,
     lock_hash_type: lock.hashType,
     lock_args: lock.args,
-    tx_hash: options.txHash,
+    tx_hash: txHash,
   }
-  return axios
-    .get<RawResponseTransactionDetail>(`${SERVER_URL}/transactions-tx-hash`, { params })
-    .then(transformResponseTransactionDetail)
+
+  return unwrapGetTransactionByTxHash(txHash, params)
 }
 
 interface GetSudtTransactionDetailOptions {
@@ -210,7 +218,5 @@ export async function getSudtTransactionDetail(
     lock_args: lock.args,
     tx_hash: txHash,
   }
-  return axios
-    .get<RawResponseTransactionDetail>(`${SERVER_URL}/transactions-tx-hash`, { params })
-    .then(transformResponseTransactionDetail)
+  return unwrapGetTransactionByTxHash(txHash, params)
 }

@@ -30,11 +30,13 @@ const BalanceUnit = styled.span<BalanceStyleProps>`
 `
 
 export const Balance: React.FC<BalanceProps> = (props: BalanceProps) => {
-  const { value, type, size, fixedTo, unitSize: propUnitSize, decimal } = props
+  const { value, type, size, fixedTo, unitSize: propUnitSize, decimal = 0 } = props
   const unitSize = propUnitSize || size
 
-  const str = value instanceof Amount ? value.toString() : new Amount(value.toString(), decimal ?? 0).toString()
-  const balance = new BigNumber(str).abs().toFormat(fixedTo)
+  const balance = new BigNumber(value instanceof Amount ? value.toString() : value)
+    .div(10 ** decimal)
+    .abs()
+    .toFormat(fixedTo)
   const unit = type && <BalanceUnit unitSize={unitSize}>{type}</BalanceUnit>
 
   return (
