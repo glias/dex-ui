@@ -127,7 +127,8 @@
 }
 
 .unit {
-  color: rgb(125, 125, 125)
+  color: rgb(125, 125, 125);
+  text-transform: none;
 }
 
 .td td {
