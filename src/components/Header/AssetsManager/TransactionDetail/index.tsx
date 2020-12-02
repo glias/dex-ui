@@ -3,7 +3,7 @@ import PWCore from '@lay2/pw-core'
 import { Divider, Result, Spin } from 'antd'
 import { getCkbTransactionDetail, getSudtTransactionDetail, TransactionDetailModel } from 'APIs'
 import Token from 'components/Token'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
@@ -81,6 +81,14 @@ const TransactionDescription = (props: { transaction: TransactionDetailModel; tx
   const { t } = useTranslation()
   const { transaction: tx, txHash, tokenName } = props
   const { amount, from, to, blockNumber, fee } = tx
+  const { useSudt } = AssetManagerContainer.useContainer()
+  const sudt = useSudt()
+
+  const decimal = useMemo(() => {
+    if (sudt) return sudt.info?.decimals || 0
+    // CKB decimal
+    return 8
+  }, [sudt])
 
   return (
     <table>
@@ -95,14 +103,14 @@ const TransactionDescription = (props: { transaction: TransactionDetailModel; tx
         <tr>
           <th>{t('Amount')}</th>
           <td>
-            <Balance value={amount} />
+            <Balance value={amount} decimal={decimal} type={tokenName} />
           </td>
         </tr>
 
         <tr>
           <th>{t('Transaction fee')}</th>
           <td>
-            <Balance value={fee} />
+            <Balance value={fee} decimal={8} type="CKB" />
           </td>
         </tr>
 

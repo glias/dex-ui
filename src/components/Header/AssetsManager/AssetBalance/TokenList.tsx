@@ -13,13 +13,14 @@ const AssetListWrapper = styled.div`
   .ant-list-split .ant-list-item {
     border-bottom: 0;
     cursor: pointer;
+    font-weight: bold;
+    padding: 16px;
+  }
+
+  .arrow-icon {
+    margin-left: 8px;
   }
 `
-
-// interface AssetBalance {
-//   type: string
-//   balance: number
-// }
 
 export const AssetList: React.FC = () => {
   const { push } = useHistory()
@@ -39,7 +40,7 @@ export const AssetList: React.FC = () => {
             <Token tokenName={tokenName} className="small" />
             <span>
               <Balance value={balance} />
-              &gt;
+              <span className="arrow-icon">&gt;</span>
             </span>
           </List.Item>
         ))}

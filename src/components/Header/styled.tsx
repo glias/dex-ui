@@ -1,32 +1,25 @@
 import styled from 'styled-components'
-import BackGroundImage from '../../assets/svg/Component12.svg'
+import BackGroundImage from '../../assets/svg/dex-background.svg'
 
 export const HeaderBox = styled.div`
-  padding: 0 120px;
-  max-width: 1440px;
-  position:
+  display: inline-block;
+  position: relative;
   margin: 0 auto;
   background-color: #6b70e0;
   color: white;
   width: 100%;
-  .bg-img {
-    position: absolute;
-    width: 100%;
-    height: 340px;
-    top: 0;
-    background-image: url(${BackGroundImage});
-    background-repeat: repeat;
-    background-position: center;
-    background-size: cover;
-  }
 `
 
 export const HeaderContainer = styled.div`
+  text-align: center;
   position: absolute;
   width: 100%;
   box-shadow: 3px 3px 8px 0 rgba(0, 0, 0, 0.08);
-  background-color: #6b70e0;
-  z-index: 1;
+  height: 340px;
+  background-image: url(${BackGroundImage});
+  background-repeat: repeat;
+  background-position: center;
+  background-size: cover;
 `
 
 export const MenuLiText = styled.span`
@@ -35,12 +28,13 @@ export const MenuLiText = styled.span`
 `
 
 export const HeaderPanel = styled.div`
+  max-width: 1440px;
+  padding: 0 120px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 0 auto;
   background-color: #6b70e0;
-  z-index: 2;
   position: relative;
   .ant-menu {
     background-color: #6b70e0;
@@ -284,26 +278,5 @@ export const HeaderMeta = styled.div`
       border-radius: 10px;
       margin: 0 10px;
     }
-  }
-`
-
-export const Background = styled.div`
-  position: absolute;
-  width: 100%;
-  height: 341px;
-  top: 0;
-  display: flex;
-  flex-direction: row;
-
-  .left {
-    width: 50%;
-    height: 341px;
-    background: linear-gradient(180deg, #cb9fbb 0%, #f0ad79 100%);
-  }
-
-  .right {
-    width: 50%;
-    height: 341px;
-    background: linear-gradient(180deg, #bcb1ff 0%, #c9bdff 100%);
   }
 `

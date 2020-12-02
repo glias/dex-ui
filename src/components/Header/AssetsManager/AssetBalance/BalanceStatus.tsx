@@ -43,7 +43,7 @@ export const BalanceStatus = () => {
 
   const { total, free, inUse, locked } = {
     total: wallet.balance,
-    free: wallet.balance.minus(wallet.lockedOrder),
+    free: isCkbWallet(wallet) ? wallet.free : wallet.balance.minus(wallet.lockedOrder),
     inUse: isCkbWallet(wallet) ? wallet.inuse : 0,
     locked: wallet.lockedOrder,
   }
