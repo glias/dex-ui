@@ -133,7 +133,7 @@ export function useWallet() {
     const res = (await getCkbBalance(PWCore.provider.address.toLockScript())).data
     const free = new BigNumber(res.free).div(CKB_DECIMAL)
     const occupied = new BigNumber(res.occupied).div(CKB_DECIMAL)
-    const lockedOrder = new BigNumber(res.occupied).div(CKB_DECIMAL)
+    const lockedOrder = new BigNumber(res.locked_order).div(CKB_DECIMAL)
 
     setCkbWallet({
       balance: free,
