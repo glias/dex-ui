@@ -19,7 +19,7 @@ import { calcTotalPay } from 'utils/fee'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
-import { CKB_NODE_URL, ETH_DECIMAL, EXPLORER_API, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
+import { CKB_NODE_URL, ETH_DECIMAL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
 export * from './checkSubmittedTxs'
@@ -143,21 +143,109 @@ export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA) {
   })
 }
 
-export function getCkbTransactions(address: string, page: number = 1, pageSize: number = 100) {
+export type SudtTransaction = {
+  hash: string
+  income: string
+  timestamp: string
+}
+
+export function isSudtIncomingTransaction(sudtTransaction: SudtTransaction): boolean {
+  return !sudtTransaction.income.startsWith('-')
+}
+
+export function getSudtTransactions(type: Script, lock: Script): Promise<AxiosResponse<SudtTransaction[]>> {
   const params = {
-    page,
-    page_size: pageSize,
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
   }
 
-  // TODO: order history should get all sudt
-  return axios.get(`${EXPLORER_API}address_transactions/${address}`, {
-    params,
-    headers: {
-      'Content-Type': 'application/vnd.api+json',
-      Accept: 'application/vnd.api+json',
-    },
-    data: null,
-  })
+  return axios.get(`${SERVER_URL}/sudt-transactions`, { params })
+}
+
+interface RawResponseTransactionDetail {
+  amount: string
+  block_no: number
+  from: string
+  hash: string
+  status: 'committed' | 'pending' | 'proposed'
+  to: string
+  transaction_fee: string
+}
+
+export interface TransactionDetailModel {
+  from: string
+  to: string
+  amount: string
+  fee: string
+  blockNumber: number
+  status: string
+  transactionFee: string
+  direction: string
+}
+
+function transformResponseTransactionDetail(res: AxiosResponse<RawResponseTransactionDetail>): TransactionDetailModel {
+  const direction = res.data.amount.startsWith('-') ? 'out' : 'in'
+
+  return {
+    amount: res.data.amount,
+    direction,
+    blockNumber: res.data.block_no,
+    fee: res.data.transaction_fee,
+    from: res.data.from,
+    to: res.data.to,
+    status: res.data.status,
+    transactionFee: res.data.transaction_fee,
+  }
+}
+
+interface GetCkbTransactionDetailOptions {
+  lock: Script
+  txHash: string
+}
+
+export async function getCkbTransactionDetail(
+  options: GetCkbTransactionDetailOptions,
+): Promise<TransactionDetailModel> {
+  const { lock } = options
+
+  const params = {
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+    tx_hash: options.txHash,
+  }
+  return axios
+    .get<RawResponseTransactionDetail>(`${SERVER_URL}/transactions-tx-hash`, { params })
+    .then(transformResponseTransactionDetail)
+}
+
+interface GetSudtTransactionDetailOptions {
+  txHash: string
+  type: Script
+  lock: Script
+}
+
+export async function getSudtTransactionDetail(
+  options: GetSudtTransactionDetailOptions,
+): Promise<TransactionDetailModel> {
+  const { lock, type, txHash } = options
+
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+    tx_hash: txHash,
+  }
+  return axios
+    .get<RawResponseTransactionDetail>(`${SERVER_URL}/transactions-tx-hash`, { params })
+    .then(transformResponseTransactionDetail)
 }
 
 export function getTransactionHeader(blockHashes: string[]) {
