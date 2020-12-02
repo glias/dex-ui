@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import ConfirmButton from 'components/ConfirmButton'
 import { useContainer } from 'unstated-next'
 import i18n from '../../../../utils/i18n'
@@ -13,6 +13,18 @@ export default function Trade() {
     Order.setStep(OrderStep.Order)
   }
 
+  const isEthTransactions = useMemo(() => {
+    return (Order.tx as any).gas
+  }, [Order.tx])
+
+  const url = useMemo(() => {
+    if (isEthTransactions) {
+      return `https://etherscan.io/tx/${Order.txHash}`
+    }
+
+    return `${EXPLORER_URL}transaction/${Order.txHash}`
+  }, [isEthTransactions, Order.txHash])
+
   return (
     <Container>
       <Result>
@@ -21,8 +33,8 @@ export default function Trade() {
             <SuccessSVG />
           </div>
           <div className="order-tip">{i18n.t('trade.orderSubmitted')}</div>
-          <a target="_blank" rel="noreferrer noopener" href={`${EXPLORER_URL}transaction/${Order.txHash}`}>
-            {i18n.t('trade.viewExplorer')}
+          <a target="_blank" rel="noreferrer noopener" href={url}>
+            {isEthTransactions ? i18n.t('trade.viewEtherscan') : i18n.t('trade.viewExplorer')}
           </a>
         </div>
       </Result>

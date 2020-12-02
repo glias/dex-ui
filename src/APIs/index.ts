@@ -172,16 +172,22 @@ export function getTransactionHeader(blockHashes: string[]) {
   return ckb.rpc.createBatchRequest(requests).exec()
 }
 
-export function getOrCreateBridgeCell(
+export async function getOrCreateBridgeCell(
   ckbAddress: string,
   ethAddress = '0x0000000000000000000000000000000000000000',
   bridgeFee = '0x0',
-) {
-  return axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_or_create_bridge_cell`, {
-    recipient_address: ckbAddress,
-    eth_token_address: ethAddress,
-    bridge_fee: bridgeFee,
-  })
+): Promise<AxiosResponse<any>> {
+  try {
+    const res = await axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_or_create_bridge_cell`, {
+      recipient_address: ckbAddress,
+      eth_token_address: ethAddress,
+      bridge_fee: bridgeFee,
+    })
+
+    return res
+  } catch (error) {
+    return getOrCreateBridgeCell(ckbAddress, ethAddress, bridgeFee)
+  }
 }
 
 export async function shadowAssetCrossOut(

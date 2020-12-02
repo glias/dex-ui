@@ -143,8 +143,11 @@ export default function OrderTable() {
   }, [Wallet.ckbWallet.balance])
 
   const insufficientCKB = useMemo(() => {
-    return new BigNumber(ckbBalance).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE).isLessThanOrEqualTo(0)
-  }, [ckbBalance])
+    return (
+      new BigNumber(ckbBalance).minus(ORDER_CELL_CAPACITY).minus(MAX_TRANSACTION_FEE).isLessThanOrEqualTo(0) &&
+      Order.orderMode === OrderMode.Order
+    )
+  }, [ckbBalance, Order.orderMode])
 
   const maxPay = useMemo(() => {
     const p = new BigNumber(Order.maxPay)
@@ -403,13 +406,17 @@ export default function OrderTable() {
     }
   }, [Order.pair, createBridgeCell, ckbWallet.address])
 
+  const [firstToken, secondToken] = Order.pair
+
   return (
     <OrderTableContainer id="order-box" isBid={isBid}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Header>
           <h3>{i18n.t('trade.trade')}</h3>
         </Header>
-        {isRelaying && lockHash && disabled ? <span className="alert">{i18n.t('trade.relaying')}</span> : null}
+        {isRelaying && lockHash && disabled ? (
+          <span className="alert">{i18n.t('trade.relaying', { t1: firstToken, t2: secondToken })}</span>
+        ) : null}
         {insufficientCKB && Wallet.ckbWallet.address && disabled ? (
           <span className="alert">{i18n.t('trade.insufficientAmount')}</span>
         ) : null}
