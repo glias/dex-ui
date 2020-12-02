@@ -354,8 +354,8 @@ export default function OrderTable() {
     if (Order.pair.includes('ETH')) {
       return `CKB per ETH`
     }
-    return `CKB per ${Wallet.currentSudtWallet.tokenName}`
-  }, [Order.pair, Wallet.currentSudtWallet.tokenName])
+    return `CKB per ${Order.currentSudtTokenName}`
+  }, [Order.pair, Order.currentSudtTokenName])
 
   const onPairSelect = useCallback(() => {
     if (!Wallet.connecting) {
