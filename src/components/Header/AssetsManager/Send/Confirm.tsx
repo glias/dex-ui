@@ -43,9 +43,10 @@ export const SendConfirm = () => {
   const payload: ConfirmParamsPayload = (parse(search) as unknown) as ConfirmParamsPayload
   const { t } = useTranslation()
   const { pw } = WalletContainer.useContainer()
-  const { useWallet, sendCkb, sendUsdt } = AssetManagerContainer.useContainer()
+  const { useWallet, useSudt, sendCkb, sendSudt } = AssetManagerContainer.useContainer()
   const wallet = useWallet()
   const { replace } = useHistory()
+  const sudt = useSudt()
 
   const { amount, fee, to } = payload
   const from = PWCore.provider.address.toCKBAddress()
@@ -58,7 +59,7 @@ export const SendConfirm = () => {
       return
     }
 
-    const txHash = await sendUsdt(to, new Amount(amount).toString(AmountUnit.shannon))
+    const txHash = await sendSudt(to, new Amount(amount).toString(AmountUnit.shannon), sudt)
     replace(`/assets/${tokenName}/transactions/${txHash}`)
   }
 

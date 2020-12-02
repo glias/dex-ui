@@ -13,6 +13,8 @@ import PWCore, {
   Transaction,
   Builder,
 } from '@lay2/pw-core'
+import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
+import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
 import Web3 from 'web3'
 import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
 import { calcTotalPay } from 'utils/fee'
@@ -21,8 +23,6 @@ import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
 import { CKB_NODE_URL, ETH_DECIMAL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
-import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
-import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
 
 export * from './checkSubmittedTxs'
 
@@ -164,70 +164,7 @@ export function getSudtTransactions(type: Script, lock: Script): Promise<AxiosRe
     lock_hash_type: lock.hashType,
     lock_args: lock.args,
   }
-
-  return axios.get(`${SERVER_URL}/sudt-transactions`, { params })
-}
-
-interface RawResponseTransactionDetail {
-  amount: string
-  block_no: number
-  from: string
-  hash: string
-  status: TransactionStatus
-  to: string
-  transaction_fee: string
-}
-
-export interface TransactionDetailModel {
-  from: string
-  to: string
-  amount: string
-  fee: string
-  blockNumber: number
-  status: TransactionStatus
-  direction: TransactionDirection
-}
-
-function transformResponseTransactionDetail(res: AxiosResponse<RawResponseTransactionDetail>): TransactionDetailModel {
-  const direction = res.data.amount.startsWith('-') ? TransactionDirection.Out : TransactionDirection.In
-
-  return {
-    amount: res.data.amount,
-    direction,
-    blockNumber: res.data.block_no,
-    fee: res.data.transaction_fee,
-    from: res.data.from,
-    to: res.data.to,
-    status: res.data.status,
-    txHash: res.data.hash,
-  }
-}
-
-interface GetCkbTransactionDetailOptions {
-  lock: Script
-  txHash: string
-}
-
-export async function getCkbTransactionDetail(
-  options: GetCkbTransactionDetailOptions,
-): Promise<TransactionDetailModel> {
-  const { lock } = options
-
-  const params = {
-    lock_code_hash: lock.codeHash,
-    lock_hash_type: lock.hashType,
-    lock_args: lock.args,
-    tx_hash: options.txHash,
-  }
-  return axios
-    .get<RawResponseTransactionDetail>(`${SERVER_URL}/transactions-tx-hash`, { params })
-    .then(transformResponseTransactionDetail)
-}
-
-interface GetSudtTransactionDetailOptions {
-  txHash: string
-  type: Script
-  lock: Script
+  return axios.get<SudtTransaction[]>(`${SERVER_URL}/sudt-transactions`, { params })
 }
 
 export function getTransactionHeader(blockHashes: string[]) {
@@ -385,6 +322,21 @@ export interface TransactionDetailModel {
   txHash: string
 }
 
+function transformResponseTransactionDetail(res: AxiosResponse<RawResponseTransactionDetail>): TransactionDetailModel {
+  const direction = res.data.amount.startsWith('-') ? TransactionDirection.Out : TransactionDirection.In
+
+  return {
+    amount: res.data.amount,
+    direction,
+    blockNumber: res.data.block_no,
+    fee: res.data.transaction_fee,
+    from: res.data.from,
+    to: res.data.to,
+    status: res.data.status,
+    txHash: res.data.hash,
+  }
+}
+
 interface GetCkbTransactionDetailOptions {
   lock: Script
   txHash: string
@@ -395,6 +347,21 @@ async function unwrapGetTransactionByTxHash(txHash: string, params: any): Promis
   if (!res.data) return findByTxHash(txHash)!
 
   return transformResponseTransactionDetail(res)
+}
+
+export async function getCkbTransactionDetail(
+  options: GetCkbTransactionDetailOptions,
+): Promise<TransactionDetailModel> {
+  const { lock, txHash } = options
+
+  const params = {
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+    tx_hash: txHash,
+  }
+
+  return unwrapGetTransactionByTxHash(txHash, params)
 }
 
 interface GetSudtTransactionDetailOptions {

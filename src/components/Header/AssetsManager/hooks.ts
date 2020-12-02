@@ -39,8 +39,6 @@ function useSendCkb(): (address: string, shannonCkb: string) => Promise<string> 
     async (address: string, shannonCkb: string) => {
       asserts(pw)
 
-      // eslint-disable-next-line no-debugger
-      debugger
       const builder = new SimpleBuilder(wrapAddress(address), new Amount(shannonCkb, AmountUnit.shannon))
       const txHash = await pw.sendTransaction(builder)
       const built = await builder.build()
@@ -75,9 +73,7 @@ function useSendSudt(): (address: string, amount: string, inputSudt?: SUDT) => P
     async (address: string, amount: string, inputSudt?: SUDT) => {
       asserts(pw)
 
-      const sudt = paramSudt || inputSudt
-      // eslint-disable-next-line no-debugger
-      debugger
+      const sudt = inputSudt || paramSudt
       asserts(sudt)
 
       const sudtBuilder = new SimpleSUDTBuilder(sudt, wrapAddress(address), new Amount(amount, AmountUnit.shannon))
@@ -110,7 +106,7 @@ function useAssetManager() {
     useWallet,
     useSudt,
     sendCkb: useSendCkb(),
-    sendUsdt: useSendSudt(),
+    sendSudt: useSendSudt(),
   }
 }
 
