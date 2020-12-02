@@ -21,6 +21,8 @@ import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
 import { CKB_NODE_URL, ETH_DECIMAL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
+import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
+import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
 
 export * from './checkSubmittedTxs'
 
@@ -171,7 +173,7 @@ interface RawResponseTransactionDetail {
   block_no: number
   from: string
   hash: string
-  status: 'committed' | 'pending' | 'proposed'
+  status: TransactionStatus
   to: string
   transaction_fee: string
 }
@@ -182,13 +184,12 @@ export interface TransactionDetailModel {
   amount: string
   fee: string
   blockNumber: number
-  status: string
-  transactionFee: string
-  direction: string
+  status: TransactionStatus
+  direction: TransactionDirection
 }
 
 function transformResponseTransactionDetail(res: AxiosResponse<RawResponseTransactionDetail>): TransactionDetailModel {
-  const direction = res.data.amount.startsWith('-') ? 'out' : 'in'
+  const direction = res.data.amount.startsWith('-') ? TransactionDirection.Out : TransactionDirection.In
 
   return {
     amount: res.data.amount,
@@ -198,7 +199,7 @@ function transformResponseTransactionDetail(res: AxiosResponse<RawResponseTransa
     from: res.data.from,
     to: res.data.to,
     status: res.data.status,
-    transactionFee: res.data.transaction_fee,
+    txHash: res.data.hash,
   }
 }
 
@@ -227,25 +228,6 @@ interface GetSudtTransactionDetailOptions {
   txHash: string
   type: Script
   lock: Script
-}
-
-export async function getSudtTransactionDetail(
-  options: GetSudtTransactionDetailOptions,
-): Promise<TransactionDetailModel> {
-  const { lock, type, txHash } = options
-
-  const params = {
-    type_code_hash: type.codeHash,
-    type_hash_type: type.hashType,
-    type_args: type.args,
-    lock_code_hash: lock.codeHash,
-    lock_hash_type: lock.hashType,
-    lock_args: lock.args,
-    tx_hash: txHash,
-  }
-  return axios
-    .get<RawResponseTransactionDetail>(`${SERVER_URL}/transactions-tx-hash`, { params })
-    .then(transformResponseTransactionDetail)
 }
 
 export function getTransactionHeader(blockHashes: string[]) {
@@ -380,6 +362,62 @@ export function getOrders(sudt: SUDT = SUDT_GLIA): Promise<AxiosResponse<OrdersR
   return axios.get(`${SERVER_URL}/orders`, {
     params,
   })
+}
+
+interface RawResponseTransactionDetail {
+  amount: string
+  block_no: number
+  from: string
+  hash: string
+  status: TransactionStatus
+  to: string
+  transaction_fee: string
+}
+
+export interface TransactionDetailModel {
+  from: string
+  to: string
+  amount: string
+  fee: string
+  blockNumber: number
+  status: TransactionStatus
+  direction: TransactionDirection
+  txHash: string
+}
+
+interface GetCkbTransactionDetailOptions {
+  lock: Script
+  txHash: string
+}
+
+async function unwrapGetTransactionByTxHash(txHash: string, params: any): Promise<TransactionDetailModel> {
+  const res = await axios.get<RawResponseTransactionDetail>(`${SERVER_URL}/transactions-tx-hash`, { params })
+  if (!res.data) return findByTxHash(txHash)!
+
+  return transformResponseTransactionDetail(res)
+}
+
+interface GetSudtTransactionDetailOptions {
+  txHash: string
+  type: Script
+  lock: Script
+}
+
+export async function getSudtTransactionDetail(
+  options: GetSudtTransactionDetailOptions,
+): Promise<TransactionDetailModel> {
+  const { lock, type, txHash } = options
+
+  const params = {
+    type_code_hash: type.codeHash,
+    type_hash_type: type.hashType,
+    type_args: type.args,
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+    tx_hash: txHash,
+  }
+  return unwrapGetTransactionByTxHash(txHash, params)
 }
 
 export function getCurrentPrice(sudt: SUDT = SUDT_GLIA): Promise<AxiosResponse<string>> {

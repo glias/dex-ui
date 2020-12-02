@@ -4,6 +4,7 @@ import BackGroundImage from '../../assets/svg/Component12.svg'
 export const HeaderBox = styled.div`
   padding: 0 120px;
   max-width: 1440px;
+  position:
   margin: 0 auto;
   background-color: #6b70e0;
   color: white;

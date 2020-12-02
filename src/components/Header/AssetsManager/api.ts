@@ -2,6 +2,7 @@ import PWCore, { Provider, SUDT } from '@lay2/pw-core'
 import { getSudtTransactions } from 'APIs'
 import { getCkbTransactions } from 'APIs/explorer'
 import { DateTime } from 'luxon'
+import { getPendingTransactions, removePendingTransactions } from './pendingTxs'
 
 export enum TransactionStatus {
   Pending = 'pending',
@@ -36,6 +37,27 @@ function formatDateTime(timestamp: string | number): string {
   return DateTime.fromMillis(Number(timestamp)).toFormat('yyyy-MM-dd HH:mm:ss')
 }
 
+/**
+ * remove exists pending transactions and return all pending transactions
+ * @param tokenName
+ * @param summaries
+ */
+function syncWithLocalStorage(tokenName: string, summaries: TransactionSummary[]): TransactionSummary[] {
+  const hashes = summaries.map(s => s.txHash)
+  removePendingTransactions(hashes)
+
+  const cleanedSummaries = getPendingTransactions().map<TransactionSummary>(tx => ({
+    amount: tx.amount,
+    date: formatDateTime(Number(tx.timestamp)),
+    tokenName,
+    txHash: tx.txHash,
+    direction: tx.direction,
+    status: tx.status,
+  }))
+
+  return summaries.concat(cleanedSummaries).sort((l, r) => r.date.localeCompare(l.date))
+}
+
 export async function getSudtTransferSummaries(
   options: GetSudtTransferSummariesOptions,
 ): Promise<TransactionSummary[]> {
@@ -44,13 +66,17 @@ export async function getSudtTransferSummaries(
   const sudtTxs = sudtTxRes.data
   if (!sudtTxs.length) return []
 
-  const transfers = sudtTxs.map<TransactionSummary>(tx => ({
+  const tokenName = sudt.info?.name ?? ''
+
+  let transfers = sudtTxs.map<TransactionSummary>(tx => ({
     ...signedAmountToDirectedAmount(tx.income),
-    tokenName: sudt.info?.name ?? '',
+    tokenName,
     txHash: tx.hash,
     date: formatDateTime(tx.timestamp),
     status: TransactionStatus.Committed,
   }))
+
+  transfers = syncWithLocalStorage(tokenName, transfers)
 
   if (!direction) return transfers
 
@@ -70,7 +96,9 @@ interface GetCkbTransferSummariesOptions {
 export async function getCkbTransferSummaries(options?: GetCkbTransferSummariesOptions): Promise<TransactionSummary[]> {
   const transactions = await getCkbTransactions(PWCore.provider.address.toCKBAddress())
 
-  const transfers = transactions.data.data.map<TransactionSummary>(tx => {
+  const tokenName = 'CKB'
+
+  let transfers = transactions.data.data.map<TransactionSummary>(tx => {
     const { amount, direction } = signedAmountToDirectedAmount(tx.attributes.income)
 
     return {
@@ -78,10 +106,12 @@ export async function getCkbTransferSummaries(options?: GetCkbTransferSummariesO
       direction,
       date: formatDateTime(tx.attributes.block_timestamp),
       txHash: tx.attributes.transaction_hash,
-      tokenName: 'CKB',
+      tokenName,
       status: TransactionStatus.Committed,
     }
   })
+
+  transfers = syncWithLocalStorage(tokenName, transfers)
 
   const direction = options?.direction
   if (!direction) return transfers

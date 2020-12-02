@@ -1,4 +1,4 @@
-import PWCore, { Address, AddressType, Amount, AmountUnit, SimpleBuilder, SimpleSUDTBuilder } from '@lay2/pw-core'
+import PWCore, { Amount, AmountUnit } from '@lay2/pw-core'
 import { Divider } from 'antd'
 import Token from 'components/Token'
 import { isCkbWallet, WalletContainer } from 'containers/wallet'
@@ -7,7 +7,6 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { spentCells } from 'utils'
 import { AssetManagerHeader } from '../AssetManagerHeader'
 import { Balance } from '../Balance'
 import { Button } from '../components/Button'
@@ -44,34 +43,22 @@ export const SendConfirm = () => {
   const payload: ConfirmParamsPayload = (parse(search) as unknown) as ConfirmParamsPayload
   const { t } = useTranslation()
   const { pw } = WalletContainer.useContainer()
-  const { useWallet, useSudt } = AssetManagerContainer.useContainer()
+  const { useWallet, sendCkb, sendUsdt } = AssetManagerContainer.useContainer()
   const wallet = useWallet()
-  const sudt = useSudt()
   const { replace } = useHistory()
 
   const { amount, fee, to } = payload
   const from = PWCore.provider.address.toCKBAddress()
 
   async function onConfirm() {
-    const addressType = to.startsWith('ck') ? AddressType.ckb : AddressType.eth
-    const toAddress = new Address(to, addressType)
-
     if (!wallet || !pw) return
     if (isCkbWallet(wallet)) {
-      const builder = new SimpleBuilder(toAddress, new Amount(amount, AmountUnit.ckb))
-      const txHash = await pw.sendTransaction(builder)
-      const built = await builder.build()
-      spentCells.add(built.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
+      const txHash = await sendCkb(to, new Amount(amount).toString(AmountUnit.shannon))
       replace(`/assets/${tokenName}/transactions/${txHash}`)
       return
     }
 
-    if (!sudt) return
-
-    const sudtBuilder = new SimpleSUDTBuilder(sudt, toAddress, new Amount(amount, AmountUnit.shannon))
-
-    spentCells.add(sudtBuilder.inputCells.map(input => input.serializeJson()) as any)
-    const txHash = await pw.sendTransaction(sudtBuilder)
+    const txHash = await sendUsdt(to, new Amount(amount).toString(AmountUnit.shannon))
     replace(`/assets/${tokenName}/transactions/${txHash}`)
   }
 
@@ -104,7 +91,9 @@ export const SendConfirm = () => {
         <Divider />
 
         <div className="label">{t('Transaction Fee')}</div>
-        <div className="item">{fee}</div>
+        <div className="item">
+          <Balance value={fee} type="CKB" />
+        </div>
 
         <Button block size="large" onClick={onConfirm}>
           {t('Confirm')}
