@@ -1,6 +1,7 @@
 import { useEffect, MutableRefObject, useCallback } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
-import { getHistoryOrders } from '../../../../APIs'
+import BigNumber from 'bignumber.js'
+import { getAllHistoryOrders, getTransactionHeader } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import { REJECT_ERROR_CODE } from '../../../../constants'
@@ -68,16 +69,26 @@ export const usePollOrderList = ({
 
     if (lockArgs) {
       const fetchData = () =>
-        getHistoryOrders(lockArgs)
-          .then(res => {
-            const parsed = res.data.reverse().map((item: RawOrder) => {
+        getAllHistoryOrders(lockArgs)
+          .then(async res => {
+            const parsed = res.map((item: RawOrder) => {
               const order = parseOrderRecord(item)
               if (['aborted', 'claimed'].includes(order.status ?? '')) {
                 pendingOrders.remove(order.key)
               }
+              // @ts-ignore
+              order.tokenName = item.tokenName
               return order
             })
-            dispatch({ type: ActionType.UpdateOrderList, value: parsed })
+            const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
+            for (let i = 0; i < resList.length; i++) {
+              const blockHeader = resList[i]
+              parsed[i].createdAt = blockHeader.timestamp
+            }
+            dispatch({
+              type: ActionType.UpdateOrderList,
+              value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+            })
           })
           .catch(err => {
             console.warn(`[History Polling]: ${err.message}`)
@@ -87,7 +98,7 @@ export const usePollOrderList = ({
           })
 
       dispatch({ type: ActionType.UpdateLoading, value: true })
-      const TIMER = 3000
+      const TIMER = 10000
       fetchData()
       /* eslint-disable-next-line no-param-reassign */
       fetchListRef.current = setInterval(fetchData, TIMER)

@@ -10,6 +10,7 @@ import {
   SUDT,
   SUDTCollector,
 } from '@lay2/pw-core'
+import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
 import { buildSellData, buildChangeData, buildBuyData } from '../utils/buffer'
 import {
@@ -18,8 +19,9 @@ import {
   SUDT_DEP,
   MIN_SUDT_CAPACITY,
   MAX_TRANSACTION_FEE,
+  COMMISSION_FEE,
 } from '../constants'
-import { calcBuyReceive, calcBuyAmount, calcSellReceive } from '../utils/fee'
+import { calcBidReceive, calcAskReceive } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -30,6 +32,8 @@ export class PlaceOrderBuilder extends Builder {
 
   pay: Amount
 
+  totalPay: Amount
+
   orderLock: Script
 
   inputLock: Script
@@ -37,6 +41,8 @@ export class PlaceOrderBuilder extends Builder {
   sudt: SUDT
 
   collector: SUDTCollector
+
+  decimal: number
 
   constructor(
     address: Address,
@@ -53,12 +59,16 @@ export class PlaceOrderBuilder extends Builder {
     this.orderType = orderType
     this.price = price
     this.pay = pay
+    const amount = new BigNumber(this.pay.toString())
+    this.decimal = sudt?.info?.decimals ?? AmountUnit.ckb
+    this.totalPay = new Amount(amount.plus(amount.times(COMMISSION_FEE)).toString())
     this.sudt = sudt
     this.orderLock = new Script(
       ORDER_BOOK_LOCK_SCRIPT.codeHash,
       this.address.toLockScript().toHash(),
       ORDER_BOOK_LOCK_SCRIPT.hashType,
     )
+
     this.inputLock = this.address.toLockScript()
   }
 
@@ -72,7 +82,7 @@ export class PlaceOrderBuilder extends Builder {
 
     const orderOutput = new Cell(neededCapacity, this.orderLock, this.sudt.toTypeScript())
 
-    const cells = await this.collector.collectSUDT(this.sudt, this.address, { neededAmount: this.pay })
+    const cells = await this.collector.collectSUDT(this.sudt, this.address, { neededAmount: this.totalPay })
     cells.forEach(cell => {
       // TODO: decimal
       sudtSumAmount = sudtSumAmount.add(cell.getSUDTAmount())
@@ -80,8 +90,8 @@ export class PlaceOrderBuilder extends Builder {
       inputCapacity = inputCapacity.add(cell.capacity)
     })
 
-    if (sudtSumAmount.lt(this.pay)) {
-      throw new Error(`Input SUDT amount not enough, need ${this.pay.toString()}, got ${sudtSumAmount.toString()}`)
+    if (sudtSumAmount.lt(this.totalPay)) {
+      throw new Error(`Input SUDT amount not enough, need ${this.totalPay.toString()}, got ${sudtSumAmount.toString()}`)
     }
 
     if (inputCapacity.lt(neededCapacity)) {
@@ -105,17 +115,17 @@ export class PlaceOrderBuilder extends Builder {
       )
     }
 
-    const receive = calcSellReceive(`${this.pay}`, this.price)
+    const receive = calcAskReceive(this.pay.toString(this.decimal), this.price)
     if (inputCapacity.lt(neededCapacity.add(new Amount(MIN_SUDT_CAPACITY.toString())))) {
       orderOutput.capacity = inputCapacity
-      orderOutput.setHexData(buildSellData(`${sudtSumAmount}`, receive, this.price))
+      orderOutput.setHexData(buildSellData(sudtSumAmount.toString(this.decimal), receive, this.price, this.decimal))
       outputs.push(orderOutput)
     } else {
       orderOutput.capacity = neededCapacity
-      orderOutput.setHexData(buildSellData(`${this.pay}`, receive, this.price))
+      orderOutput.setHexData(buildSellData(this.totalPay.toString(this.decimal), receive, this.price, this.decimal))
       const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, this.sudt.toTypeScript())
-      const changeAmount = sudtSumAmount.sub(this.pay).toString()
-      changeOutput.setHexData(buildChangeData(changeAmount))
+      const changeAmount = sudtSumAmount.sub(this.totalPay).toString()
+      changeOutput.setHexData(buildChangeData(changeAmount, this.decimal))
       outputs = outputs.concat([orderOutput, changeOutput])
     }
 
@@ -140,15 +150,15 @@ export class PlaceOrderBuilder extends Builder {
       return this.buildSellTx()
     }
 
-    const buyCellCapacity = new Amount(calcBuyAmount(this.pay.toString()))
+    const buyCellCapacity = this.totalPay.add(new Amount(ORDER_CELL_CAPACITY.toString()))
 
     const neededCapacity = buyCellCapacity.add(fee).add(new Amount(`${MAX_TRANSACTION_FEE}`))
     let inputCapacity = Amount.ZERO
     const inputs: Cell[] = []
 
     const orderOutput = new Cell(buyCellCapacity, this.orderLock, this.sudt.toTypeScript())
-    const receive = calcBuyReceive(this.pay.toString(), this.price).toString()
-    orderOutput.setHexData(buildBuyData(receive, this.price))
+    const receive = calcBidReceive(this.pay.toString(), this.price)
+    orderOutput.setHexData(buildBuyData(receive, this.price, this.decimal))
     // fill the inputs
     const cells = await this.collector.collect(this.address, { neededAmount: neededCapacity })
     cells.forEach(cell => {

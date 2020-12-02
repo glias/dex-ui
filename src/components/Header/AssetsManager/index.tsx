@@ -1,8 +1,10 @@
-import React from 'react'
+import { checkSubmittedTxs } from 'APIs'
+import React, { useEffect } from 'react'
 import { MemoryRouter, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { AssetBalance } from './AssetBalance'
 import { AssetManagerContainer } from './hooks'
+import { getPendingTransactions } from './pendingTxs'
 import { Receive } from './Receive'
 import { Send } from './Send'
 import { SendConfirm } from './Send/Confirm'
@@ -35,6 +37,19 @@ const AssetManagerWrapper = styled.div`
 `
 
 export const AssetManager: React.FC = () => {
+  // check and clean the pending cell when the cell was dead
+  useEffect(() => {
+    const taskId = setInterval(() => {
+      const hashes = getPendingTransactions().map(tx => tx.txHash)
+      if (!hashes.length) return
+      checkSubmittedTxs(hashes)
+    }, 3000)
+
+    return () => {
+      clearInterval(taskId)
+    }
+  })
+
   return (
     <AssetManagerContainer.Provider>
       <AssetManagerWrapper>

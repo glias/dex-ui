@@ -3,11 +3,32 @@ import type { SubmittedOrder } from '../containers/order'
 const PENDING_ORDERS_LABEL = 'ckb_dex_pending_orders'
 const SUBMITTED_ORDERS_LABEL = 'ckb_dex_submitted_orders'
 const SPENDT_CELLS_LABEL = 'ckb_dex_spent_cells'
+export const REPLAY_RESIST_OUTPOINT = 'ckb_replay_resist_outpoint'
 
 export interface SpentCell {
   tx_hash: string
   index: string
   timestamp?: string
+}
+
+export const replayResistOutpoints = {
+  get: () => {
+    try {
+      return JSON.parse(localStorage.getItem(REPLAY_RESIST_OUTPOINT)!) || {}
+    } catch (err) {
+      return {}
+    }
+  },
+  add: (address: string, hashes: string[]) => {
+    const outpoints = replayResistOutpoints.get()
+    outpoints[address] = (outpoints[address] || []).concat(hashes)
+    localStorage.setItem(REPLAY_RESIST_OUTPOINT, JSON.stringify(outpoints))
+  },
+  remove: (address: string, hash: string) => {
+    const outpoints = replayResistOutpoints.get()
+    outpoints[address] = (outpoints[address] || []).filter((o: string) => o !== hash)
+    localStorage.setItem(REPLAY_RESIST_OUTPOINT, JSON.stringify(outpoints))
+  },
 }
 
 export const pendingOrders = {

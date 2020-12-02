@@ -15,8 +15,9 @@ export const checkSubmittedTxs = async (hashes: Array<string>) => {
       const tx = resList[i]
       const inputs = tx?.transaction?.inputs ?? []
       if (tx?.txStatus?.status === 'committed') {
+        unconfirmedHashes.push(true)
         for (let j = 0; j < spentCellsLength; j++) {
-          const cell = allSpentCells[j]
+          const cell = allSpentCells[j] || {}
           if (
             inputs.some(
               (input: any) => input.previousOutput.index === cell.index && input.previousOutput.txHash === cell.tx_hash,
@@ -25,7 +26,6 @@ export const checkSubmittedTxs = async (hashes: Array<string>) => {
             allSpentCells.splice(j, 1)
           }
         }
-        unconfirmedHashes.push(true)
       } else {
         unconfirmedHashes.push(false)
       }

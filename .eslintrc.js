@@ -92,6 +92,7 @@ module.exports = {
         exceptions: [''],
       },
     ],
+    'operator-linebreak': 0,
     'no-shadow': 0,
     'import/prefer-default-export': 0,
     'react/display-name': 0,

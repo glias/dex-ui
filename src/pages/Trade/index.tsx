@@ -7,7 +7,8 @@ import TradeOrderTable from './components/TradeOrderTable'
 import History from './components/History'
 import TradeOrderConfirm from './components/TradeOrderConfirm'
 import TradeOrderResult from './components/TradeOrderResult'
-import { TradePage, TradeMain, TradeFrame, TradeContainer } from './styled'
+import TradePriceTable from './components/TradePriceTable'
+import { TradePage, TradeMain, TradeFrame, TradeContainer, OrderBookFrame } from './styled'
 import OrderContainer, { OrderStep } from '../../containers/order'
 import { checkSubmittedTxs } from '../../APIs'
 
@@ -195,6 +196,9 @@ const Trade = () => {
       <TradeContainer>
         <TradeMain>
           <TradeFrame width="360px">{traceNavigation()}</TradeFrame>
+          <OrderBookFrame width="auto">
+            <TradePriceTable />
+          </OrderBookFrame>
         </TradeMain>
         <History />
       </TradeContainer>

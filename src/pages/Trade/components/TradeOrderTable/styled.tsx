@@ -3,11 +3,11 @@ import styled from 'styled-components'
 export const BID_CONFIRM_COLOR = '#ff9a6f'
 export const ASK_CONFRIM_COLOR = '#72d1a4'
 
-export const BID_RECEIVE_COLOR = '#FCF0E6'
-export const BID_RECEIVE_BORDER = '#FAE2D0'
+export const BID_RECEIVE_COLOR = '#E9F6F1'
+export const BID_RECEIVE_BORDER = '#D8EBD9'
 
-export const ASK_RECEIVE_COLOR = '#E9F6F1'
-export const ASK_RECEIVE_BORDER = '#D8EBD9'
+export const ASK_RECEIVE_COLOR = '#FCF0E6'
+export const ASK_RECEIVE_BORDER = '#FAE2D0'
 
 export interface ContainerProps {
   isBid: boolean

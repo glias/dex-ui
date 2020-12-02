@@ -1,16 +1,18 @@
-import { Address, AddressType } from '@lay2/pw-core'
+import { Address, AddressType, Amount, SimpleBuilder, SimpleSUDTBuilder } from '@lay2/pw-core'
 import { Divider, Form, Input } from 'antd'
 import { BigNumber } from 'bignumber.js'
 import Token from 'components/Token'
 import WalletContainer from 'containers/wallet'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from 'react-query'
 import { useHistory, useParams, useRouteMatch } from 'react-router-dom'
 import styled from 'styled-components'
 import { AssetManagerHeader } from '../AssetManagerHeader'
 import { Balance } from '../Balance'
 import { Button } from '../components/Button'
 import { asserts, debounce } from '../helper'
+import { AssetManagerContainer } from '../hooks'
 
 const SendWrapper = styled.div`
   padding: 16px;
@@ -69,6 +71,8 @@ export const Send: React.FC = () => {
   const [form] = Form.useForm()
   const { push } = useHistory()
   const match = useRouteMatch()
+  const { useSudt } = AssetManagerContainer.useContainer()
+  const sudt = useSudt()
 
   const { wallets } = WalletContainer.useContainer()
   const wallet = wallets.find(wallet => wallet.tokenName === tokenName)
@@ -83,6 +87,33 @@ export const Send: React.FC = () => {
       setInputAllValidated(isValidated)
     }, 200),
     [form, setInputAllValidated],
+  )
+
+  const { data: transactionFee } = useQuery<string, unknown>(
+    ['getTransactionFee', tokenName, inputAllValidated],
+    async () => {
+      const { amount, to } = form.getFieldsValue(['amount', 'to'])
+      if (!inputAllValidated) return ''
+      const toAddressType = to.startsWith('ck') ? AddressType.ckb : AddressType.eth
+      const toAddress = new Address(to, toAddressType)
+
+      if (tokenName === 'CKB') {
+        const builder = new SimpleBuilder(toAddress, new Amount(amount))
+        await builder.build()
+
+        const fee = builder.getFee().toString()
+        return fee
+      }
+
+      asserts(sudt)
+
+      const builder = new SimpleSUDTBuilder(sudt, toAddress, new Amount(amount))
+      await builder.build()
+      const fee = builder.getFee().toString()
+
+      return fee
+    },
+    { enabled: inputAllValidated && form },
   )
 
   function validateInput() {
@@ -143,15 +174,13 @@ export const Send: React.FC = () => {
   const transactionFeeTip = (
     <div style={{ marginBottom: '16px' }}>
       <div>{t('Transaction fee')}</div>
-      <div>
-        <Balance value="300" type="CKB" />
-      </div>
+      <div>{transactionFee ? <Balance value={transactionFee} type="CKB" /> : '-'}</div>
     </div>
   )
 
   function onFinish(data: { to: string; amount: string }) {
     const { to, amount } = data
-    const confirmUrl = `${match.url}/confirm?to=${to}&amount=${amount}`
+    const confirmUrl = `${match.url}/confirm?to=${to}&amount=${amount}&fee=${transactionFee}`
     push(confirmUrl)
   }
 
@@ -174,7 +203,7 @@ export const Send: React.FC = () => {
           {transactionFeeTip}
 
           <Form.Item>
-            <Button htmlType="submit" size="large" block disabled={!inputAllValidated}>
+            <Button htmlType="submit" size="large" block disabled={!inputAllValidated || !transactionFee}>
               {t('Send')}
             </Button>
           </Form.Item>

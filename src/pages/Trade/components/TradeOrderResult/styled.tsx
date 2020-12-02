@@ -1,15 +1,31 @@
 import styled from 'styled-components'
 
-export const TracePairResultBox = styled.div`
-  height: 400px;
-  background: #fff;
+export const Container = styled.div`
+  height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
-  border: 1px solid #abd1e1;
-  box-sizing: border-box;
-  overflow: hidden;
+`
+
+export const Result = styled.form`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  .success {
+    text-align: center;
+  }
+  .order-tip {
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  a {
+    font-size: 14px;
+    color: #5c61da;
+    text-decoration: underline;
+    margin-top: 20px;
+  }
 `
 
 export const TradePairConfirmBox = styled.div`

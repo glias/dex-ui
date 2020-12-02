@@ -4,18 +4,19 @@ import { Form, Tooltip, Modal, Input, Divider } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import Token from 'components/Token'
-import { Address, Amount, AddressType } from '@lay2/pw-core'
+import { Address, Amount, AddressType, AmountUnit } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import { removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
+import { getForceBridgeHistory, placeCrossChainOrder, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
   ORDER_CELL_CAPACITY,
   MAX_TRANSACTION_FEE,
   // MINIUM_RECEIVE,
-  SUDT_GLIA,
   ERC20_LIST,
+  SUDT_LIST,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
 import { OrderTableContainer, PayMeta, Header, PairContainer, PairsContainer, Swap } from './styled'
@@ -155,22 +156,42 @@ export default function OrderTable() {
   }, [Order.maxPay])
 
   useEffect(() => {
+    if (insufficientCKB) {
+      return
+    }
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
       receive: formatedReceive,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formatedReceive])
+  }, [formatedReceive, insufficientCKB])
+
+  useEffect(() => {
+    if (insufficientCKB) {
+      return
+    }
+    // eslint-disable-next-line no-unused-expressions
+    formRef.current?.setFieldsValue({
+      price,
+    })
+    if (price) {
+      setIsPriceInvalid(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price, insufficientCKB])
 
   const setMaxPay = useCallback(() => {
-    const max = new BigNumber(maxPay).toFixed(8, 1)
+    if (insufficientCKB) {
+      return
+    }
+    const max = removeTrailingZero(new BigNumber(maxPay).toFixed(8, 1))
     setPay(max)
     // eslint-disable-next-line no-unused-expressions
     formRef.current?.setFieldsValue({
       pay: max,
     })
     setIsPayInvalid(false)
-  }, [maxPay, formRef, setPay])
+  }, [maxPay, formRef, setPay, insufficientCKB])
 
   const checkPay = useCallback(
     (_: any, value: string): Promise<void> => {
@@ -265,17 +286,46 @@ export default function OrderTable() {
     } else {
       try {
         setCollectingCells(true)
-        if (isNormalOrder) {
-          const builder = new PlaceOrderBuilder(
-            new Address(Wallet.ckbWallet.address, AddressType.ckb),
-            new Amount(Order.pay),
-            Order.orderType,
-            Order.price,
-            SUDT_GLIA,
-            new DEXCollector(),
-          )
-          const tx = await builder.build()
-          Order.setTx(tx)
+        switch (Order.orderMode) {
+          case OrderMode.Order: {
+            const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
+            const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
+            const builder = new PlaceOrderBuilder(
+              new Address(Wallet.ckbWallet.address, AddressType.ckb),
+              new Amount(Order.pay, OrderType.Ask === Order.orderType ? sudt?.info?.decimals : AmountUnit.ckb),
+              Order.orderType,
+              Order.price,
+              sudt!,
+              new DEXCollector() as any,
+            )
+            const tx = await builder.build()
+            Order.setTx(tx)
+            break
+          }
+          case OrderMode.CrossChain: {
+            const res = await placeCrossChainOrder(
+              pay,
+              price,
+              Order.receive,
+              Wallet.ckbWallet.address,
+              Wallet.ethWallet.address,
+              Wallet.web3!,
+            )
+            Order.setTx(res.data)
+            break
+          }
+          case OrderMode.CrossIn: {
+            const res = await shadowAssetCrossIn(pay, Wallet.ckbWallet.address, Wallet.ethWallet.address, Wallet.web3!)
+            Order.setTx(res.data)
+            break
+          }
+          case OrderMode.CrossOut: {
+            const res = await shadowAssetCrossOut(pay, Wallet.ckbWallet.address, Wallet.ethWallet.address)
+            Order.setTx(res.data.raw_tx)
+            break
+          }
+          default:
+            break
         }
         setStep(OrderStep.Confirm)
       } catch (error) {
@@ -294,6 +344,10 @@ export default function OrderTable() {
     Order.pay,
     Order.orderType,
     isNormalOrder,
+    Wallet.ckbWallet.address,
+    Wallet.ethWallet.address,
+    Wallet.web3,
+    Order.receive,
   ])
 
   const perSuffix = useMemo(() => {
@@ -303,16 +357,63 @@ export default function OrderTable() {
     return `CKB per ${Wallet.currentSudtWallet.tokenName}`
   }, [Order.pair, Wallet.currentSudtWallet.tokenName])
 
+  const onPairSelect = useCallback(() => {
+    if (!Wallet.connecting) {
+      setStep(OrderStep.Select)
+    }
+  }, [Wallet.connecting, setStep])
+
+  const { createBridgeCell, ckbWallet, getBridgeCell, lockHash } = Wallet
+
+  const [reactor, setReactor] = useState(0)
+
+  const ethAddress = '0x0000000000000000000000000000000000000000'
+
+  const isRelaying = useMemo(() => {
+    if (Order.orderMode !== OrderMode.CrossChain && Order.orderMode !== OrderMode.CrossIn) {
+      return false
+    }
+    const [firstToken, secondToken] = Order.pair
+    if (firstToken === 'ETH' && secondToken === 'CKB') {
+      const bridgeCell = getBridgeCell(ethAddress, 'cross-order')
+      return !bridgeCell
+    }
+    if (firstToken === 'ETH' && secondToken === 'ckETH') {
+      const bridgeCell = getBridgeCell(ethAddress, 'cross-in')
+      return !bridgeCell
+    }
+    return false
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Order.orderMode, Order.pair, reactor, getBridgeCell])
+
+  useEffect(() => {
+    const [firstToken, secondToken] = Order.pair
+    if (firstToken === 'ETH' && secondToken === 'CKB') {
+      createBridgeCell(ethAddress, 'cross-order', () => setReactor(Math.random()))
+    }
+    if (firstToken === 'ETH' && secondToken === 'ckETH') {
+      createBridgeCell(ethAddress, 'cross-in', () => setReactor(Math.random()))
+    }
+
+    if (ckbWallet.address) {
+      getForceBridgeHistory(ckbWallet.address).then(res => {
+        // eslint-disable-next-line no-console
+        console.log(res.data)
+      })
+    }
+  }, [Order.pair, createBridgeCell, ckbWallet.address])
+
   return (
     <OrderTableContainer id="order-box" isBid={isBid}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Header>
           <h3>{i18n.t('trade.trade')}</h3>
         </Header>
+        {isRelaying && lockHash && disabled ? <span className="alert">{i18n.t('trade.relaying')}</span> : null}
         {insufficientCKB && Wallet.ckbWallet.address && disabled ? (
           <span className="alert">{i18n.t('trade.insufficientAmount')}</span>
         ) : null}
-        <Pairs onSelect={() => Order.setStep(OrderStep.Select)} pairs={Order.pair} onSwap={changePair} />
+        <Pairs onSelect={onPairSelect} pairs={Order.pair} onSwap={changePair} />
         <Form.Item label={i18n.t('trade.pay')}>
           <PayMeta>
             <button type="button" onClick={setMaxPay}>
@@ -338,6 +439,7 @@ export default function OrderTable() {
               type="number"
               required
               size="large"
+              disabled={insufficientCKB}
               step="any"
               value={pay}
               onChange={e => setPay(e.target.value)}
@@ -359,6 +461,7 @@ export default function OrderTable() {
               placeholder="0"
               suffix={perSuffix}
               size="large"
+              disabled={insufficientCKB}
               required
               type="number"
               step="any"

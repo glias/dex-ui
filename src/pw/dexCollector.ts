@@ -54,7 +54,7 @@ export default class DEXCollector extends SUDTCollector {
       neededAmount!.toBigInt().toString(),
     )
 
-    return cells.map(DEXCollector.fromLumosCell)
+    return cells.map(DEXCollector.fromLumosCell as any) as any
   }
 
   public getBalance = async (address: Address): Promise<Amount> => {
@@ -62,8 +62,11 @@ export default class DEXCollector extends SUDTCollector {
     return new Amount(free, AmountUnit.shannon)
   }
 
-  public collect = async (address: Address, { neededAmount }: CollectorOptions): Promise<Cell[]> => {
+  public collect = async (address: Address, amountOrOptions: CollectorOptions /* | Amount */): Promise<Cell[]> => {
+    const neededAmount: Amount =
+      'neededAmount' in amountOrOptions ? amountOrOptions.neededAmount! : (amountOrOptions as Amount)
+
     const { data: cells } = await getCkbLiveCells(address.toLockScript(), neededAmount!.toString(AmountUnit.shannon))
-    return cells.map(DEXCollector.fromLumosCell)
+    return cells.map(DEXCollector.fromLumosCell as any)
   }
 }

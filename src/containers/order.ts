@@ -1,4 +1,4 @@
-import { Amount, Transaction } from '@lay2/pw-core'
+import { Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
@@ -29,10 +29,10 @@ export enum OrderMode {
   CrossOut = 'CrossOut',
 }
 
-const BID_CONFIRM_COLOR = '#ff9a6f'
-const ASK_CONFRIM_COLOR = '#72d1a4'
+const BID_CONFIRM_COLOR = '#72d1a4'
+const ASK_CONFRIM_COLOR = '#ff9a6f'
 
-export interface SubmittedOrder extends Pick<OrderRecord, 'isBid' | 'pay' | 'receive' | 'price' | 'key'> {
+export interface SubmittedOrder extends Pick<OrderRecord, 'isBid' | 'pay' | 'receive' | 'price' | 'key' | 'tokenName'> {
   status: 'pending'
   createdAt: string
 }
@@ -192,7 +192,7 @@ export function useOrder() {
         setMaxPay(ckbMax)
         break
       case 'ETH':
-        setMaxPay(ethWallet.balance.sub(new Amount('0.1')).toString())
+        setMaxPay(ethWallet.balance.minus(0.1).toString())
         break
       default:
         if (sudtWallet) {

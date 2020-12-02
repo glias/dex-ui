@@ -80,64 +80,66 @@ const ResultMain: React.FC<ResultMainProps> = (props: ResultMainProps) => {
 const TransactionDescription = (props: { transaction: TransactionDetailModel; txHash: string; tokenName: string }) => {
   const { t } = useTranslation()
   const { transaction: tx, txHash, tokenName } = props
-  const { amount, from, to, blockNumber, transactionFee } = tx
+  const { amount, from, to, blockNumber, fee } = tx
 
   return (
     <table>
-      <tr>
-        <th>{t('Token')}</th>
-        <td>
-          <Token tokenName={tokenName} className="small" />
-        </td>
-      </tr>
+      <tbody>
+        <tr>
+          <th>{t('Token')}</th>
+          <td>
+            <Token tokenName={tokenName} className="small" />
+          </td>
+        </tr>
 
-      <tr>
-        <th>{t('Amount')}</th>
-        <td>
-          <Balance value={amount} />
-        </td>
-      </tr>
+        <tr>
+          <th>{t('Amount')}</th>
+          <td>
+            <Balance value={amount} />
+          </td>
+        </tr>
 
-      <tr>
-        <th>{t('Transaction fee')}</th>
-        <td>
-          <Balance value={transactionFee} />
-        </td>
-      </tr>
+        <tr>
+          <th>{t('Transaction fee')}</th>
+          <td>
+            <Balance value={fee} />
+          </td>
+        </tr>
 
-      <tr>
-        <th>{t('To')}</th>
-        <td>{to}</td>
-      </tr>
+        <tr>
+          <th>{t('To')}</th>
+          <td>{to}</td>
+        </tr>
 
-      <tr>
-        <th>{t('From')}</th>
-        <td>{from}</td>
-      </tr>
+        <tr>
+          <th>{t('From')}</th>
+          <td>{from}</td>
+        </tr>
 
-      <tr>
-        <td colSpan={2}>
-          <Divider />
-        </td>
-      </tr>
+        <tr>
+          <td colSpan={2}>
+            <Divider />
+          </td>
+        </tr>
 
-      <tr>
-        <th>{t('Hash')}</th>
-        <td>
-          <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}transaction/${txHash}`}>
-            {txHash}
-          </a>
-        </td>
-      </tr>
+        <tr>
+          <th>{t('Hash')}</th>
+          <td>
+            <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}transaction/${txHash}`}>
+              {txHash}
+            </a>
+          </td>
+        </tr>
 
-      <tr>
-        <th>{t('Block No.')}</th>
-        <td>
-          <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}block/${blockNumber}`}>
-            {blockNumber}
-          </a>
-        </td>
-      </tr>
+        <tr>
+          <th>{t('Block No.')}</th>
+          <td>
+            <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}block/${blockNumber}`}>
+              {blockNumber}
+            </a>
+          </td>
+        </tr>
+      </tbody>
     </table>
   )
 }
@@ -157,7 +159,11 @@ export const TransactionDetail: React.FC = () => {
 
   let descriptions: React.ReactNode
   if (isLoading) {
-    descriptions = <Spin />
+    descriptions = (
+      <Result>
+        <Spin />
+      </Result>
+    )
   } else if (tx) {
     descriptions = (
       <>
