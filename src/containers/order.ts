@@ -224,6 +224,10 @@ export function useOrder() {
     setPrice('')
   }
 
+  const currentSudtTokenName = useMemo(() => {
+    return pair.find(t => t !== 'CKB')
+  }, [pair])
+
   return {
     step,
     setStep,
@@ -256,6 +260,7 @@ export function useOrder() {
     currentPairToken,
     setCurrentPairToken,
     orderMode,
+    currentSudtTokenName,
   }
 }
 
