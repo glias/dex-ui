@@ -79,7 +79,7 @@ export function useWallet() {
   const [web3, setWeb3] = useState<null | Web3>(null)
   const web3ModalRef = useRef<Web3Modal | null>(null)
   const [ckbWallet, setCkbWallet] = useState<CkbWallet>(defaultCkbWallet)
-  const [connecting, setConnecting] = useState(false)
+  const [connectStatus, setConnectStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const [ethWallet, setEthWallet] = useState<Wallet>(defaultEthWallet)
 
   const [sudtWallets, setSudtWallets] = useState<SudtWallet[]>(defaultSUDTWallets)
@@ -87,6 +87,8 @@ export function useWallet() {
   const currentSudtWallet = useMemo(() => {
     return sudtWallets.find(w => w.lockHash === currentSudtLockHash)!
   }, [currentSudtLockHash, sudtWallets])
+
+  const connecting = useMemo(() => connectStatus === 'connecting', [connectStatus])
 
   const setEthBalance = useCallback(
     (balance: BigNumber, addr: string) => {
@@ -186,7 +188,7 @@ export function useWallet() {
   )
 
   const connectWallet = useCallback(async () => {
-    setConnecting(true)
+    setConnectStatus('connecting')
     try {
       const provider = await web3ModalRef.current?.connect()
 
@@ -213,8 +215,9 @@ export function useWallet() {
       setEthBalance(new BigNumber(ethBalance).div(new BigNumber(10).pow(18)), ethAddr.toLowerCase())
       setCkbAddress(ckbAddr)
       reloadWallet(ckbAddr)
-    } finally {
-      setConnecting(false)
+      setConnectStatus('connected')
+    } catch (e) {
+      setConnectStatus('disconnected')
     }
   }, [reloadWallet, setCkbAddress, setEthBalance])
 
@@ -224,11 +227,11 @@ export function useWallet() {
       await web3ModalRef.current?.clearCachedProvider()
       setCkbAddress('')
       setEthAddress('')
-      setConnecting(false)
+      setConnectStatus('disconnected')
       // eslint-disable-next-line no-unused-expressions
       cb?.()
     },
-    [setCkbAddress, setEthAddress],
+    [setCkbAddress, setEthAddress, setConnectStatus],
   )
 
   const resetWallet = useCallback(() => {
@@ -313,8 +316,8 @@ export function useWallet() {
     reloadSudtWallets,
     reloadWallet,
     connecting,
-    setConnecting,
     connectWallet,
+    connectStatus,
     disconnectWallet,
     web3ModalRef,
     resetWallet,
