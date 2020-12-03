@@ -6,7 +6,7 @@ import { useContainer } from 'unstated-next'
 import { ERC20_LIST, SUDT_LIST } from 'constants/sudt'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
-import { PRICE_DECIMAL, CKB_DECIMAL } from 'constants/number'
+import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT } from 'constants/number'
 import { calcTotalPay, removeTrailingZero } from 'utils/fee'
 import PWCore, { SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
@@ -107,11 +107,16 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
           const empty = '--'
           return <List price={empty} pay={empty} receive={empty} key={key} isBid={isBid} />
         }
-        const price = removeTrailingZero(new BigNumber(order.price).div(PRICE_DECIMAL).toString())
+        const price = removeTrailingZero(
+          new BigNumber(order.price)
+            .div(PRICE_DECIMAL)
+            .times(new BigNumber(10).pow(decimal - CKB_DECIMAL_INT))
+            .toString(),
+        )
         const progress = new BigNumber(order.price).dividedBy(maxPrice).div(PRICE_DECIMAL).times(100).toFixed(0)
 
         if (isBid) {
-          const receive = new BigNumber(order.order_amount).div(base.pow(decimal))
+          const receive = new BigNumber(order.receive).div(base.pow(decimal))
           const ckbPay = receive.times(price)
           const totalPay = calcTotalPay(ckbPay.toString())
           const pay = new BigNumber(totalPay).toFixed(4)
@@ -127,16 +132,16 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
             />
           )
         }
-        const sudtPay = new BigNumber(order.sudt_amount).div(base.pow(decimal)).toFixed(4)
-        const receive = removeTrailingZero(new BigNumber(order.order_amount).div(CKB_DECIMAL).toFixed(4))
-
+        const receive = new BigNumber(order.receive).div(CKB_DECIMAL)
+        const pay = receive.div(price)
+        const totalPay = calcTotalPay(pay.toString())
         return (
           <List
             setPrice={setPrice}
             progress={progress}
             price={price}
-            pay={sudtPay}
-            receive={receive}
+            pay={removeTrailingZero(new BigNumber(totalPay).toFixed())}
+            receive={removeTrailingZero(receive.toFixed(4))}
             key={key}
             isBid={isBid}
           />
