@@ -3,7 +3,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import styled from 'styled-components'
-import { AssetManagerHeader } from '../AssetManagerHeader'
+import { WalletConnectionStatusHeader } from '../AssetManagerHeader'
 import { Button } from '../components/Button'
 import { BalanceStatus } from './BalanceStatus'
 import { TokenTabs } from './TokenTabs'
@@ -41,7 +41,7 @@ const Operations = () => {
 export const AssetBalance: React.FC = () => {
   return (
     <>
-      <AssetManagerHeader showGoBack />
+      <WalletConnectionStatusHeader />
       <BalanceStatus />
       <Operations />
       <TokenTabs />

@@ -1,8 +1,8 @@
-import { Address, AddressType, Amount, SimpleBuilder, SimpleSUDTBuilder } from '@lay2/pw-core'
+import { Address, AddressType, Amount, AmountUnit, SimpleBuilder, SimpleSUDTBuilder } from '@lay2/pw-core'
 import { Divider, Form, Input } from 'antd'
 import { BigNumber } from 'bignumber.js'
 import Token from 'components/Token'
-import WalletContainer from 'containers/wallet'
+import WalletContainer, { isCkbWallet } from 'containers/wallet'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
@@ -76,6 +76,10 @@ export const Send: React.FC = () => {
 
   const { wallets } = WalletContainer.useContainer()
   const wallet = wallets.find(wallet => wallet.tokenName === tokenName)
+  let freeAmount: BigNumber
+  if (!wallet) freeAmount = new BigNumber(0)
+  else if (isCkbWallet(wallet)) freeAmount = wallet.free
+  else freeAmount = wallet.balance
 
   const [inputAllValidated, setInputAllValidated] = useState(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -166,7 +170,7 @@ export const Send: React.FC = () => {
       >
         {t('Max')}
         :&nbsp;
-        <Balance value={wallet.balance} fixedTo={4} />
+        <Balance value={freeAmount} fixedTo={4} />
       </span>
     </AmountControlLabelWrapper>
   )
@@ -179,7 +183,10 @@ export const Send: React.FC = () => {
   )
 
   function onFinish(data: { to: string; amount: string }) {
-    const { to, amount } = data
+    const { to, amount: inputAmount } = data
+    const decimals = sudt ? sudt.info?.decimals ?? 0 : AmountUnit.ckb
+
+    const amount = new Amount(inputAmount, decimals).toString(0)
     const confirmUrl = `${match.url}/confirm?to=${to}&amount=${amount}&fee=${transactionFee}`
     push(confirmUrl)
   }

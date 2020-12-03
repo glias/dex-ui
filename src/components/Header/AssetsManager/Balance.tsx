@@ -24,7 +24,7 @@ const BalanceWrapper = styled.div<Required<BalanceStyledProps>>`
 
   .balance-decimals {
     font-size: 80%;
-    color: #aaa;
+    color: #666;
   }
 
   .balance-unit {
@@ -48,7 +48,11 @@ export const Balance: React.FC<BalanceProps> = (props: BalanceProps) => {
     <>
       <span className="balance-value">{integers}</span>
       {decimals && '.'}
-      {decimals && <small className="balance-decimals">{decimals}</small>}
+      {decimals && (
+        <small className="balance-decimals">
+          {decimals.substring(0, 4) === '0000' ? decimals : decimals.substring(0, 4)}
+        </small>
+      )}
     </>
   )
 

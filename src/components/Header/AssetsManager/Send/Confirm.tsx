@@ -1,9 +1,9 @@
-import PWCore, { Amount, AmountUnit } from '@lay2/pw-core'
+import PWCore from '@lay2/pw-core'
 import { Divider } from 'antd'
 import Token from 'components/Token'
 import { isCkbWallet, WalletContainer } from 'containers/wallet'
 import { parse } from 'query-string'
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
 import styled from 'styled-components'
@@ -26,8 +26,8 @@ const ConfirmWrapper = styled.div`
     color: #000;
   }
 
-  .amount {
-    font-size: 24px;
+  .btn-confirm {
+    margin-top: 16px;
   }
 `
 
@@ -43,24 +43,24 @@ export const SendConfirm = () => {
   const payload: ConfirmParamsPayload = (parse(search) as unknown) as ConfirmParamsPayload
   const { t } = useTranslation()
   const { pw } = WalletContainer.useContainer()
-  const { useWallet, useSudt, sendCkb, sendSudt } = AssetManagerContainer.useContainer()
+  const { useWallet, useSudt, sendCkb, sendSudt, decimals } = AssetManagerContainer.useContainer()
   const wallet = useWallet()
   const { replace } = useHistory()
   const sudt = useSudt()
+  const [confirming, setIsConfirming] = useState(false)
 
   const { amount, fee, to } = payload
   const from = PWCore.provider.address.toCKBAddress()
 
   async function onConfirm() {
     if (!wallet || !pw) return
-    if (isCkbWallet(wallet)) {
-      const txHash = await sendCkb(to, new Amount(amount).toString(AmountUnit.shannon))
-      replace(`/assets/${tokenName}/transactions/${txHash}`)
-      return
+    setIsConfirming(true)
+    try {
+      const txHash = isCkbWallet(wallet) ? await sendCkb(to, amount) : await sendSudt(to, amount, sudt)
+      if (txHash) replace(`/assets/${tokenName}#transactions`)
+    } finally {
+      setIsConfirming(false)
     }
-
-    const txHash = await sendSudt(to, new Amount(amount).toString(AmountUnit.shannon), sudt)
-    replace(`/assets/${tokenName}/transactions/${txHash}`)
   }
 
   return (
@@ -75,8 +75,8 @@ export const SendConfirm = () => {
         <Divider />
 
         <div className="label">{t('Amount')}</div>
-        <div className="item amount">
-          <Balance value={amount} type={tokenName} />
+        <div className="item">
+          <Balance size={24} value={amount} type={tokenName} decimal={decimals} />
         </div>
 
         <Divider />
@@ -96,7 +96,7 @@ export const SendConfirm = () => {
           <Balance value={fee} type="CKB" />
         </div>
 
-        <Button block size="large" onClick={onConfirm}>
+        <Button className="btn-confirm" block size="large" onClick={onConfirm} loading={confirming}>
           {t('Confirm')}
         </Button>
       </ConfirmWrapper>
