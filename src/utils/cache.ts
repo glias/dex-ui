@@ -21,7 +21,8 @@ export const replayResistOutpoints = {
   },
   add: (address: string, hashes: string[]) => {
     const outpoints = replayResistOutpoints.get()
-    outpoints[address] = (outpoints[address] || []).concat(hashes)
+    const ops = outpoints[address] || []
+    outpoints[address] = ops.concat(hashes.filter(hash => !ops.include(hash)))
     localStorage.setItem(REPLAY_RESIST_OUTPOINT, JSON.stringify(outpoints))
   },
   remove: (address: string, hash: string) => {
