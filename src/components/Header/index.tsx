@@ -1,31 +1,17 @@
+import { MenuOutlined } from '@ant-design/icons'
 import PWCore from '@lay2/pw-core'
 import { Badge, Button, Menu, Modal, Popover } from 'antd'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
-import { ReactComponent as HeaderMetaSVG } from '../../assets/svg/Component12.svg'
-import { ReactComponent as HeaderMoreSVG } from '../../assets/svg/more.svg'
-import { thirdPartyLinks } from '../../constants'
 import WalletContainer from '../../containers/wallet'
 import { useDidMount } from '../../hooks'
-// import { ReactComponent as BackgroundSVG } from '../../assets/svg/dex-background.svg'
 import i18n from '../../utils/i18n'
-// import WalletBox from './HeaderWalletBox'
 import { AssetManager } from './AssetsManager'
 import { getChainData, getProviderOptions } from './chain'
-import {
-  ButtonSvgBox,
-  ButtonWalletSvgBox,
-  HeaderBox,
-  HeaderContainer,
-  HeaderLogoBox,
-  HeaderMeta,
-  HeaderPanel,
-  MenuLiText,
-  UserMeta,
-} from './styled'
+import { HeaderBox, HeaderContainer, HeaderLogoBox, HeaderMeta, HeaderPanel, MenuLiText, UserMeta } from './styled'
 
 const CLOSE_BY_THE_USER_ERROR_MSG = 'Modal closed by user'
 const UNKNOWN_CONNECT_WALLET_FAILED = 'Connect wallet failed, please check wallet settings.'
@@ -35,16 +21,13 @@ const Header = () => {
   const Wallet = useContainer(WalletContainer)
   const { pathname } = useLocation()
 
-  const { ckbWallet, ethWallet } = Wallet
+  const { ckbWallet, connectStatus } = Wallet
   const ckbAddress = ckbWallet.address
-  const ethAddress = ethWallet.address
 
   const truncateStr = (str: string): string => {
     return str?.length >= 5 ? `${str.slice(0, 5)}...${str.slice(-5)}` : ''
   }
 
-  // popover visible config
-  const [visibleMore, setVisibleMore] = useState(false)
   const [visibleWallet, setVisibleWallet] = useState(false)
   const updateWalletTimer = useRef<ReturnType<typeof setInterval> | undefined>()
 
@@ -65,6 +48,10 @@ const Header = () => {
       }),
     [connectWallet, resetWallet],
   )
+
+  useEffect(() => {
+    if (!ckbAddress) setVisibleWallet(false)
+  }, [ckbAddress])
 
   useDidMount(() => {
     web3ModalRef.current = new Web3Modal({
@@ -92,25 +79,9 @@ const Header = () => {
     }
   })
 
-  const sideBarContent = (
-    <div className="sidebar-content">
-      <div className="sidebar-title">{i18n.t('header.more')}</div>
-      {thirdPartyLinks.map(item => (
-        <Button type="text" onClick={() => window.open(item.link)} key={item.name}>
-          {item.name}
-        </Button>
-      ))}
-    </div>
-  )
-
   const gotoHome = () => {
     history.push('/')
   }
-
-  // const disconnect = useCallback(() => {
-  //   disconnectWallet(() => setVisibleWallet(false))
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [disconnectWallet])
 
   return (
     <HeaderContainer>
@@ -134,20 +105,16 @@ const Header = () => {
             </Menu.Item>
           </Menu>
           <HeaderMeta id="header-meta">
-            {ckbAddress === '' ? (
-              <Button className="collect-btn" onClick={handleWalletConnect} disabled={Wallet.connecting}>
+            {connectStatus !== 'connected' ? (
+              <Button className="btn-connect" onClick={handleWalletConnect} disabled={Wallet.connecting}>
                 {Wallet.connecting ? i18n.t('header.connecting') : i18n.t('header.wallet')}
               </Button>
             ) : (
               <>
-                <UserMeta>
-                  <img src={MetaMaskpng} alt="metaMask" />
-                  {truncateStr(ethAddress)}
-                </UserMeta>
                 <Popover
                   placement="bottomRight"
                   title=""
-                  overlayClassName="no-arronPoint popover-wallet"
+                  overlayClassName="popover-wallet"
                   trigger="click"
                   visible={visibleWallet}
                   onVisibleChange={() => setVisibleWallet(!visibleWallet)}
@@ -155,46 +122,15 @@ const Header = () => {
                   content={<AssetManager />}
                 >
                   <Badge count="">
-                    <Button
-                      className="btn-meta"
-                      style={{
-                        background: visibleWallet ? '#fff' : 'rgba(0,106,151,1)',
-                      }}
-                    >
-                      <ButtonWalletSvgBox>
-                        <HeaderMetaSVG
-                          className="full-width-and-height"
-                          color={visibleWallet ? 'rgba(0,106,151,1)' : '#fff'}
-                        />
-                      </ButtonWalletSvgBox>
-                    </Button>
+                    <UserMeta>
+                      <img src={MetaMaskpng} alt="metaMask" />
+                      {truncateStr(ckbAddress)}
+                      <MenuOutlined style={{ marginLeft: '10px' }} translate="more" />
+                    </UserMeta>
                   </Badge>
                 </Popover>
               </>
             )}
-            <Popover
-              placement="bottomRight"
-              title=""
-              content={sideBarContent}
-              trigger="click"
-              visible={visibleMore}
-              onVisibleChange={() => setVisibleMore(!visibleMore)}
-              overlayClassName="sidebarBox no-arronPoint"
-              getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
-            >
-              <Button
-                className="btn-meta"
-                style={{
-                  borderRadius: '10px',
-                  background: visibleMore ? '#fff' : 'rgba(0,106,151,1)',
-                  marginLeft: '5px',
-                }}
-              >
-                <ButtonSvgBox color={visibleMore ? 'rgba(0,106,151,1)' : '#fff'}>
-                  <HeaderMoreSVG className="full-width-and-height" />
-                </ButtonSvgBox>
-              </Button>
-            </Popover>
           </HeaderMeta>
         </HeaderPanel>
       </HeaderBox>
