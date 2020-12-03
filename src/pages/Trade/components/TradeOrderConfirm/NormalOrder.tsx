@@ -6,14 +6,12 @@ import { Divider } from 'antd'
 import { OrderResult } from './styled'
 import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderType } from '../../../../containers/order'
-import WalletContainer from '../../../../containers/wallet'
 import { toFormatWithoutTrailingZero } from '../../../../utils/fee'
 import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from '../../../../constants'
 import { List, Item } from './list'
 import { Meta } from './meta'
 
 export default function NormalOrder() {
-  const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
 
@@ -87,12 +85,12 @@ export default function NormalOrder() {
       {
         desc: i18n.t(`trade.price`),
         value: toFormatWithoutTrailingZero(Order.price),
-        unit: `CKB per ${Wallet.currentSudtWallet.tokenName}`,
+        unit: `CKB per ${Order.currentSudtTokenName}`,
       },
     ]
 
     return list
-  }, [Order.price, Wallet.currentSudtWallet.tokenName])
+  }, [Order.price, Order.currentSudtTokenName])
 
   const receive = useMemo(() => {
     return toFormatWithoutTrailingZero(Order.receive)
