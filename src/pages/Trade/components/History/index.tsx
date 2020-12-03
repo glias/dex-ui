@@ -1,9 +1,10 @@
+/* eslint-disable react/jsx-no-bind */
 import React, { useRef, useMemo, useReducer, useState, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import BigNumber from 'bignumber.js'
 import { TradeFrame } from 'pages/Trade/styled'
 import { PageHeader, Table, Button, Spin, Tooltip, Modal, Divider, Progress, Input } from 'antd'
-import { SyncOutlined, SearchOutlined } from '@ant-design/icons'
+import { SyncOutlined, SearchOutlined, CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 import { useContainer } from 'unstated-next'
 import { removeTrailingZero } from 'utils/fee'
 import PWCore from '@lay2/pw-core'
@@ -11,8 +12,9 @@ import WalletContainer from '../../../../containers/wallet'
 import OrderContainer from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import { getTimeString, pendingOrders } from '../../../../utils'
-import { HISTORY_QUERY_KEY } from '../../../../constants'
+import { ERC20_LIST, ETHER_SCAN_URL, EXPLORER_URL, HISTORY_QUERY_KEY } from '../../../../constants'
 import type { OrderRecord } from '../../../../utils'
+import { ReactComponent as InfoSvg } from '../../../../assets/svg/info.svg'
 import { reducer, usePollOrderList, useHandleWithdrawOrder } from './hooks'
 import styles from './history.module.css'
 
@@ -159,6 +161,7 @@ const History = () => {
   const fetchListRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
   const location = useLocation()
+  const [modalVisable, setModalVisable] = useState(false)
   const query = new URLSearchParams(location.search)
   const type = query.get(HISTORY_QUERY_KEY.type) || 'all'
   const wallet = useContainer(WalletContainer)
@@ -179,41 +182,60 @@ const History = () => {
     [searchValue],
   )
 
+  const [orderIndex, setOrderIndex] = useState(0)
+  const [currentPagination, setPagination] = useState(1)
+
   const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
-  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch })
+  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch, ckbAddress: address })
+
+  const statusOnClick = useCallback((index: number) => {
+    setModalVisable(true)
+    setOrderIndex(index)
+  }, [])
 
   const actionColumn = {
     title: 'action',
     dataIndex: 'action',
     key: 'action',
-    width: 120,
-    render: (_: unknown, order: OrderInList) => {
+    width: 150,
+    render: (_: unknown, order: OrderInList, index: number) => {
       const handleClick = () => {
         handleWithdraw(order.key).catch(error => {
           Modal.error({ title: 'Transaction Error', content: error.message })
         })
       }
       if (state.pendingIdList.includes(order.key)) {
-        return <Spin indicator={<SyncOutlined spin translate="loadaing" />} />
+        return <Spin indicator={<SyncOutlined spin translate="loading" />} />
       }
+      const status = (
+        <Button onClick={() => statusOnClick(index + (currentPagination - 1) * 10)} className={styles.status}>
+          <InfoSvg />
+        </Button>
+      )
       switch (order.status) {
         case 'completed': {
           return (
-            <Button onClick={handleClick} className={styles.action}>
-              Claim
-            </Button>
+            <div className={styles.center}>
+              <Button onClick={handleClick} className={styles.action}>
+                Claim
+              </Button>
+              {status}
+            </div>
           )
         }
         case 'opening': {
           return (
-            <Button onClick={handleClick} className={styles.action}>
-              Cancel
-            </Button>
+            <div className={styles.center}>
+              <Button onClick={handleClick} className={styles.action}>
+                Cancel
+              </Button>
+              {status}
+            </div>
           )
         }
         default: {
-          return ''
+          return <div className={styles.center}>{status}</div>
         }
       }
     },
@@ -232,6 +254,10 @@ const History = () => {
     }
     return orderList.filter(searchFilter).filter(o => o.status === 'aborted' || o.status === 'claimed')
   }, [orderList, showOpenOrder, searchFilter])
+
+  const currentOrder = useMemo(() => {
+    return orders[orderIndex]
+  }, [orders, orderIndex])
 
   const header = (
     <div className={styles.switcher}>
@@ -255,6 +281,71 @@ const History = () => {
     />
   )
 
+  const getOrderCellType = (index: number, isLast: boolean, isCrossChain: boolean, status: OrderInList['status']) => {
+    if (index === 0) {
+      return isCrossChain ? 'Cross Chain' : 'Place Order'
+    }
+    if (isCrossChain && index === 1) {
+      return 'Place Order'
+    }
+    if (isLast) {
+      switch (status) {
+        case 'aborted':
+          return 'Cancel Order'
+        case 'claimed':
+          return 'Claim Order'
+        default:
+          return 'Match Order'
+      }
+    }
+    return 'Match Order'
+  }
+
+  const currentStatus = useMemo(() => {
+    if (!currentOrder) {
+      return ''
+    }
+    const { status, orderCells, executed } = currentOrder
+    const isCrossChain = ['ETH', ...ERC20_LIST].includes(currentOrder.tokenName)
+
+    return (
+      <>
+        <div className={styles.modalBody}>
+          <Progress percent={parseInt(executed, 10)} type="circle" />
+          <h3>{status}</h3>
+        </div>
+        <div className={styles.records}>
+          {orderCells?.map((cell, index) => {
+            const isLast = index === orderCells.length - 1
+            const txHashLength = cell.tx_hash.length
+            const txHash = `${cell.tx_hash.slice(0, 30)}...${cell.tx_hash.slice(txHashLength - 4, txHashLength)}`
+            const url =
+              isCrossChain && index === 0
+                ? `${ETHER_SCAN_URL}tx/${cell.tx_hash}`
+                : `${EXPLORER_URL}transaction/${cell.tx_hash}`
+            return (
+              <div key={cell.tx_hash} className={styles.record}>
+                <span className={styles.type}>
+                  {getOrderCellType(index, isLast, isCrossChain, status)}
+                  {status === 'pending' ? (
+                    <LoadingOutlined translate="loading" className={styles.check} />
+                  ) : (
+                    <CheckCircleOutlined translate="check" className={styles.check} />
+                  )}
+                </span>
+                <span className={styles.hash}>
+                  <a target="_blank" rel="noopener noreferrer" href={url}>
+                    {txHash}
+                  </a>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </>
+    )
+  }, [currentOrder])
+
   return (
     <TradeFrame width="100%" height="auto">
       <PageHeader className={styles.header} title={header} extra={input} />
@@ -265,7 +356,18 @@ const History = () => {
         dataSource={orders}
         rowClassName={(_, index) => (index % 2 === 0 ? `${styles.even} ${styles.td}` : `${styles.td}`)}
         onHeaderRow={() => ({ className: styles.thead })}
+        onChange={pagination => setPagination(pagination.current!)}
       />
+      <Modal
+        className={styles.modal}
+        wrapClassName={styles.modal}
+        visible={modalVisable}
+        title="Order Info"
+        footer={null}
+        onCancel={() => setModalVisable(false)}
+      >
+        {currentStatus}
+      </Modal>
     </TradeFrame>
   )
 }

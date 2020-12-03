@@ -1,12 +1,18 @@
 import BigNumber from 'bignumber.js'
 import { PRICE_DECIMAL, CKB_DECIMAL, COMMISSION_FEE, SUDT_LIST } from '../constants'
 
+export interface OrderCell {
+  tx_hash: string
+  index: string
+}
+
 export type RawOrder = Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {
   is_bid: boolean
   status: 'opening' | 'completed' | 'aborted' | 'claimed' | 'claimable' | null
   last_order_cell_outpoint: Record<'tx_hash' | 'index', string>
   block_hash: string
   tokenName?: string
+  order_cells?: OrderCell[]
 }
 
 function pad(n: number) {
@@ -30,6 +36,7 @@ export const parseOrderRecord = ({
   price,
   status,
   last_order_cell_outpoint,
+  order_cells,
   ...rest
 }: RawOrder) => {
   const { tokenName } = rest
@@ -57,6 +64,7 @@ export const parseOrderRecord = ({
     status: status === 'claimable' ? 'completed' : status,
     tokenName: '',
     createdAt: '',
+    orderCells: order_cells,
     ...rest,
   }
 }

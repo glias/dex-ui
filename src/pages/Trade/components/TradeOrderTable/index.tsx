@@ -8,7 +8,7 @@ import { Address, Amount, AddressType, AmountUnit } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import { removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
-import { getForceBridgeHistory, placeCrossChainOrder, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
+import { placeCrossChainOrder, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
@@ -396,13 +396,6 @@ export default function OrderTable() {
     }
     if (firstToken === 'ETH' && secondToken === 'ckETH') {
       createBridgeCell(ethAddress, 'cross-in', () => setReactor(Math.random()))
-    }
-
-    if (ckbWallet.address) {
-      getForceBridgeHistory(ckbWallet.address).then(res => {
-        // eslint-disable-next-line no-console
-        console.log(res.data)
-      })
     }
   }, [Order.pair, createBridgeCell, ckbWallet.address])
 

@@ -1,7 +1,7 @@
 import { useEffect, MutableRefObject, useCallback } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
-import { getAllHistoryOrders, getTransactionHeader } from '../../../../APIs'
+import { getAllHistoryOrders, getForceBridgeHistory, getTransactionHeader } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import { REJECT_ERROR_CODE } from '../../../../constants'
@@ -59,10 +59,12 @@ export const usePollOrderList = ({
   lockArgs,
   dispatch,
   fetchListRef,
+  ckbAddress,
 }: {
   lockArgs: string
   dispatch: React.Dispatch<HistoryAction>
   fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
+  ckbAddress: string
 }) => {
   useEffect(() => {
     dispatch({ type: ActionType.UpdateOrderList, value: [] as Array<Order> })
@@ -80,6 +82,31 @@ export const usePollOrderList = ({
               order.tokenName = item.tokenName
               return order
             })
+            try {
+              const { crosschain_history: orderHistory } = (await getForceBridgeHistory(ckbAddress)).data
+              for (let i = 0; i < orderHistory.length; i++) {
+                const order = orderHistory[i]
+                const index = res.findIndex(r => r.order_cells?.[0]?.tx_hash === `0x${order.ckb_tx_hash}`)
+                if (!index) {
+                  // eslint-disable-next-line no-continue
+                  continue
+                }
+                const matchedOrder = parsed[index]
+                if (!matchedOrder) {
+                  // eslint-disable-next-line no-continue
+                  continue
+                }
+                matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
+                // eslint-disable-next-line no-unused-expressions
+                matchedOrder.orderCells?.unshift({
+                  tx_hash: order.eth_lock_tx_hash,
+                  index: '',
+                })
+              }
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.log(error)
+            }
             const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
             for (let i = 0; i < resList.length; i++) {
               const blockHeader = resList[i]
@@ -98,7 +125,7 @@ export const usePollOrderList = ({
           })
 
       dispatch({ type: ActionType.UpdateLoading, value: true })
-      const TIMER = 10000
+      const TIMER = 3000
       fetchData()
       /* eslint-disable-next-line no-param-reassign */
       fetchListRef.current = setInterval(fetchData, TIMER)
@@ -111,7 +138,7 @@ export const usePollOrderList = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [lockArgs, dispatch, fetchListRef])
+  }, [lockArgs, dispatch, fetchListRef, ckbAddress])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {

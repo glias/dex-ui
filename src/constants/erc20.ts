@@ -32,7 +32,7 @@ export const FORCE_BRIDGE_SETTINGS = {
 }
 
 export const buildBridgeLockScript = (erc20Address: string = '0x0000000000000000000000000000000000000000') => {
-  const lockArgs = `0x${erc20Address.slice(2)}${FORCE_BRIDGE_SETTINGS.eth_token_locker_addr.slice(2)}`
+  const lockArgs = `0x${FORCE_BRIDGE_SETTINGS.eth_token_locker_addr.slice(2)}${erc20Address.slice(2)}`
   return new Script(`0x${FORCE_BRIDGE_SETTINGS.bridge_lockscript.code_hash}`, lockArgs, HashType.data)
 }
 
@@ -43,5 +43,5 @@ export const buildShadowAssetSUDT = (
   const scriptHash = buildBridgeLockScript(erc20Address).toHash()
   // eslint-disable-next-line no-console
   console.log(scriptHash)
-  return new SUDT('0x59de8d8189d74a6e1519492731b498c27a2d3ce05d14814d7c2cf6d5335fe154', info)
+  return new SUDT(scriptHash, info)
 }
