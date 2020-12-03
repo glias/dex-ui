@@ -1,6 +1,5 @@
-import React, { useMemo } from 'react'
 import { TOKEN_LOGOS } from 'constants/tokens'
-import { SUDT_MAP } from 'constants/sudt'
+import React, { useMemo } from 'react'
 import { TokenContainer } from './styled'
 
 export interface TokenProps {
@@ -8,31 +7,21 @@ export interface TokenProps {
   className?: string
 }
 
-const SHADOW_ASSET_COLOR = '#FCF0E6'
-// const ETH_COLOR = '#E7EAFE'
-const CKB_COLOR = '#D9E8E2'
+const CrossChainTokenColor: Record<string, string> = {
+  ETH: '#C1C8E2',
+  USDT: '#B0E3D4',
+  USDC: '#B3D0F0',
+  DAI: '#EFDDBF',
+}
+
+const WHITE_LIST_TOKEN = new Set(['CKB', 'ckETH', 'ckUSDT', 'ckUSDC', 'ckDAI', 'CoffeeCoin', 'LoveLina'])
 
 const Token = ({ tokenName, className }: TokenProps) => {
   const logo = TOKEN_LOGOS.get(tokenName)
   const color = useMemo(() => {
-    switch (tokenName) {
-      case 'CKB':
-        return CKB_COLOR
-      // case 'ETH':
-      //   return ETH_COLOR
-      default: {
-        let hex = CKB_COLOR
-        SUDT_MAP.forEach(sudt => {
-          if (sudt.info?.symbol === tokenName) {
-            hex = CKB_COLOR
-          }
-        })
-        if (tokenName.startsWith('ck')) {
-          hex = SHADOW_ASSET_COLOR
-        }
-        return hex
-      }
-    }
+    if (tokenName in CrossChainTokenColor) return CrossChainTokenColor[tokenName]
+    if (WHITE_LIST_TOKEN.has(tokenName)) return '#D9E8E2'
+    return '#EEEEEE'
   }, [tokenName])
 
   return (

@@ -20,6 +20,7 @@ export const TradeContainer = styled.div`
   padding: 0 120px;
   position: relative;
   width: 100%;
+  overflow-x: hidden;
 `
 
 export const TradeContent = styled.div`
