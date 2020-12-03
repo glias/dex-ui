@@ -19,20 +19,28 @@ import { AssetManagerContainer } from '../hooks'
 const TransactionDetailWrapper = styled.div`
   padding: 16px;
 
+  .ant-result {
+    padding: 8px;
+  }
+
   table {
     width: 100%;
+  }
+
+  td,
+  th {
+    padding: 4px;
   }
 
   th {
     color: #666666;
     white-space: nowrap;
-    padding: 10px 16px;
+
     width: 100px;
   }
 
   td {
     word-break: break-all;
-    padding: 10px 16px;
   }
 
   .ant-divider {
@@ -80,7 +88,7 @@ const TransactionDescription = (props: { transaction: TransactionDetailModel; tx
   const { t } = useTranslation()
   const { transaction: tx, txHash, tokenName } = props
   const { amount, from, to, blockNumber, fee } = tx
-  const { useSudt } = AssetManagerContainer.useContainer()
+  const { useSudt, wrapAddress } = AssetManagerContainer.useContainer()
   const sudt = useSudt()
 
   const decimal = useMemo(() => {
@@ -115,12 +123,12 @@ const TransactionDescription = (props: { transaction: TransactionDetailModel; tx
 
         <tr>
           <th>{t('To')}</th>
-          <td>{to}</td>
+          <td>{wrapAddress(to)}</td>
         </tr>
 
         <tr>
           <th>{t('From')}</th>
-          <td>{from}</td>
+          <td>{wrapAddress(from)}</td>
         </tr>
 
         <tr>

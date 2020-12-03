@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import Token from 'components/Token'
 import WalletContainer, { isCkbWallet } from 'containers/wallet'
 import React, { useMemo } from 'react'
@@ -8,7 +9,7 @@ import { Balance } from '../Balance'
 import { Description } from './Description'
 
 const BalanceStatusWrapper = styled.div`
-  padding: 0 24px;
+  padding: 24px 24px 0;
   text-align: center;
 
   .space-bottom {
@@ -41,12 +42,13 @@ export const BalanceStatus = () => {
 
   if (!wallet) return null
 
-  const { total, free, inUse, locked } = {
-    total: wallet.balance,
+  const { free, inUse, locked } = {
     free: isCkbWallet(wallet) ? wallet.free : wallet.balance.minus(wallet.lockedOrder),
     inUse: isCkbWallet(wallet) ? wallet.inuse : 0,
     locked: wallet.lockedOrder,
   }
+
+  const total = new BigNumber(free).plus(inUse).plus(locked)
   return (
     <BalanceStatusWrapper>
       <div className="space-bottom">

@@ -24,6 +24,34 @@ const ReceiveWrapper = styled.div`
 `
 
 export const Receive: React.FC = () => {
+  const { t } = useTranslation()
+  const rawAddress = PWCore.provider.address
+  const address = rawAddress.toCKBAddress()
+
+  const qrCodeContent = useMemo(
+    () => (
+      <>
+        <QRCode style={{ width: '200px', height: '200px' }} className="qr-code" value={address} />
+        <Text copyable strong>
+          {address}
+        </Text>
+      </>
+    ),
+    [address],
+  )
+
+  return (
+    <>
+      <AssetManagerHeader showGoBack title={t('Receive')} />
+      <ReceiveWrapper>{qrCodeContent}</ReceiveWrapper>
+    </>
+  )
+}
+
+/**
+ * @deprecated
+ */
+export const SelectableReceive: React.FC = () => {
   const [receiveWalletType, setReceiveWalletType] = useState('ckb')
   const { t } = useTranslation()
   const rawAddress = PWCore.provider.address

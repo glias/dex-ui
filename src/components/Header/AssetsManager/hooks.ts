@@ -39,6 +39,9 @@ function useSendCkb(): (address: string, shannonCkb: string) => Promise<string> 
     async (address: string, shannonCkb: string) => {
       asserts(pw)
 
+      // eslint-disable-next-line no-console
+      console.log(new Amount(shannonCkb, AmountUnit.shannon))
+
       const builder = new SimpleBuilder(wrapAddress(address), new Amount(shannonCkb, AmountUnit.shannon))
       const txHash = await pw.sendTransaction(builder)
       const built = await builder.build()
@@ -100,13 +103,33 @@ function useSendSudt(): (address: string, amount: string, inputSudt?: SUDT) => P
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useWrapAddress(): (address: string | Address) => string {
+  return (address: string | Address) => {
+    if (address instanceof Address) address.toCKBAddress()
+    if (typeof address === 'string') {
+      return new Address(address, address.startsWith('ck') ? AddressType.ckb : AddressType.eth).toCKBAddress()
+    }
+    return ''
+  }
+}
+
 function useAssetManager() {
+  const sudt = useSudt()
+
+  const decimals = sudt ? sudt.info?.decimals ?? 0 : AmountUnit.ckb
+
+  const wrapAddress = useWrapAddress()
+
   return {
     useParamsTokenName,
     useWallet,
     useSudt,
     sendCkb: useSendCkb(),
     sendSudt: useSendSudt(),
+    decimals,
+    sudt,
+    wrapAddress,
   }
 }
 
