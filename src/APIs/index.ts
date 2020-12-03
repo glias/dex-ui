@@ -407,7 +407,17 @@ export function getCurrentPrice(sudt: SUDT = SUDT_GLIA): Promise<AxiosResponse<s
   })
 }
 
-export function getForceBridgeHistory(ckbAddress: string) {
+export interface ForceBridgeHistory {
+  crosschain_history: ForceBridgeItem[]
+}
+
+export interface ForceBridgeItem {
+  ckb_tx_hash?: string
+  eth_lock_tx_hash: string
+  id: string
+}
+
+export function getForceBridgeHistory(ckbAddress: string): Promise<AxiosResponse<ForceBridgeHistory>> {
   const orderLock = new Script(
     ORDER_BOOK_LOCK_SCRIPT.codeHash,
     new Address(ckbAddress, AddressType.ckb).toLockScript().toHash(),

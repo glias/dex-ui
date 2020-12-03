@@ -119,6 +119,103 @@
   border: solid 1px #dddddd;
   background-color: #ffffff;
   width: 80px;
+  margin-right: 10px;
+  color: #5C61DA;
+}
+
+.status {
+  border-radius: 10px;
+  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.08);
+  border: solid 1px #dddddd;
+  background-color: #ffffff;
+  width: 32px;
+  height: 32px;
+  color: #5C61DA;
+}
+
+.modal {
+  border-radius: 16px;
+}
+
+.modal .ant-modal-title {
+  font-weight: bold !important;
+}
+
+.modalBody {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.records {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #E1E1E1;
+  margin-top: 20px;
+}
+
+.record {
+  display: flex;
+  flex: row;
+  height: 42px;
+}
+
+.record:nth-child(odd) {
+  background-color: #F6F6F6;
+}
+
+.modalBody h3 {
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 22px;
+  margin-top: 10px;
+  text-transform: capitalize;
+}
+
+.status svg {
+  position: relative;
+  right: 6px;
+  top: 1px;
+}
+
+.item {
+  display: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.check {
+  margin-left: 4px;
+  color: #5C61DA;
+}
+
+.spin {
+  margin-left: 4px;
+}
+
+.type {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 150px;
+  border-right: 1px solid #e7e7e7;
+}
+
+.hash {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  color: #5C61DA;
+  text-decoration: underline;
+}
+
+.center {
+  display: flex;
+  flex-direction: row;
+  color: #5C61DA;
+  justify-content: center;
 }
 
 .td {
