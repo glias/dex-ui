@@ -152,6 +152,87 @@ const orderFilter = (type: string, order: OrderInList) => {
   }
 }
 
+const getOrderCellType = (index: number, isLast: boolean, isCrossChain: boolean, status: OrderInList['status']) => {
+  if (index === 0) {
+    return isCrossChain ? 'Cross Chain' : 'Place Order'
+  }
+  if (isCrossChain && index === 1) {
+    return 'Place Order'
+  }
+  if (isLast) {
+    switch (status) {
+      case 'aborted':
+        return 'Cancel Order'
+      case 'claimed':
+        return 'Claim Order'
+      default:
+        return 'Match Order'
+    }
+  }
+  return 'Match Order'
+}
+
+const OrderModal = ({
+  currentOrder,
+  modalVisable,
+  setModalVisable,
+}: {
+  modalVisable: boolean
+  currentOrder: OrderInList | null
+  setModalVisable: Function
+}) => {
+  if (!currentOrder) {
+    return null
+  }
+
+  const { status, orderCells, executed } = currentOrder
+  const isCrossChain = ['ETH', ...ERC20_LIST].includes(currentOrder.tokenName)
+
+  return (
+    <Modal
+      className={styles.modal}
+      wrapClassName={styles.modal}
+      visible={modalVisable}
+      title="Order Info"
+      footer={null}
+      onCancel={() => setModalVisable(false)}
+    >
+      <div className={styles.modalBody}>
+        <Progress percent={parseInt(executed, 10)} type="circle" />
+        <h3>{status}</h3>
+      </div>
+      <div className={styles.records}>
+        {orderCells?.map((cell, index) => {
+          const isLast = index === orderCells.length - 1
+          const txHashLength = cell.tx_hash.length
+          const txHash = `${cell.tx_hash.slice(0, 30)}...${cell.tx_hash.slice(txHashLength - 4, txHashLength)}`
+          const url =
+            isCrossChain && index === 0
+              ? `${ETHER_SCAN_URL}tx/${cell.tx_hash}`
+              : `${EXPLORER_URL}transaction/${cell.tx_hash}`
+          return (
+            <div key={cell.tx_hash} className={styles.record}>
+              <span className={styles.type}>
+                {getOrderCellType(index, isLast, isCrossChain, status)}
+                {status === 'pending' ? (
+                  <LoadingOutlined translate="loading" className={styles.check} />
+                ) : (
+                  <CheckCircleOutlined translate="check" className={styles.check} />
+                )}
+              </span>
+              <span className={styles.hash}>
+                <a target="_blank" rel="noopener noreferrer" href={url}>
+                  {txHash}
+                </a>
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </Modal>
+  )
+}
+
 const History = () => {
   const [state, dispatch] = useReducer(reducer, {
     orderList: [],
@@ -182,16 +263,13 @@ const History = () => {
     [searchValue],
   )
 
-  const [orderIndex, setOrderIndex] = useState(0)
-  const [currentPagination, setPagination] = useState(1)
-
   const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
   usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch, ckbAddress: address })
 
-  const statusOnClick = useCallback((index: number) => {
+  const statusOnClick = useCallback((order: OrderInList) => {
     setModalVisable(true)
-    setOrderIndex(index)
+    setCurrentOrder(order)
   }, [])
 
   const actionColumn = {
@@ -199,7 +277,7 @@ const History = () => {
     dataIndex: 'action',
     key: 'action',
     width: 150,
-    render: (_: unknown, order: OrderInList, index: number) => {
+    render: (_: unknown, order: OrderInList) => {
       const handleClick = () => {
         handleWithdraw(order.key).catch(error => {
           Modal.error({ title: 'Transaction Error', content: error.message })
@@ -209,7 +287,7 @@ const History = () => {
         return <Spin indicator={<SyncOutlined spin translate="loading" />} />
       }
       const status = (
-        <Button onClick={() => statusOnClick(index + (currentPagination - 1) * 10)} className={styles.status}>
+        <Button onClick={() => statusOnClick(order)} className={styles.status}>
           <InfoSvg />
         </Button>
       )
@@ -255,9 +333,7 @@ const History = () => {
     return orderList.filter(searchFilter).filter(o => o.status === 'aborted' || o.status === 'claimed')
   }, [orderList, showOpenOrder, searchFilter])
 
-  const currentOrder = useMemo(() => {
-    return orders[orderIndex]
-  }, [orders, orderIndex])
+  const [currentOrder, setCurrentOrder] = useState<null | OrderInList>(null)
 
   const header = (
     <div className={styles.switcher}>
@@ -281,71 +357,6 @@ const History = () => {
     />
   )
 
-  const getOrderCellType = (index: number, isLast: boolean, isCrossChain: boolean, status: OrderInList['status']) => {
-    if (index === 0) {
-      return isCrossChain ? 'Cross Chain' : 'Place Order'
-    }
-    if (isCrossChain && index === 1) {
-      return 'Place Order'
-    }
-    if (isLast) {
-      switch (status) {
-        case 'aborted':
-          return 'Cancel Order'
-        case 'claimed':
-          return 'Claim Order'
-        default:
-          return 'Match Order'
-      }
-    }
-    return 'Match Order'
-  }
-
-  const currentStatus = useMemo(() => {
-    if (!currentOrder) {
-      return ''
-    }
-    const { status, orderCells, executed } = currentOrder
-    const isCrossChain = ['ETH', ...ERC20_LIST].includes(currentOrder.tokenName)
-
-    return (
-      <>
-        <div className={styles.modalBody}>
-          <Progress percent={parseInt(executed, 10)} type="circle" />
-          <h3>{status}</h3>
-        </div>
-        <div className={styles.records}>
-          {orderCells?.map((cell, index) => {
-            const isLast = index === orderCells.length - 1
-            const txHashLength = cell.tx_hash.length
-            const txHash = `${cell.tx_hash.slice(0, 30)}...${cell.tx_hash.slice(txHashLength - 4, txHashLength)}`
-            const url =
-              isCrossChain && index === 0
-                ? `${ETHER_SCAN_URL}tx/${cell.tx_hash}`
-                : `${EXPLORER_URL}transaction/${cell.tx_hash}`
-            return (
-              <div key={cell.tx_hash} className={styles.record}>
-                <span className={styles.type}>
-                  {getOrderCellType(index, isLast, isCrossChain, status)}
-                  {status === 'pending' ? (
-                    <LoadingOutlined translate="loading" className={styles.check} />
-                  ) : (
-                    <CheckCircleOutlined translate="check" className={styles.check} />
-                  )}
-                </span>
-                <span className={styles.hash}>
-                  <a target="_blank" rel="noopener noreferrer" href={url}>
-                    {txHash}
-                  </a>
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </>
-    )
-  }, [currentOrder])
-
   return (
     <TradeFrame width="100%" height="auto">
       <PageHeader className={styles.header} title={header} extra={input} />
@@ -356,18 +367,8 @@ const History = () => {
         dataSource={orders}
         rowClassName={(_, index) => (index % 2 === 0 ? `${styles.even} ${styles.td}` : `${styles.td}`)}
         onHeaderRow={() => ({ className: styles.thead })}
-        onChange={pagination => setPagination(pagination.current!)}
       />
-      <Modal
-        className={styles.modal}
-        wrapClassName={styles.modal}
-        visible={modalVisable}
-        title="Order Info"
-        footer={null}
-        onCancel={() => setModalVisable(false)}
-      >
-        {currentStatus}
-      </Modal>
+      <OrderModal currentOrder={currentOrder} modalVisable={modalVisable} setModalVisable={setModalVisable} />
     </TradeFrame>
   )
 }
