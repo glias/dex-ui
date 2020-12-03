@@ -87,7 +87,7 @@ export const usePollOrderList = ({
               for (let i = 0; i < orderHistory.length; i++) {
                 const order = orderHistory[i]
                 const index = res.findIndex(r => r.order_cells?.[0]?.tx_hash === `0x${order.ckb_tx_hash}`)
-                if (!index) {
+                if (index < 0) {
                   // eslint-disable-next-line no-continue
                   continue
                 }

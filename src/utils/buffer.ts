@@ -1,5 +1,6 @@
 import { Amount, AmountUnit } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
+import { PRICE_DECIMAL_INT, CKB_DECIMAL_INT } from 'constants/number'
 import { toUint64Le } from '@nervosnetwork/ckb-sdk-utils'
 import { removeTrailingZero } from './fee'
 
@@ -14,17 +15,24 @@ export const buildPriceData = (price: string) => {
   return toUint64Le(BigInt(new BigNumber(price).times(priceDecimal).toString())).slice(2)
 }
 
-export const buildBuyData = (orderAmount: string, price: string, decimal: number) => {
+export const buildBuyData = (orderAmount: string, price: string, sudtDecimal: number) => {
   const amountData = new Amount('0').toUInt128LE()
-  const orderAmountData = new Amount(removeTrailingZero(orderAmount), decimal).toUInt128LE().slice(2)
-  const priceData = buildPriceData(removeTrailingZero(price))
+
+  const orderAmountData = new Amount(removeTrailingZero(orderAmount), sudtDecimal).toUInt128LE().slice(2)
+
+  const priceData = new Amount(removeTrailingZero(price), CKB_DECIMAL_INT - sudtDecimal + PRICE_DECIMAL_INT)
+    .toUInt128LE()
+    .slice(2)
+
   return `${amountData}${orderAmountData}${priceData}00`
 }
 
-export const buildSellData = (amount: string, orderAmount: string, price: string, decimal: number) => {
-  const amountData = new Amount(removeTrailingZero(amount), decimal).toUInt128LE()
+export const buildSellData = (amount: string, orderAmount: string, price: string, sudtDecimal: number) => {
+  const amountData = new Amount(removeTrailingZero(amount), sudtDecimal).toUInt128LE()
   const orderAmountData = new Amount(removeTrailingZero(orderAmount), AmountUnit.ckb).toUInt128LE().slice(2)
-  const priceData = buildPriceData(removeTrailingZero(price))
+  const priceData = new Amount(removeTrailingZero(price), CKB_DECIMAL_INT - sudtDecimal + PRICE_DECIMAL_INT)
+    .toUInt128LE()
+    .slice(2)
   return `${amountData}${orderAmountData}${priceData}01`
 }
 
