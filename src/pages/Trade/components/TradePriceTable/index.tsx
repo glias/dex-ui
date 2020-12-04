@@ -7,7 +7,7 @@ import { ERC20_LIST, SUDT_LIST } from 'constants/sudt'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
 import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT } from 'constants/number'
-import { calcTotalPay, removeTrailingZero } from 'utils/fee'
+import { calcTotalPay, removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
 import PWCore, { SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
 
@@ -124,7 +124,7 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
             <List
               setPrice={setPrice}
               progress={progress}
-              price={price}
+              price={toFormatWithoutTrailingZero(price, 4)}
               pay={removeTrailingZero(pay)}
               receive={removeTrailingZero(receive.toFixed(4))}
               key={key}
@@ -139,8 +139,8 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
           <List
             setPrice={setPrice}
             progress={progress}
-            price={price}
-            pay={removeTrailingZero(new BigNumber(totalPay).toFixed())}
+            price={toFormatWithoutTrailingZero(price, 4)}
+            pay={removeTrailingZero(new BigNumber(totalPay).toFixed(4))}
             receive={removeTrailingZero(receive.toFixed(4))}
             key={key}
             isBid={isBid}

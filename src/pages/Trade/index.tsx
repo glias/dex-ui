@@ -3,6 +3,8 @@ import { useContainer } from 'unstated-next'
 import SelectToken from 'components/SelectToken'
 import { SUDT_LIST, ERC20_LIST } from 'constants/sudt'
 import { Wallet } from 'containers/wallet'
+import { useDidMount } from 'hooks'
+import { setForceBridgeServer } from 'constants/erc20'
 import TradeOrderTable from './components/TradeOrderTable'
 import History from './components/History'
 import TradeOrderConfirm from './components/TradeOrderConfirm'
@@ -10,7 +12,7 @@ import TradeOrderResult from './components/TradeOrderResult'
 import TradePriceTable from './components/TradePriceTable'
 import { TradePage, TradeMain, TradeFrame, TradeContainer, OrderBookFrame } from './styled'
 import OrderContainer, { OrderStep } from '../../containers/order'
-import { checkSubmittedTxs } from '../../APIs'
+import { checkSubmittedTxs, getForceBridgeSettings } from '../../APIs'
 
 const Trade = () => {
   const Order = useContainer(OrderContainer)
@@ -190,6 +192,14 @@ const Trade = () => {
         return <TradeOrderResult />
     }
   }
+
+  useDidMount(() => {
+    getForceBridgeSettings().then(res => {
+      // eslint-disable-next-line no-console
+      console.log(res.data)
+      setForceBridgeServer(res.data)
+    })
+  })
 
   return (
     <TradePage className="trade-page">

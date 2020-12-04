@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 
 export const COMMISSION_FEE = 0.003
-export const PRICE_DECIMAL = new BigNumber(10).pow(new BigNumber(10))
+export const PRICE_DECIMAL = new BigNumber(10).pow(new BigNumber(20))
 export const SUDT_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
 export const CKB_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
 export const ETH_DECIMAL = new BigNumber(10).pow(18)
@@ -16,4 +16,4 @@ export const MAX_TRANSACTION_FEE = 0.1
 export const MINIUM_RECEIVE = 0.00000001
 
 export const CKB_DECIMAL_INT = 8
-export const PRICE_DECIMAL_INT = 10
+export const PRICE_DECIMAL_INT = 20
