@@ -464,3 +464,7 @@ export async function signForceBridgeTransaction(rawTx: RPC.RawTransaction, pw: 
 
   return pw.sendTransaction(tx)
 }
+
+export function getForceBridgeSettings() {
+  return axios.get(`${FORCE_BRIDGER_SERVER_URL}/settings`)
+}

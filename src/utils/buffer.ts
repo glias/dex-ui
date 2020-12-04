@@ -1,7 +1,6 @@
 import { Amount, AmountUnit } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import { PRICE_DECIMAL_INT, CKB_DECIMAL_INT } from 'constants/number'
-import { toUint64Le } from '@nervosnetwork/ckb-sdk-utils'
 import { removeTrailingZero } from './fee'
 
 export const getAmountFromCellData = (hex: string) => {
@@ -9,15 +8,7 @@ export const getAmountFromCellData = (hex: string) => {
   return Amount.fromUInt128LE(sudtAmount).toString()
 }
 
-const priceDecimal = new BigNumber(10).pow(new BigNumber(10))
-
-export const buildPriceData = (price: string) => {
-  return toUint64Le(BigInt(new BigNumber(price).times(priceDecimal).toString())).slice(2)
-}
-
 export const buildBuyData = (orderAmount: string, price: string, sudtDecimal: number) => {
-  // eslint-disable-next-line no-debugger
-  debugger
   const amountData = new Amount('0').toUInt128LE()
 
   const orderAmountData = new Amount(removeTrailingZero(orderAmount), sudtDecimal).toUInt128LE().slice(2)
@@ -25,6 +16,9 @@ export const buildBuyData = (orderAmount: string, price: string, sudtDecimal: nu
   const priceData = new Amount(removeTrailingZero(price), CKB_DECIMAL_INT - sudtDecimal + PRICE_DECIMAL_INT)
     .toUInt128LE()
     .slice(2)
+
+  // eslint-disable-next-line no-debugger
+  debugger
 
   return `${amountData}${orderAmountData}${priceData}00`
 }
