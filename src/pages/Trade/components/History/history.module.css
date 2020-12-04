@@ -137,6 +137,14 @@
   border-radius: 16px;
 }
 
+.modal .ant-modal-content {
+  border-radius: 16px!important;
+}
+
+.modal .ant-modal-header {
+  border-radius: 16px!important;
+}
+
 .modal .ant-modal-title {
   font-weight: bold !important;
 }
