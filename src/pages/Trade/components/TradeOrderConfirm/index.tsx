@@ -49,6 +49,24 @@ export default function TradePairConfirm() {
           from: Wallet.ethWallet.address,
         })
           .once('transactionHash', hash => {
+            if (OrderMode.CrossChain === Order.orderMode) {
+              const submittedOrder: SubmittedOrder = {
+                key: `${hash}:0x0`,
+                isBid: false,
+                status: 'pending',
+                pay: calcTotalPay(pay),
+                receive: calcAskReceive(pay, price),
+                price,
+                executed: '0%',
+                createdAt: `${Date.now()}`,
+                tokenName: Order.pair.find(t => t !== 'CKB')! ?? '',
+                orderCells: [
+                  { tx_hash: hash!, index: '' },
+                  { tx_hash: '', index: '' },
+                ],
+              }
+              setAndCacheSubmittedOrders(orders => [submittedOrder, ...orders])
+            }
             resolve(hash)
           })
           .on('error', err => {
@@ -56,7 +74,7 @@ export default function TradePairConfirm() {
           })
       })
     },
-    [Wallet.web3, Wallet.ethWallet.address],
+    [Wallet.ethWallet.address, setAndCacheSubmittedOrders, pay, price, Order.pair, Wallet.web3, Order.orderMode],
   )
 
   const placeNormalOrder = useCallback(
