@@ -86,12 +86,11 @@ export class CkbTransactionListener extends EventEmitter<TransactionEvents> {
       }
       this.#tasks.add(hash)
     })
-    this.emit(
-      'fetched',
-      // @ts-ignore
-      res.filter<CKBComponents.TransactionWithStatus>(x => x != null),
-    )
-    this.emit('committed', committed)
+    // @ts-ignore
+    const fetched = res.filter<CKBComponents.TransactionWithStatus>(x => x != null)
+
+    if (fetched.length) this.emit('fetched', fetched)
+    if (committed.length) this.emit('committed', committed)
   }
 
   getPendingHashes(): string[] {
