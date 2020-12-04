@@ -16,7 +16,7 @@ const SuccessTransactionNotification: React.FC<SuccessTransactionNotificationPro
   const { txHash } = props
   return (
     <a target="_blank" rel="noopener noreferrer" href={`${EXPLORER_URL}transaction/${txHash}`}>
-      {t('Transaction has been committed')}
+      {t('A transaction was committed')}
       &nbsp;
       <small>{ellipsisCenter(txHash, 8)}</small>
     </a>
@@ -37,6 +37,7 @@ export const useNotifyTransaction = () => {
     listener.start()
 
     return () => {
+      listener.off('committed', notify)
       listener.stop()
     }
   }, [listener])
