@@ -39,9 +39,6 @@ function useSendCkb(): (address: string, shannonCkb: string) => Promise<string> 
     async (address: string, shannonCkb: string) => {
       asserts(pw)
 
-      // eslint-disable-next-line no-console
-      console.log(new Amount(shannonCkb, AmountUnit.shannon))
-
       const builder = new SimpleBuilder(wrapAddress(address), new Amount(shannonCkb, AmountUnit.shannon))
       const txHash = await pw.sendTransaction(builder)
       const built = await builder.build()

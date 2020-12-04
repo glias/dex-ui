@@ -7,7 +7,7 @@ import { OrderResult } from './styled'
 import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderType } from '../../../../containers/order'
 import { toFormatWithoutTrailingZero } from '../../../../utils/fee'
-import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from '../../../../constants'
+import { COMMISSION_FEE } from '../../../../constants'
 import { List, Item } from './list'
 import { Meta } from './meta'
 
@@ -51,7 +51,7 @@ export default function NormalOrder() {
     if (Order.tx && Order.orderType === OrderType.Ask) {
       list.push({
         desc: '',
-        value: new Amount(ORDER_CELL_CAPACITY.toString()).add(new Amount(transactionFee)).toString(),
+        value: new Amount('0').add(new Amount(transactionFee)).toString(),
         unit: 'CKB',
       })
     }

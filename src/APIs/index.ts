@@ -13,15 +13,17 @@ import PWCore, {
   Transaction,
   Builder,
 } from '@lay2/pw-core'
+import PlaceOrderBuilder from 'pw/placeOrderBuilder'
+import DEXCollector from 'pw/dexCollector'
 import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
 import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
 import Web3 from 'web3'
 import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
-import { calcTotalPay } from 'utils/fee'
+import { calcAskReceive, calcTotalPay } from 'utils/fee'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
-import { CKB_NODE_URL, ETH_DECIMAL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
+import { CKB_NODE_URL, ETH_DECIMAL, ORDER_BOOK_LOCK_SCRIPT, SUDT_CK_ETH, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
 export * from './checkSubmittedTxs'
@@ -240,18 +242,33 @@ export async function shadowAssetCrossIn(
   return res
 }
 
+const ETH_DECIMAL_INT = 18
+
 export async function placeCrossChainOrder(
   pay: string,
   price: string,
-  receive: string,
+  _: string,
   ckbAddress: string,
   ethAddress: string,
   web3: Web3,
   tokenAddress = '0x0000000000000000000000000000000000000000',
   bridgeFee = '0x0',
 ) {
-  const amount = new BigNumber(calcTotalPay(pay)).times(ETH_DECIMAL).toString()
-  const data = buildSellData(amount, receive, price, 18).slice(2)
+  // TODO: remove place order
+  const builder = new PlaceOrderBuilder(
+    new Address(ckbAddress, AddressType.ckb),
+    new Amount(pay, ETH_DECIMAL_INT),
+    OrderType.Ask,
+    price,
+    SUDT_CK_ETH,
+    new DEXCollector() as any,
+  )
+
+  const receive = calcAskReceive(builder.pay.toString(ETH_DECIMAL_INT), price)
+  const data = buildSellData(builder.totalPay.toString(ETH_DECIMAL_INT), receive, price, ETH_DECIMAL_INT).slice(2)
+  const amount = new BigNumber(builder.totalPay.toString(ETH_DECIMAL_INT)).times(ETH_DECIMAL).toString()
+  // eslint-disable-next-line no-debugger
+  // debugger
   const sudtData = data.slice(32, data.length)
 
   const orderLock = new Script(
