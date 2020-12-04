@@ -17,9 +17,6 @@ export const buildBuyData = (orderAmount: string, price: string, sudtDecimal: nu
     .toUInt128LE()
     .slice(2)
 
-  // eslint-disable-next-line no-debugger
-  debugger
-
   return `${amountData}${orderAmountData}${priceData}00`
 }
 

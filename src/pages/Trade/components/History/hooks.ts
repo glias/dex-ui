@@ -2,6 +2,8 @@ import { useEffect, MutableRefObject, useCallback } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
+import { useContainer } from 'unstated-next'
+import OrderContainer from 'containers/order'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
 import { ckb, getAllHistoryOrders, getForceBridgeHistory, getTransactionHeader } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
@@ -25,6 +27,7 @@ export enum ActionType {
   UpdateLoading,
   UpdateCurrentOrderStatus,
   updateCurrentOrder,
+  EndCurrentOrderPending,
 }
 
 export type HistoryAction =
@@ -34,6 +37,7 @@ export type HistoryAction =
   | { type: ActionType.UpdateLoading; value: boolean }
   | { type: ActionType.UpdateCurrentOrderStatus; value: OrderCell[] }
   | { type: ActionType.updateCurrentOrder; value: OrderInList }
+  | { type: ActionType.EndCurrentOrderPending }
 
 export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, action) => {
   switch (action.type) {
@@ -120,8 +124,6 @@ export const usePollingOrderStatus = ({
       const checkCkbStatus = (index: number) => {
         getForceBridgeHistory(ckbAddress).then(res => {
           const forceBridgeItem = res.data.crosschain_history.find(p => p.eth_lock_tx_hash === cells?.[index]?.tx_hash)
-          // eslint-disable-next-line no-console
-          console.log(forceBridgeItem, res.data, cells)
           if (forceBridgeItem && forceBridgeItem.ckb_tx_hash) {
             // eslint-disable-next-line no-param-reassign
             cells[index].tx_hash = forceBridgeItem.ckb_tx_hash!
@@ -178,6 +180,7 @@ export const usePollOrderList = ({
   fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
   ckbAddress: string
 }) => {
+  const { setAndCacheSubmittedOrders } = useContainer(OrderContainer)
   useEffect(() => {
     dispatch({ type: ActionType.UpdateOrderList, value: [] as Array<Order> })
 
@@ -208,6 +211,10 @@ export const usePollOrderList = ({
                   // eslint-disable-next-line no-continue
                   continue
                 }
+                setAndCacheSubmittedOrders(orders => {
+                  // eslint-disable-next-line no-console
+                  return orders.filter(o => o.key.split(':')[0] !== order.eth_lock_tx_hash)
+                })
                 matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
                 // eslint-disable-next-line no-unused-expressions
                 matchedOrder.orderCells?.unshift({
@@ -250,7 +257,7 @@ export const usePollOrderList = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [lockArgs, dispatch, fetchListRef, ckbAddress])
+  }, [lockArgs, dispatch, fetchListRef, ckbAddress, setAndCacheSubmittedOrders])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {

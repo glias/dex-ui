@@ -56,6 +56,9 @@ export const parseOrderRecord = ({
     1 + +COMMISSION_FEE,
   )
 
+  const turnoverRate = new BigNumber(turnover_rate)
+  const isClaimable = turnoverRate.isGreaterThan(0.999)
+
   return {
     key,
     pay: `${payAmount.toFixed(4, 1)}`,
@@ -63,7 +66,7 @@ export const parseOrderRecord = ({
     tradedAmount: `${tradedAmount}`,
     isBid,
     receive: `${orderAmount.toFixed(4, 1)}`,
-    executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
+    executed: isClaimable ? '100%' : `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
     price: `${priceInNum}`,
     status: status === 'claimable' ? 'completed' : status,
     tokenName: '',

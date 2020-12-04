@@ -239,6 +239,17 @@ const OrderModal = ({
     fetchListRef,
   })
 
+  const realStatus = useMemo(() => {
+    if (status === 'pending') {
+      const isAllLoaded = orderCells?.every(cell => cell.isLoaded)
+      if (isAllLoaded) {
+        return 'opening'
+      }
+      return 'pending'
+    }
+    return status
+  }, [status, orderCells])
+
   return (
     <ModalContainer
       className={styles.modal}
@@ -250,7 +261,7 @@ const OrderModal = ({
     >
       <div className={styles.modalBody}>
         <Progress percent={parseInt(executed, 10)} type="circle" />
-        <h3>{status}</h3>
+        <h3>{realStatus}</h3>
       </div>
       <div className={styles.records}>
         {cells?.map((cell, index) => {
