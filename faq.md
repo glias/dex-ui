@@ -34,7 +34,7 @@ On Gliaswap, just connect the wallets and enjoy the free trade!
 
 ### How do I get Test Token so I can start trading？
 
-You can get some Test Token from [Gliaswap Testnet](gliaswap-faucet.ckbapp.com).
+You can get some Test Token from [Gliaswap Testnet](https://gliaswap-faucet.ckbapp.com).
 
 ## Trade
 
