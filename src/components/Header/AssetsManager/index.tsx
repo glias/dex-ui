@@ -31,9 +31,8 @@ const Control = () => {
 
 const AssetManagerWrapper = styled.div`
   width: 375px;
-  max-height: 675px;
+  height: 675px;
   overflow-y: auto;
-  padding-bottom: 20px;
 `
 
 export const AssetManager: React.FC = () => {

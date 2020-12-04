@@ -1,9 +1,8 @@
+import PWCore from '@lay2/pw-core'
 import { Typography } from 'antd'
-import WalletContainer from 'containers/wallet'
 import QRCode from 'qrcode.react'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { AssetManagerHeader } from '../AssetManagerHeader'
 import { RadioItem, RadioTabs } from '../components/RadioTabs'
@@ -25,19 +24,49 @@ const ReceiveWrapper = styled.div`
 `
 
 export const Receive: React.FC = () => {
+  const { t } = useTranslation()
+  const rawAddress = PWCore.provider.address
+  const address = rawAddress.toCKBAddress()
+
+  const qrCodeContent = useMemo(
+    () => (
+      <>
+        <QRCode style={{ width: '200px', height: '200px' }} className="qr-code" value={address} />
+        <Text copyable strong>
+          {address}
+        </Text>
+      </>
+    ),
+    [address],
+  )
+
+  return (
+    <>
+      <AssetManagerHeader showGoBack title={t('Receive')} />
+      <ReceiveWrapper>{qrCodeContent}</ReceiveWrapper>
+    </>
+  )
+}
+
+/**
+ * @deprecated
+ */
+export const SelectableReceive: React.FC = () => {
   const [receiveWalletType, setReceiveWalletType] = useState('ckb')
   const { t } = useTranslation()
-  const { tokenName } = useParams<{ tokenName: string }>()
-  const { wallets } = WalletContainer.useContainer()
-  const wallet = wallets.find(wallet => wallet.tokenName === tokenName)
+  const rawAddress = PWCore.provider.address
+  const address = receiveWalletType === 'ckb' ? rawAddress.toCKBAddress() : rawAddress.addressString
 
-  if (!wallet) return null
-
-  const qrCodeContent = wallet.address && (
-    <>
-      <QRCode style={{ width: '200px', height: '200px' }} className="qr-code" value={wallet.address} />
-      <Text strong>{wallet.address}</Text>
-    </>
+  const qrCodeContent = useMemo(
+    () => (
+      <>
+        <QRCode style={{ width: '200px', height: '200px' }} className="qr-code" value={address} />
+        <Text copyable strong>
+          {address}
+        </Text>
+      </>
+    ),
+    [address],
   )
 
   function changeWallet(inputType: string) {

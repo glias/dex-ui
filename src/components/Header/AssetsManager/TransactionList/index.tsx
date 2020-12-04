@@ -74,7 +74,7 @@ const TransactionListItem: React.FC<TransactionListItemProps> = (props: Transact
 
 const TransactionListWrapper = styled.div`
   .ant-list {
-    max-height: 250px;
+    max-height: 285px;
     overflow: auto;
   }
 `
@@ -115,7 +115,12 @@ export const TransactionList: React.FC<TransactionListProps> = (/* props: Transa
 
   return (
     <TransactionListWrapper>
-      <RadioTabs mode="underline" value={transferDirection} onChange={onDirectionChange}>
+      <RadioTabs
+        style={{ boxShadow: '3px 3px 8px rgba(0, 0, 0, 0.08)' }}
+        mode="underline"
+        value={transferDirection}
+        onChange={onDirectionChange}
+      >
         <RadioItem key="all">{t('All')}</RadioItem>
         <RadioItem key="in">{t('In')}</RadioItem>
         <RadioItem key="out">{t('Out')}</RadioItem>

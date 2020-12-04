@@ -3,46 +3,65 @@ import BigNumber from 'bignumber.js'
 import React from 'react'
 import styled from 'styled-components'
 
-interface BalanceStyleProps {
+interface BalanceStyledProps {
   size?: number
   unitSize?: number
 }
 
-interface BalanceFormatProps {
+export interface BalanceProps extends BalanceStyledProps {
+  value: BigNumber.Value | Amount
+  decimal?: number
   type?: string
   fixedTo?: number
 }
 
-interface BalanceValueProps {
-  value: BigNumber.Value | Amount
-  decimal?: number
-}
+const BalanceWrapper = styled.div<Required<BalanceStyledProps>>`
+  display: inline-block;
+  font-size: ${props => `${props.size}px`};
 
-interface BalanceProps extends BalanceStyleProps, BalanceFormatProps, BalanceValueProps {}
+  .balance-value {
+  }
 
-const BalanceValue = styled.span<BalanceStyleProps>`
-  font-size: ${props => (props.size ? `${props.size}px` : '')};
-`
-const BalanceUnit = styled.span<BalanceStyleProps>`
-  margin-left: 4px;
-  font-size: ${props => (props.unitSize ? `${props.unitSize}px` : '')};
-  color: #888888;
+  .balance-decimals {
+    font-size: 80%;
+    color: #666;
+  }
+
+  .balance-unit {
+    margin-left: 4px;
+    color: #888888;
+    font-size: ${props => `${props.unitSize}px`};
+  }
 `
 
 export const Balance: React.FC<BalanceProps> = (props: BalanceProps) => {
-  const { value, type, size, fixedTo, unitSize: propUnitSize, decimal = 0 } = props
-  const unitSize = propUnitSize || size
+  const { value, type, size = 14, fixedTo, unitSize = 14, decimal = 0 } = props
 
   const balance = new BigNumber(value instanceof Amount ? value.toString() : value)
     .div(10 ** decimal)
     .abs()
     .toFormat(fixedTo)
-  const unit = type && <BalanceUnit unitSize={unitSize}>{type}</BalanceUnit>
+
+  const [integers, decimals] = balance.split('.')
+
+  const balanceNode = (
+    <>
+      <span className="balance-value">{integers}</span>
+      {decimals && '.'}
+      {decimals && (
+        <small className="balance-decimals">
+          {decimals.substring(0, 4) === '0000' ? decimals : decimals.substring(0, 4)}
+        </small>
+      )}
+    </>
+  )
+
+  const unitNode = type && <span className="balance-unit">{type}</span>
 
   return (
-    <BalanceValue size={size}>
-      <span>{balance}</span>
-      <span>{unit}</span>
-    </BalanceValue>
+    <BalanceWrapper size={size} unitSize={unitSize}>
+      {balanceNode}
+      {unitNode}
+    </BalanceWrapper>
   )
 }

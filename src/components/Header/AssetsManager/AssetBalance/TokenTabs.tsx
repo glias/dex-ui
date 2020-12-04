@@ -1,12 +1,25 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useHistory, useLocation, useRouteMatch } from 'react-router-dom'
 import { RadioItem, RadioTabs } from '../components/RadioTabs'
 import { TransactionList } from '../TransactionList'
 import { AssetList } from './TokenList'
 
 export const TokenTabs: React.FC = () => {
-  const [activatedTab, setActivatedTab] = useState('assets')
+  const { hash } = useLocation()
+  const { replace } = useHistory()
+  const match = useRouteMatch()
   const { t } = useTranslation()
+
+  const activatedTab = hash.substring(1)
+
+  function setActivatedTab(tab: string) {
+    replace(`${match.url}#${tab}`)
+  }
+
+  useEffect(() => {
+    if (!activatedTab) replace(`${match.url}#assets`)
+  }, [activatedTab, match.url, replace])
 
   const tabContent = activatedTab === 'assets' ? <AssetList /> : <TransactionList />
 

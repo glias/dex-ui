@@ -17,6 +17,7 @@ const DescriptionWrapper = styled.div`
 
   .description-child {
     font-size: 12px;
+    padding: 4px;
   }
 `
 
