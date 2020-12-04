@@ -99,22 +99,30 @@ export const usePollingOrderStatus = ({
     if (status === 'pending' && web3) {
       const checkEthStatus = () => {
         const hash = cells?.[0]?.tx_hash
-        web3.eth.getPendingTransactions().then(res => {
-          if (!res.some(r => r.hash === hash)) {
-            // eslint-disable-next-line no-param-reassign
-            cells[0].isLoaded = true
-            dispatch({
-              type: ActionType.UpdateCurrentOrderStatus,
-              value: cells,
-            })
-          }
-        })
+        web3.eth
+          .getTransactionReceipt(hash)
+          .then(res => {
+            if (res) {
+              // eslint-disable-next-line no-param-reassign
+              cells[0].isLoaded = true
+              dispatch({
+                type: ActionType.UpdateCurrentOrderStatus,
+                value: cells,
+              })
+            }
+          })
+          .catch(err => {
+            // eslint-disable-next-line no-console
+            console.log(err)
+          })
       }
 
       const checkCkbStatus = (index: number) => {
         getForceBridgeHistory(ckbAddress).then(res => {
-          const forceBridgeItem = res.data.crosschain_history.find(p => p.ckb_tx_hash === cells?.[index]?.tx_hash)
-          if (forceBridgeItem) {
+          const forceBridgeItem = res.data.crosschain_history.find(p => p.eth_lock_tx_hash === cells?.[index]?.tx_hash)
+          // eslint-disable-next-line no-console
+          console.log(forceBridgeItem, res.data, cells)
+          if (forceBridgeItem && forceBridgeItem.ckb_tx_hash) {
             // eslint-disable-next-line no-param-reassign
             cells[index].tx_hash = forceBridgeItem.ckb_tx_hash!
             dispatch({
@@ -139,7 +147,7 @@ export const usePollingOrderStatus = ({
       const checkStatus = () => {
         if (isCrossChain) {
           checkEthStatus()
-          checkCkbStatus(1)
+          checkCkbStatus(0)
         } else {
           checkCkbTransaction(cells?.[0]?.tx_hash, 0)
         }

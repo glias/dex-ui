@@ -141,6 +141,14 @@
   border-radius: 16px!important;
 }
 
+.spinContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 78px;
+  margin-right: 10px;
+}
+
 .modal .ant-modal-header {
   border-radius: 16px!important;
 }

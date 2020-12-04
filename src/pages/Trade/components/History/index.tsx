@@ -156,7 +156,7 @@ const columns = [
         const price = order.isBid
           ? new BigNumber(paidAmount).div(tradedAmount)
           : new BigNumber(tradedAmount).div(paidAmount)
-        result = removeTrailingZero(price.toFixed(10, 1))
+        result = removeTrailingZero(price.toFixed(8, 1))
       }
       return (
         <Tooltip title={result}>
@@ -363,6 +363,16 @@ const History = () => {
               <Button onClick={handleClick} className={styles.action}>
                 Cancel
               </Button>
+              {status}
+            </div>
+          )
+        }
+        case 'pending': {
+          return (
+            <div className={styles.center}>
+              <div className={styles.spinContainer}>
+                <Spin indicator={<SyncOutlined spin translate="loading" />} />
+              </div>
               {status}
             </div>
           )
