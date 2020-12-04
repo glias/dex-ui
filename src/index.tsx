@@ -1,12 +1,13 @@
+import 'ant-design-icons/dist/anticons.min.css'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './index.css'
-import 'ant-design-icons/dist/anticons.min.css'
 import styled from 'styled-components'
-import './utils/i18n'
-import Routers from './routes'
-import { WalletContainer } from './containers/wallet'
+import { TransactionListenerContainer } from './containers/listener'
 import { OrderContainer } from './containers/order'
+import { WalletContainer } from './containers/wallet'
+import './index.css'
+import Routers from './routes'
+import './utils/i18n'
 
 const AppDiv = styled.div`
   width: 100%;
@@ -16,11 +17,13 @@ const AppDiv = styled.div`
 
 ReactDOM.render(
   <WalletContainer.Provider>
-    <OrderContainer.Provider>
-      <AppDiv>
-        <Routers />
-      </AppDiv>
-    </OrderContainer.Provider>
+    <TransactionListenerContainer.Provider>
+      <OrderContainer.Provider>
+        <AppDiv>
+          <Routers />
+        </AppDiv>
+      </OrderContainer.Provider>
+    </TransactionListenerContainer.Provider>
   </WalletContainer.Provider>,
   document.getElementById('root'),
 )

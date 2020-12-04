@@ -6,6 +6,7 @@ import React, { HTMLAttributes } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+import { ellipsisCenter } from 'utils/common'
 
 const { Text } = Typography
 
@@ -64,13 +65,6 @@ const WalletConnectionStatusHeaderWrapper = styled.div`
   .button {
   }
 `
-
-function ellipsisCenter(str: string, takeLength: number, tailLength = takeLength): string {
-  if (!str) return str
-  if (str.length <= takeLength) return str
-
-  return `${str.substring(0, takeLength)}...${str.substring(str.length - tailLength)}`
-}
 
 export const WalletConnectionStatusHeader = () => {
   const { t } = useTranslation()

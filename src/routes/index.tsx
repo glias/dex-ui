@@ -1,11 +1,12 @@
+import { useNotifyTransaction } from 'hooks/useNotifyTransaction'
 import React, { Suspense } from 'react'
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
-import NotFound from '../pages/404'
-import Trade from '../pages/Trade'
-import Header from '../components/Header'
+import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom'
 import Footer from '../components/Footer'
-import Pool from '../pages/Pool'
+import Header from '../components/Header'
+import NotFound from '../pages/404'
 import Match from '../pages/Match'
+import Pool from '../pages/Pool'
+import Trade from '../pages/Trade'
 
 const Containers: CustomRouter.Route[] = [
   {
@@ -46,6 +47,8 @@ const Containers: CustomRouter.Route[] = [
 ]
 
 export default () => {
+  useNotifyTransaction()
+
   return (
     <Router>
       <Suspense fallback={<div />}>

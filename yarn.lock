@@ -1750,6 +1750,11 @@
   resolved "https://registry.npmjs.org/@nervosnetwork/ckb-types/-/ckb-types-0.37.0.tgz#2ac3261171c119895c91dc6f114dc55fbdc6a07e"
   integrity sha512-2/kEVjRVr87MCEfTxhm842ZYLlehvWG5HC3dEsBENE3i9JCg3JQiibUGZeih+0k6W/S/rFpALIOJsctJK7SsRA==
 
+"@nervosnetwork/ckb-types@^0.38.2":
+  version "0.38.2"
+  resolved "https://registry.yarnpkg.com/@nervosnetwork/ckb-types/-/ckb-types-0.38.2.tgz#2e584c0f3f3ba53d30abe1a0a80493091d92c547"
+  integrity sha512-d5oQug8qZGJ188JE5e7baYLER45vVuTkzgEU07dmUxbib3+nDdme1ZK1659329mSDO9u1yRPuhRhu8YXREWOtA==
+
 "@nodelib/fs.scandir@2.1.3":
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.3.tgz#3a582bdb53804c6ba6d146579c46e52130cf4a3b"
@@ -6642,7 +6647,7 @@ eventemitter3@4.0.4:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.4.tgz#b5463ace635a083d018bdc7c917b4c5f10a85384"
   integrity sha512-rlaVLnVxtxvoyLsQQFBx53YmXHDxRIzzTLbdfxqi4yocpSjAxXwkU0cScM5JgSKMqEhrZpnvQ2D9gjylR0AimQ==
 
-eventemitter3@^4.0.0:
+eventemitter3@^4.0.0, eventemitter3@^4.0.7:
   version "4.0.7"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
