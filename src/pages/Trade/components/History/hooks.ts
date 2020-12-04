@@ -1,16 +1,20 @@
 import { useEffect, MutableRefObject, useCallback } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
-import { getAllHistoryOrders, getForceBridgeHistory, getTransactionHeader } from '../../../../APIs'
+import Web3 from 'web3'
+import { TransactionStatus } from 'components/Header/AssetsManager/api'
+import { ckb, getAllHistoryOrders, getForceBridgeHistory, getTransactionHeader } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
-import { parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
+import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import { REJECT_ERROR_CODE } from '../../../../constants'
 import type { RawOrder } from '../../../../utils'
+import { OrderInList } from '.'
 
 export interface HistoryState {
   orderList: Array<Order>
   pendingIdList: Array<string>
   isLoading: boolean
+  currentOrder: OrderInList | null
 }
 
 /* eslint-disable-next-line no-shadow */
@@ -19,6 +23,8 @@ export enum ActionType {
   AddPendingId,
   RemovePendingId,
   UpdateLoading,
+  UpdateCurrentOrderStatus,
+  updateCurrentOrder,
 }
 
 export type HistoryAction =
@@ -26,6 +32,8 @@ export type HistoryAction =
   | { type: ActionType.AddPendingId; value: string }
   | { type: ActionType.RemovePendingId; value: string }
   | { type: ActionType.UpdateLoading; value: boolean }
+  | { type: ActionType.UpdateCurrentOrderStatus; value: OrderCell[] }
+  | { type: ActionType.updateCurrentOrder; value: OrderInList }
 
 export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, action) => {
   switch (action.type) {
@@ -47,6 +55,21 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
     case ActionType.UpdateLoading: {
       return { ...state, isLoading: action.value }
     }
+    case ActionType.UpdateCurrentOrderStatus: {
+      return {
+        ...state,
+        currentOrder: {
+          ...state.currentOrder!,
+          orderCells: action.value,
+        },
+      }
+    }
+    case ActionType.updateCurrentOrder: {
+      return {
+        ...state,
+        currentOrder: action.value,
+      }
+    }
     default: {
       return state
     }
@@ -54,6 +77,87 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
 }
 
 type Order = ReturnType<typeof parseOrderRecord>
+
+export const usePollingOrderStatus = ({
+  web3,
+  status,
+  cells,
+  fetchListRef,
+  dispatch,
+  isCrossChain,
+  ckbAddress,
+}: {
+  web3: Web3 | null
+  status: OrderInList['status']
+  cells: OrderCell[]
+  isCrossChain: boolean
+  fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
+  dispatch: React.Dispatch<HistoryAction>
+  ckbAddress: string
+}) => {
+  useEffect(() => {
+    if (status === 'pending' && web3) {
+      const checkEthStatus = () => {
+        const hash = cells?.[0]?.tx_hash
+        web3.eth.getPendingTransactions().then(res => {
+          if (!res.some(r => r.hash === hash)) {
+            // eslint-disable-next-line no-param-reassign
+            cells[0].isLoaded = true
+            dispatch({
+              type: ActionType.UpdateCurrentOrderStatus,
+              value: cells,
+            })
+          }
+        })
+      }
+
+      const checkCkbStatus = (index: number) => {
+        getForceBridgeHistory(ckbAddress).then(res => {
+          const forceBridgeItem = res.data.crosschain_history.find(p => p.ckb_tx_hash === cells?.[index]?.tx_hash)
+          if (forceBridgeItem) {
+            // eslint-disable-next-line no-param-reassign
+            cells[index].tx_hash = forceBridgeItem.ckb_tx_hash!
+            dispatch({
+              type: ActionType.UpdateCurrentOrderStatus,
+              value: cells,
+            })
+
+            checkCkbTransaction(forceBridgeItem.ckb_tx_hash!, index)
+          }
+        })
+      }
+
+      const checkCkbTransaction = (txHash: string, index: number) => {
+        ckb.rpc.getTransaction(txHash).then(res => {
+          if (res.txStatus?.status === TransactionStatus.Committed) {
+            // eslint-disable-next-line no-param-reassign
+            cells[index].isLoaded = true
+          }
+        })
+      }
+
+      const checkStatus = () => {
+        if (isCrossChain) {
+          checkEthStatus()
+          checkCkbStatus(1)
+        } else {
+          checkCkbTransaction(cells?.[0]?.tx_hash, 0)
+        }
+      }
+      checkStatus()
+      const TIMER = 3000
+
+      /* eslint-disable-next-line no-param-reassign */
+      fetchListRef.current = setInterval(checkStatus, TIMER)
+    }
+
+    return () => {
+      if (fetchListRef.current) {
+        clearInterval(fetchListRef.current)
+      }
+    }
+  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch])
+}
 
 export const usePollOrderList = ({
   lockArgs,

@@ -16,6 +16,8 @@ export const buildPriceData = (price: string) => {
 }
 
 export const buildBuyData = (orderAmount: string, price: string, sudtDecimal: number) => {
+  // eslint-disable-next-line no-debugger
+  debugger
   const amountData = new Amount('0').toUInt128LE()
 
   const orderAmountData = new Amount(removeTrailingZero(orderAmount), sudtDecimal).toUInt128LE().slice(2)

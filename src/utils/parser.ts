@@ -4,6 +4,7 @@ import { PRICE_DECIMAL, CKB_DECIMAL, COMMISSION_FEE, SUDT_LIST, CKB_DECIMAL_INT 
 export interface OrderCell {
   tx_hash: string
   index: string
+  isLoaded?: boolean
 }
 
 export type RawOrder = Record<'order_amount' | 'traded_amount' | 'turnover_rate' | 'paid_amount' | 'price', string> & {

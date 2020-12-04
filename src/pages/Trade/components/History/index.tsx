@@ -8,6 +8,7 @@ import { SyncOutlined, SearchOutlined, CheckCircleOutlined, LoadingOutlined } fr
 import { useContainer } from 'unstated-next'
 import { removeTrailingZero } from 'utils/fee'
 import PWCore from '@lay2/pw-core'
+import styled from 'styled-components'
 import WalletContainer from '../../../../containers/wallet'
 import OrderContainer from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
@@ -15,10 +16,32 @@ import { getTimeString, pendingOrders } from '../../../../utils'
 import { ERC20_LIST, ETHER_SCAN_URL, EXPLORER_URL, HISTORY_QUERY_KEY } from '../../../../constants'
 import type { OrderRecord } from '../../../../utils'
 import { ReactComponent as InfoSvg } from '../../../../assets/svg/info.svg'
-import { reducer, usePollOrderList, useHandleWithdrawOrder } from './hooks'
+import {
+  reducer,
+  usePollOrderList,
+  useHandleWithdrawOrder,
+  ActionType,
+  usePollingOrderStatus,
+  HistoryAction,
+} from './hooks'
 import styles from './history.module.css'
 
-type OrderInList = OrderRecord | SubmittedOrder
+export type OrderInList = OrderRecord | SubmittedOrder
+
+const ModalContainer = styled(Modal)`
+  .ant-modal-content {
+    border-radius: 16px !important;
+  }
+
+  .ant-modal-header {
+    border-radius: 16px !important;
+    border-bottom: none;
+  }
+
+  .ant-modal-title {
+    font-weight: bold !important;
+  }
+`
 
 const columns = [
   {
@@ -106,9 +129,17 @@ const columns = [
     title: 'Filled(%)',
     dataIndex: 'executed',
     key: 'price',
-    render: (executed: string) => {
+    render: (executed: string, _: unknown, index: number) => {
+      const isOdd = index % 2 === 0
       return (
-        <Progress type="circle" className={styles.bold} width={28} percent={parseInt(executed, 10)} format={e => e} />
+        <Progress
+          trailColor={isOdd ? 'white' : undefined}
+          type="circle"
+          className={styles.bold}
+          width={28}
+          percent={parseInt(executed, 10)}
+          format={e => e}
+        />
       )
     },
   },
@@ -176,20 +207,40 @@ const OrderModal = ({
   currentOrder,
   modalVisable,
   setModalVisable,
+  dispatch,
 }: {
   modalVisable: boolean
-  currentOrder: OrderInList | null
+  currentOrder: OrderInList
   setModalVisable: Function
+  dispatch: React.Dispatch<HistoryAction>
 }) => {
-  if (!currentOrder) {
-    return null
-  }
+  const { web3, ckbWallet } = useContainer(WalletContainer)
+  const [lastOutpointTxHash, lastOutpointIndex] = currentOrder.key.split(':')
 
   const { status, orderCells, executed } = currentOrder
   const isCrossChain = ['ETH', ...ERC20_LIST].includes(currentOrder.tokenName)
 
+  const cells = useMemo(() => {
+    if (status === 'aborted') {
+      return [...(orderCells || []), { tx_hash: lastOutpointTxHash, index: lastOutpointIndex }]
+    }
+    return orderCells || []
+  }, [status, orderCells, lastOutpointTxHash, lastOutpointIndex])
+
+  const fetchListRef = useRef<ReturnType<typeof setInterval> | undefined>()
+
+  usePollingOrderStatus({
+    web3,
+    dispatch,
+    cells,
+    isCrossChain,
+    ckbAddress: ckbWallet.address,
+    status,
+    fetchListRef,
+  })
+
   return (
-    <Modal
+    <ModalContainer
       className={styles.modal}
       wrapClassName={styles.modal}
       visible={modalVisable}
@@ -202,8 +253,8 @@ const OrderModal = ({
         <h3>{status}</h3>
       </div>
       <div className={styles.records}>
-        {orderCells?.map((cell, index) => {
-          const isLast = index === orderCells.length - 1
+        {cells?.map((cell, index) => {
+          const isLast = index === cells.length - 1
           const txHashLength = cell.tx_hash.length
           const txHash = `${cell.tx_hash.slice(0, 30)}...${cell.tx_hash.slice(txHashLength - 4, txHashLength)}`
           const url =
@@ -214,7 +265,7 @@ const OrderModal = ({
             <div key={cell.tx_hash} className={styles.record}>
               <span className={styles.type}>
                 {getOrderCellType(index, isLast, isCrossChain, status)}
-                {status === 'pending' ? (
+                {status === 'pending' && !cell.isLoaded ? (
                   <LoadingOutlined translate="loading" className={styles.check} />
                 ) : (
                   <CheckCircleOutlined translate="check" className={styles.check} />
@@ -229,7 +280,7 @@ const OrderModal = ({
           )
         })}
       </div>
-    </Modal>
+    </ModalContainer>
   )
 }
 
@@ -238,6 +289,7 @@ const History = () => {
     orderList: [],
     pendingIdList: Object.keys(pendingOrders.get()),
     isLoading: false,
+    currentOrder: null,
   })
   const fetchListRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
@@ -269,7 +321,10 @@ const History = () => {
 
   const statusOnClick = useCallback((order: OrderInList) => {
     setModalVisable(true)
-    setCurrentOrder(order)
+    dispatch({
+      type: ActionType.updateCurrentOrder,
+      value: order,
+    })
   }, [])
 
   const actionColumn = {
@@ -333,8 +388,6 @@ const History = () => {
     return orderList.filter(searchFilter).filter(o => o.status === 'aborted' || o.status === 'claimed')
   }, [orderList, showOpenOrder, searchFilter])
 
-  const [currentOrder, setCurrentOrder] = useState<null | OrderInList>(null)
-
   const header = (
     <div className={styles.switcher}>
       <button type="button" className={showOpenOrder ? styles.active : ''} onClick={() => setShowOpenOrder(true)}>
@@ -368,7 +421,14 @@ const History = () => {
         rowClassName={(_, index) => (index % 2 === 0 ? `${styles.even} ${styles.td}` : `${styles.td}`)}
         onHeaderRow={() => ({ className: styles.thead })}
       />
-      <OrderModal currentOrder={currentOrder} modalVisable={modalVisable} setModalVisable={setModalVisable} />
+      {state.currentOrder ? (
+        <OrderModal
+          currentOrder={state.currentOrder}
+          modalVisable={modalVisable}
+          setModalVisable={setModalVisable}
+          dispatch={dispatch}
+        />
+      ) : null}
     </TradeFrame>
   )
 }
