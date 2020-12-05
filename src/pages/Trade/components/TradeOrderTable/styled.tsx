@@ -198,3 +198,41 @@ export const Header = styled.div`
     margin: 0;
   }
 `
+
+export const PriceContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+
+  .input {
+    width: 211px;
+    max-width: 211px;
+  }
+`
+
+export const PriceUnit = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex: 1;
+  flex-direction: row;
+
+  .unit {
+    margin-left: 14px;
+    line-height: 17px;
+    font-size: 14px;
+    color: #888;
+  }
+
+  .one {
+    font-size: 24px;
+    line-height: 29px;
+    color: #000000;
+  }
+
+  svg {
+    margin-left: 14px;
+    margin-right: 6px;
+  }
+`
