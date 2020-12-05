@@ -204,7 +204,7 @@ const Trade = () => {
     <TradePage className="trade-page">
       <TradeContainer>
         <TradeMain>
-          <TradeFrame width="360px">{traceNavigation()}</TradeFrame>
+          <TradeFrame width="400px">{traceNavigation()}</TradeFrame>
           <OrderBookFrame width="auto">
             <TradePriceTable />
           </OrderBookFrame>

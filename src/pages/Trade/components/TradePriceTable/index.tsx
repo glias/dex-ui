@@ -124,7 +124,7 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
           const ckbPay = receive.times(price)
           const totalPay = calcTotalPay(ckbPay.toString())
           const pay = new BigNumber(totalPay).toFixed(4)
-          const progress = receive.dividedBy(maxCKB).times(100).toFixed(0)
+          const progress = new BigNumber(totalPay).dividedBy(maxCKB).times(100).toFixed(0)
           return (
             <List
               setPrice={setPrice}
@@ -240,11 +240,16 @@ const TradePriceTable = () => {
       const ckbPay = receive.times(price)
       const totalPay = calcTotalPay(ckbPay.toString())
       const pay = new BigNumber(totalPay).times(CKB_DECIMAL)
+      // eslint-disable-next-line no-console
+      // console.log(pay.toString(), max.toString())
 
       if (pay.isGreaterThan(max)) {
         max = pay
       }
     }
+
+    // eslint-disable-next-line no-console
+    console.log(max.toString())
 
     return max.div(CKB_DECIMAL).toString()
   }, [orders.askOrders, orders.bidOrders, sudt])

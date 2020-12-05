@@ -19,13 +19,23 @@ import {
   SUDT_LIST,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
-import { OrderTableContainer, PayMeta, Header, PairContainer, PairsContainer, Swap } from './styled'
+import {
+  OrderTableContainer,
+  PayMeta,
+  Header,
+  PairContainer,
+  PairsContainer,
+  Swap,
+  PriceContainer,
+  PriceUnit,
+} from './styled'
 import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
 import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
 import DEXCollector from '../../../../pw/dexCollector'
 import { ReactComponent as SelectTokenSVG } from '../../../../assets/svg/select-token.svg'
 import { ReactComponent as SwapTokenSVG } from '../../../../assets/svg/swap-token.svg'
+import { ReactComponent as ArrowTradeSvg } from '../../../../assets/svg/arrow-trade.svg'
 
 // eslint-disable-next-line
 type ElementOnClick = (event: React.MouseEvent<any, MouseEvent>) => void
@@ -353,12 +363,12 @@ export default function OrderTable() {
     Order.receive,
   ])
 
-  const perSuffix = useMemo(() => {
-    if (Order.pair.includes('ETH')) {
-      return `CKB per ETH`
-    }
-    return `CKB per ${Order.currentSudtTokenName}`
-  }, [Order.pair, Order.currentSudtTokenName])
+  // const perSuffix = useMemo(() => {
+  //   if (Order.pair.includes('ETH')) {
+  //     return `CKB per ETH`
+  //   }
+  //   return `CKB per ${Order.currentSudtTokenName}`
+  // }, [Order.pair, Order.currentSudtTokenName])
 
   const onPairSelect = useCallback(() => {
     if (!Wallet.connecting) {
@@ -457,17 +467,27 @@ export default function OrderTable() {
               },
             ]}
           >
-            <Input
-              placeholder="0"
-              suffix={perSuffix}
-              size="large"
-              disabled={insufficientCKB}
-              required
-              type="number"
-              step="any"
-              onChange={e => setPrice(e.target.value)}
-              value={price}
-            />
+            <PriceContainer>
+              <PriceUnit>
+                <div className="one">1</div>
+                <div className="unit">{Order.currentSudtTokenName}</div>
+                <ArrowTradeSvg />
+              </PriceUnit>
+              <div className="input">
+                <Input
+                  placeholder="0"
+                  suffix="CKB"
+                  size="large"
+                  disabled={insufficientCKB}
+                  required
+                  width="211px"
+                  type="number"
+                  step="any"
+                  onChange={e => setPrice(e.target.value)}
+                  value={price}
+                />
+              </div>
+            </PriceContainer>
           </Form.Item>
         )}
         <Divider />
