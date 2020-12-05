@@ -77,9 +77,9 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
   )
 }
 
-const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid: boolean }) => {
+const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT; isBid: boolean; maxCKB: string }) => {
   const { setPrice } = useContainer(OrderContainer)
-  const decimal = sudt.info?.decimals ?? 8
+  const decimal = sudt.info?.decimals ?? CKB_DECIMAL_INT
   const base = new BigNumber(10)
   const renderedOrders: Array<Orders | { empty: boolean }> = []
   let maxPrice = new BigNumber(0)
@@ -95,7 +95,12 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
         empty: false,
       })
     } else {
-      renderedOrders.push({ empty: true })
+      // eslint-disable-next-line no-lonely-if
+      if (!isBid) {
+        renderedOrders.unshift({ empty: true })
+      } else {
+        renderedOrders.push({ empty: true })
+      }
     }
   }
 
@@ -113,13 +118,13 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
             .times(new BigNumber(10).pow(decimal - CKB_DECIMAL_INT))
             .toString(),
         )
-        const progress = new BigNumber(order.price).dividedBy(maxPrice).div(PRICE_DECIMAL).times(100).toFixed(0)
 
         if (isBid) {
           const receive = new BigNumber(order.receive).div(base.pow(decimal))
           const ckbPay = receive.times(price)
           const totalPay = calcTotalPay(ckbPay.toString())
           const pay = new BigNumber(totalPay).toFixed(4)
+          const progress = receive.dividedBy(maxCKB).times(100).toFixed(0)
           return (
             <List
               setPrice={setPrice}
@@ -135,6 +140,7 @@ const TableBody = ({ orders, sudt, isBid }: { orders: Orders; sudt: SUDT; isBid:
         const receive = new BigNumber(order.receive).div(CKB_DECIMAL)
         const pay = receive.div(price)
         const totalPay = calcTotalPay(pay.toString())
+        const progress = receive.dividedBy(maxCKB).times(100).toFixed(0)
         return (
           <List
             setPrice={setPrice}
@@ -209,6 +215,40 @@ const TradePriceTable = () => {
     }
   }, [hasCurrentPrice, currentPrice, setPrice])
 
+  const maxCKB = useMemo(() => {
+    let max = new BigNumber(0)
+    const base = new BigNumber(10)
+    const decimal = sudt?.info?.decimals ?? CKB_DECIMAL_INT
+    for (let i = 0; i < orders.askOrders.length; i++) {
+      const order = orders.askOrders[i]
+      const ckbAmount = new BigNumber(order.receive)
+      if (ckbAmount.isGreaterThan(max)) {
+        max = ckbAmount
+      }
+    }
+
+    for (let i = 0; i < orders.bidOrders.length; i++) {
+      const order = orders.bidOrders[i]
+      const price = removeTrailingZero(
+        new BigNumber(order.price)
+          .div(PRICE_DECIMAL)
+          .times(new BigNumber(10).pow(decimal - CKB_DECIMAL_INT))
+          .toString(),
+      )
+
+      const receive = new BigNumber(order.receive).div(base.pow(decimal))
+      const ckbPay = receive.times(price)
+      const totalPay = calcTotalPay(ckbPay.toString())
+      const pay = new BigNumber(totalPay).times(CKB_DECIMAL)
+
+      if (pay.isGreaterThan(max)) {
+        max = pay
+      }
+    }
+
+    return max.div(CKB_DECIMAL).toString()
+  }, [orders.askOrders, orders.bidOrders, sudt])
+
   return (
     <Container>
       <Header>{i18n.t('trade.priceTable.title', { token: sudtToken })}</Header>
@@ -219,13 +259,13 @@ const TradePriceTable = () => {
           receive={i18n.t('trade.priceTable.receive', { token: 'CKB' })}
           isBid={false}
         />
-        <TableBody isBid={false} orders={orders.askOrders} sudt={sudt} />
+        <TableBody isBid={false} orders={orders.askOrders} sudt={sudt} maxCKB={maxCKB} />
       </AskTable>
       <BestPrice onClick={bestPriceOnClick} cursor={hasCurrentPrice ? 'pointer' : 'auto'}>
         <div className="price">{currentPrice}</div>
       </BestPrice>
       <BidTable>
-        <TableBody isBid orders={orders.bidOrders} sudt={sudt} />
+        <TableBody isBid orders={orders.bidOrders} sudt={sudt} maxCKB={maxCKB} />
         <TableHead
           price={i18n.t('trade.priceTable.price', { token: sudtToken })}
           pay={i18n.t('trade.priceTable.pay', { token: 'CKB' })}

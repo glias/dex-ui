@@ -75,11 +75,7 @@ export class PlaceOrderBuilder extends Builder {
   async buildSellTx(fee: Amount = Amount.ZERO): Promise<Transaction> {
     let sudtSumAmount = Amount.ZERO
     let inputCapacity = Amount.ZERO
-    const neededCapacity = new Amount(ORDER_CELL_CAPACITY.toString())
-      .add(new Amount(MIN_SUDT_CAPACITY.toString()))
-      .add(Builder.MIN_CHANGE)
-      .add(fee)
-      .add(new Amount(`${MAX_TRANSACTION_FEE}`))
+    const neededCapacity = new Amount(ORDER_CELL_CAPACITY.toString()).add(fee).add(new Amount(`${MAX_TRANSACTION_FEE}`))
 
     const inputs: Cell[] = []
     let outputs: Cell[] = []
@@ -100,7 +96,7 @@ export class PlaceOrderBuilder extends Builder {
 
     if (inputCapacity.lt(neededCapacity)) {
       const extraCells = await this.collector.collect(this.address, {
-        neededAmount: neededCapacity.sub(inputCapacity).add(Builder.MIN_CHANGE),
+        neededAmount: neededCapacity.sub(inputCapacity).add(new Amount(MIN_SUDT_CAPACITY.toString())),
       })
 
       extraCells.forEach(cell => {
@@ -127,14 +123,10 @@ export class PlaceOrderBuilder extends Builder {
     } else {
       orderOutput.capacity = neededCapacity
       orderOutput.setHexData(buildSellData(this.totalPay.toString(this.decimal), receive, this.price, this.decimal))
-      const changeOutput = new Cell(new Amount(MIN_SUDT_CAPACITY.toString()), this.inputLock, this.sudt.toTypeScript())
-      const changeAmount = sudtSumAmount.sub(this.totalPay)
-      changeOutput.setHexData(buildChangeData(changeAmount.toString(this.decimal), this.decimal))
-      const ckbChangeOutput = new Cell(
-        inputCapacity.sub(neededCapacity).sub(new Amount(MIN_SUDT_CAPACITY.toString())),
-        this.inputLock,
-      )
-      outputs = outputs.concat([orderOutput, changeOutput, ckbChangeOutput])
+      const changeOutput = new Cell(inputCapacity.sub(neededCapacity), this.inputLock, this.sudt.toTypeScript())
+      const changeAmount = sudtSumAmount.sub(this.totalPay).toString(this.decimal)
+      changeOutput.setHexData(buildChangeData(changeAmount, this.decimal))
+      outputs = outputs.concat([orderOutput, changeOutput])
     }
 
     const tx = new Transaction(new RawTransaction(inputs, outputs), [Builder.WITNESS_ARGS.Secp256k1])

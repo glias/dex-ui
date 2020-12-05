@@ -304,7 +304,7 @@ export async function placeCrossChainOrder(
   return res
 }
 
-export type Orders = Record<'order_amount' | 'sudt_amount' | 'price', string>[]
+export type Orders = Record<'receive' | 'price', string>[]
 export interface OrdersResult {
   bid_orders: Orders
   ask_orders: Orders
