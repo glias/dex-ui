@@ -38,7 +38,14 @@ export class CancelOrderBuilder extends Builder {
     const inputCells: Cell[] = [normalCell, orderCell]
     const outputCells: Cell[] = [normalCell, orderCell.clone()]
 
-    if (outputCells[1].type) {
+    const data = outputCells[1].getHexData().slice(0, 34)
+
+    const isAmountZero = Amount.fromUInt128LE(data).toString() === '0'
+
+    if (isAmountZero) {
+      outputCells[1].setHexData('0x')
+      outputCells[1].type = undefined
+    } else {
       outputCells[1].setHexData(outputCells[1].getHexData().slice(0, 34))
     }
 
