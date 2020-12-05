@@ -61,7 +61,7 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
 
   const onClick = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
-    setPrice?.(price)
+    setPrice?.(new BigNumber(price).toString())
   }, [setPrice, price])
 
   return (

@@ -317,6 +317,7 @@ export function getOrders(sudt: SUDT = SUDT_GLIA): Promise<AxiosResponse<OrdersR
     type_code_hash: TypeScript.codeHash,
     type_hash_type: TypeScript.hashType,
     type_args: TypeScript.args,
+    decimal: sudt?.info?.decimals,
   }
 
   return axios.get(`${SERVER_URL}/orders`, {
