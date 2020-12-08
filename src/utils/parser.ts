@@ -59,11 +59,6 @@ export const parseOrderRecord = ({
   const turnoverRate = new BigNumber(turnover_rate)
   const isClaimable = turnoverRate.isGreaterThan(0.999) && turnoverRate.isLessThan(1)
 
-  if (isClaimable) {
-    // eslint-disable-next-line no-debugger
-    debugger
-  }
-
   return {
     key,
     pay: `${payAmount.toFixed(4, 1)}`,

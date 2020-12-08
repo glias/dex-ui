@@ -174,10 +174,12 @@ export function getTransactionHeader(blockHashes: string[]) {
   return ckb.rpc.createBatchRequest(requests).exec()
 }
 
+// eslint-disable-next-line consistent-return
 export async function getOrCreateBridgeCell(
   ckbAddress: string,
   ethAddress = '0x0000000000000000000000000000000000000000',
   bridgeFee = '0x0',
+  retry = 0,
 ): Promise<AxiosResponse<any>> {
   try {
     const res = await axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_or_create_bridge_cell`, {
@@ -188,7 +190,12 @@ export async function getOrCreateBridgeCell(
 
     return res
   } catch (error) {
-    return getOrCreateBridgeCell(ckbAddress, ethAddress, bridgeFee)
+    if (retry >= 5) {
+      return Promise.resolve(Object.create({}))
+    }
+    // eslint-disable-next-line no-param-reassign
+    retry += 1
+    return getOrCreateBridgeCell(ckbAddress, ethAddress, bridgeFee, retry)
   }
 }
 
@@ -267,8 +274,6 @@ export async function placeCrossChainOrder(
   const receive = calcAskReceive(builder.pay.toString(ETH_DECIMAL_INT), price)
   const data = buildSellData(builder.totalPay.toString(ETH_DECIMAL_INT), receive, price, ETH_DECIMAL_INT).slice(2)
   const amount = new BigNumber(builder.totalPay.toString(ETH_DECIMAL_INT)).times(ETH_DECIMAL).toString()
-  // eslint-disable-next-line no-debugger
-  // debugger
   const sudtData = data.slice(32, data.length)
 
   const orderLock = new Script(

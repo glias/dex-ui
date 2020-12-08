@@ -289,9 +289,11 @@ export function useWallet() {
       const isOpsEmpty = !ops || (Array.isArray(ops) && ops.length === 0)
       if (isOpsEmpty) {
         getOrCreateBridgeCell(recipientAddress).then(res => {
-          replayResistOutpoints.add(key, res.data.outpoints)
-          // eslint-disable-next-line no-unused-expressions
-          cb?.()
+          if (res && res.data) {
+            replayResistOutpoints.add(key, res.data.outpoints)
+            // eslint-disable-next-line no-unused-expressions
+            cb?.()
+          }
         })
       }
     },
