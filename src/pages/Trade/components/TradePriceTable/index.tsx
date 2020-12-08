@@ -7,7 +7,7 @@ import { ERC20_LIST, SUDT_LIST } from 'constants/sudt'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
 import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT } from 'constants/number'
-import { calcTotalPay, removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
+import { calcTotalPay, removeTrailingZero } from 'utils/fee'
 import PWCore, { SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
 
@@ -62,10 +62,12 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
   const onClick = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
     setPrice?.(
-      price
-        .split('')
-        .filter(word => word !== ',')
-        .join(''),
+      removeTrailingZero(
+        price
+          .split('')
+          .filter(word => word !== ',')
+          .join(''),
+      ),
     )
   }, [setPrice, price])
 
@@ -134,9 +136,9 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
             <List
               setPrice={setPrice}
               progress={progress}
-              price={toFormatWithoutTrailingZero(price, 4)}
-              pay={removeTrailingZero(pay)}
-              receive={removeTrailingZero(receive.toFixed(4))}
+              price={new BigNumber(price).toFormat(8)}
+              pay={new BigNumber(pay).toFormat(4)}
+              receive={receive.toFormat(4)}
               key={key}
               isBid={isBid}
             />
@@ -150,9 +152,9 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
           <List
             setPrice={setPrice}
             progress={progress}
-            price={toFormatWithoutTrailingZero(price, 4)}
-            pay={removeTrailingZero(new BigNumber(totalPay).toFixed(4))}
-            receive={removeTrailingZero(receive.toFixed(4))}
+            price={new BigNumber(price).toFormat(8)}
+            pay={new BigNumber(totalPay).toFormat(4)}
+            receive={receive.toFormat(4)}
             key={key}
             isBid={isBid}
           />
