@@ -216,15 +216,16 @@ const OrderModal = ({
   const { web3, ckbWallet } = useContainer(WalletContainer)
   const [lastOutpointTxHash, lastOutpointIndex] = currentOrder.key.split(':')
 
-  const { status, orderCells, executed } = currentOrder
+  // @ts-ignore
+  const { status, orderCells, executed, pending } = currentOrder
   const isCrossChain = ['ETH', ...ERC20_LIST].includes(currentOrder.tokenName)
 
   const cells = useMemo(() => {
-    if (status === 'aborted') {
-      return [...(orderCells || []), { tx_hash: lastOutpointTxHash, index: lastOutpointIndex }]
+    if (status === 'aborted' && !pending) {
+      return orderCells?.concat({ tx_hash: lastOutpointTxHash, index: lastOutpointIndex }) ?? []
     }
     return orderCells || []
-  }, [status, orderCells, lastOutpointTxHash, lastOutpointIndex])
+  }, [status, orderCells, lastOutpointTxHash, lastOutpointIndex, pending])
 
   const fetchListRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
@@ -236,6 +237,8 @@ const OrderModal = ({
     ckbAddress: ckbWallet.address,
     status,
     fetchListRef,
+    pending,
+    key: currentOrder.key,
   })
 
   const realStatus = useMemo(() => {
@@ -271,11 +274,12 @@ const OrderModal = ({
             isCrossChain && index === 0
               ? `${ETHER_SCAN_URL}tx/${cell.tx_hash}`
               : `${EXPLORER_URL}transaction/${cell.tx_hash}`
+          const isLoading = (status === 'pending' || (pending && isLast)) && !cell.isLoaded
           return (
             <div key={cell.tx_hash} className={styles.record}>
               <span className={styles.type}>
                 {getOrderCellType(index, isLast, isCrossChain, status)}
-                {status === 'pending' && !cell.isLoaded ? (
+                {isLoading ? (
                   <LoadingOutlined translate="loading" className={styles.check} />
                 ) : (
                   <CheckCircleOutlined translate="check" className={styles.check} />
@@ -352,14 +356,35 @@ const History = () => {
           Modal.error({ title: 'Transaction Error', content: error.message })
         })
       }
+
       if (state.pendingIdList.includes(order.key)) {
-        return <Spin indicator={<SyncOutlined spin translate="loading" />} />
+        const handleCancelStatusClick = () => {
+          const txHash = pendingOrders.getOne(`${order.key}-pending`)
+          statusOnClick({
+            ...order,
+            status: 'aborted',
+            pending: true,
+            orderCells: order.orderCells?.concat({ tx_hash: txHash ?? '', index: '0x' }),
+          } as any)
+        }
+        return (
+          <div className={styles.center}>
+            <div className={styles.spinContainer}>
+              <Spin indicator={<SyncOutlined spin translate="loading" />} />
+            </div>
+            <Button onClick={handleCancelStatusClick} className={styles.status}>
+              <InfoSvg />
+            </Button>
+          </div>
+        )
       }
+
       const status = (
         <Button onClick={() => statusOnClick(order)} className={styles.status}>
           <InfoSvg />
         </Button>
       )
+
       switch (order.status) {
         case 'completed': {
           return (

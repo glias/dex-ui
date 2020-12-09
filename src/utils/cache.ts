@@ -41,6 +41,10 @@ export const pendingOrders = {
       return {}
     }
   },
+  getOne: (key: string) => {
+    const orders = pendingOrders.get()
+    return orders[key]
+  },
   add: (key: string, txHash: string) => {
     const orders = pendingOrders.get()
     orders[key] = txHash

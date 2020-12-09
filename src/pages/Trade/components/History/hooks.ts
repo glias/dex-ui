@@ -97,6 +97,8 @@ export const usePollingOrderStatus = ({
   dispatch,
   isCrossChain,
   ckbAddress,
+  pending,
+  key,
 }: {
   web3: Web3 | null
   status: OrderInList['status']
@@ -105,9 +107,11 @@ export const usePollingOrderStatus = ({
   fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
   dispatch: React.Dispatch<HistoryAction>
   ckbAddress: string
+  pending: boolean
+  key: string
 }) => {
   useEffect(() => {
-    if (status === 'pending' && web3) {
+    if ((status === 'pending' || pending) && web3) {
       const checkEthStatus = () => {
         const hash = cells?.[0]?.tx_hash
         web3.eth
@@ -153,6 +157,13 @@ export const usePollingOrderStatus = ({
           if (res.txStatus?.status === TransactionStatus.Committed) {
             // eslint-disable-next-line no-param-reassign
             cells[index].isLoaded = true
+            dispatch({
+              type: ActionType.UpdateCurrentOrderStatus,
+              value: cells,
+            })
+            if (pending) {
+              pendingOrders.remove(`${key}-pending`)
+            }
           }
         })
       }
@@ -162,7 +173,8 @@ export const usePollingOrderStatus = ({
           checkEthStatus()
           checkCkbStatus(0)
         } else {
-          checkCkbTransaction(cells?.[0]?.tx_hash, 0)
+          const index = pending ? cells.length - 1 : 0
+          checkCkbTransaction(cells?.[index]?.tx_hash, index)
         }
       }
       checkStatus()
@@ -177,7 +189,7 @@ export const usePollingOrderStatus = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch])
+  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key])
 }
 
 export const usePollOrderList = ({
@@ -313,6 +325,7 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
         const hash = await builder.send(tx)
         spentCells.add(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
         pendingOrders.add(orderId, txHash)
+        pendingOrders.add(`${orderId}-pending`, hash)
         return hash
       } catch (error) {
         dispatch({ type: ActionType.RemovePendingId, value: orderId })

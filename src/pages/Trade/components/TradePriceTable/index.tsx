@@ -270,8 +270,6 @@ const TradePriceTable = () => {
       const ckbPay = receive.times(price)
       const totalPay = calcTotalPay(ckbPay.toString())
       const pay = new BigNumber(totalPay).times(CKB_DECIMAL)
-      // eslint-disable-next-line no-console
-      // console.log(pay.toString(), max.toString())
 
       if (pay.isGreaterThan(max)) {
         max = pay
