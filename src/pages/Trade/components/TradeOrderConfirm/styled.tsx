@@ -91,6 +91,9 @@ export const ListContainer = styled.div`
       .value {
         margin-right: 4px;
       }
+      .free-now {
+        color: #6b70e0;
+      }
     }
   }
   &.detail {
