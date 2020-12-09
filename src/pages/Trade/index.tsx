@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback } from 'react'
 import { useContainer } from 'unstated-next'
 import SelectToken from 'components/SelectToken'
 import { SUDT_LIST, ERC20_LIST } from 'constants/sudt'
@@ -12,34 +12,10 @@ import TradeOrderResult from './components/TradeOrderResult'
 import TradePriceTable from './components/TradePriceTable'
 import { TradePage, TradeMain, TradeFrame, TradeContainer, OrderBookFrame } from './styled'
 import OrderContainer, { OrderStep } from '../../containers/order'
-import { checkSubmittedTxs, getForceBridgeSettings } from '../../APIs'
+import { getForceBridgeSettings } from '../../APIs'
 
 const Trade = () => {
   const Order = useContainer(OrderContainer)
-  const submittedOrderTimer = useRef<ReturnType<typeof setInterval> | undefined>()
-
-  const { submittedOrders, setAndCacheSubmittedOrders } = Order
-  useEffect(() => {
-    const INTERVAL_TIME = 3000
-    submittedOrderTimer.current = setInterval(() => {
-      const hashes = submittedOrders.map(o => o.key.split(':')[0])
-      if (!hashes.length) {
-        return
-      }
-      checkSubmittedTxs(hashes).then(resList => {
-        const unconfirmedHashes = hashes.filter((_, i) => !resList[i])
-        setAndCacheSubmittedOrders(orders =>
-          orders.filter(order => unconfirmedHashes.includes(order.key.split(':')[0])),
-        )
-      })
-    }, INTERVAL_TIME)
-
-    return () => {
-      if (submittedOrderTimer.current) {
-        clearInterval(submittedOrderTimer.current)
-      }
-    }
-  }, [submittedOrderTimer, submittedOrders, setAndCacheSubmittedOrders])
 
   const { selectingToken, setBuyerToken, setSellerToken, setStep, togglePair } = Order
   const [buyerToken, sellerToken] = Order.pair
