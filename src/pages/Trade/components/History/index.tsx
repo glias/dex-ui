@@ -13,7 +13,14 @@ import WalletContainer from '../../../../containers/wallet'
 import OrderContainer from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import { getTimeString, pendingOrders } from '../../../../utils'
-import { COMMISSION_FEE, ERC20_LIST, ETHER_SCAN_URL, EXPLORER_URL, HISTORY_QUERY_KEY } from '../../../../constants'
+import {
+  COMMISSION_FEE,
+  ERC20_LIST,
+  ETHER_SCAN_URL,
+  EXPLORER_URL,
+  HISTORY_QUERY_KEY,
+  REJECT_ERROR_CODE,
+} from '../../../../constants'
 import type { OrderRecord } from '../../../../utils'
 import { ReactComponent as InfoSvg } from '../../../../assets/svg/info.svg'
 import {
@@ -353,7 +360,24 @@ const History = () => {
     render: (_: unknown, order: OrderInList) => {
       const handleClick = () => {
         handleWithdraw(order.key).catch(error => {
-          Modal.error({ title: 'Transaction Error', content: error.message })
+          const message =
+            error.code === REJECT_ERROR_CODE ? (
+              error.message
+            ) : (
+              <span>
+                You don&apos;t have enough CKB to complete this transaction, please go to&nbsp;
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://faucet.nervos.org/"
+                  className={styles.faucet}
+                >
+                  Nervos Aggron Faucet
+                </a>
+                &nbsp;and claim some CKB.
+              </span>
+            )
+          Modal.error({ title: 'Transaction Error', content: message })
         })
       }
 

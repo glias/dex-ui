@@ -270,6 +270,11 @@
   text-decoration: underline;
 }
 
+.faucet {
+  color: #5C61DA;
+  text-decoration: underline;
+}
+
 .status:hover {
   color: #000;
   text-decoration: underline;
