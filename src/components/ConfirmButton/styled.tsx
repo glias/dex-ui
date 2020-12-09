@@ -34,9 +34,17 @@ export const ButtonContainer = styled.div`
     text-align: center;
     width: 100%;
     &.ant-btn-text {
+      &.ant-btn-loading {
+        color: white !important;
+        background-color: ${(props: { bgColor?: HexString }) => `${shadeColor(props.bgColor ?? '#5C61DA')}!important`};
+      }
       &:disabled {
-        background-color: #ddd !important;
-        color: #888 !important;
+        background-color: #ddd;
+        color: #888;
+      }
+      &:active {
+        color: white;
+        background-color: ${(props: { bgColor?: HexString }) => shadeColor(props.bgColor ?? '#5C61DA;')};
       }
       &:hover {
         color: white;
