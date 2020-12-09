@@ -148,7 +148,8 @@ export const usePollingOrderStatus = ({
         if (!txHash) {
           return
         }
-        ckb.rpc.getTransaction(`0x${txHash}`).then(res => {
+
+        ckb.rpc.getTransaction(txHash).then(res => {
           if (res.txStatus?.status === TransactionStatus.Committed) {
             // eslint-disable-next-line no-param-reassign
             cells[index].isLoaded = true
@@ -233,14 +234,15 @@ export const usePollOrderList = ({
                   index: '',
                 })
               }
+
+              const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
+              for (let i = 0; i < resList.length; i++) {
+                const blockHeader = resList[i]
+                parsed[i].createdAt = blockHeader.timestamp
+              }
             } catch (error) {
               // eslint-disable-next-line no-console
               console.log(error)
-            }
-            const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
-            for (let i = 0; i < resList.length; i++) {
-              const blockHeader = resList[i]
-              parsed[i].createdAt = blockHeader.timestamp
             }
 
             const hashes: string[] = submittedOrders.get(ckbAddress).map((o: any) => o.key.split(':')[0])
