@@ -272,9 +272,6 @@ const TradePriceTable = () => {
       }
     }
 
-    // eslint-disable-next-line no-console
-    console.log(max.toString())
-
     return max.div(CKB_DECIMAL).toString()
   }, [orders.askOrders, orders.bidOrders, sudt])
 
