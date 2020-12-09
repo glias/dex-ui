@@ -1,10 +1,11 @@
 import { DownloadOutlined, SendOutlined } from '@ant-design/icons'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useRouteMatch } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { WalletConnectionStatusHeader } from '../AssetManagerHeader'
+import { AssetManagerHeader, WalletConnectionStatusHeader } from '../AssetManagerHeader'
 import { Button } from '../components/Button'
+import { AssetManagerContainer } from '../hooks'
 import { BalanceStatus } from './BalanceStatus'
 import { TokenTabs } from './TokenTabs'
 
@@ -16,21 +17,21 @@ const OperationsWrapper = styled.div`
 const Operations = () => {
   const { t } = useTranslation()
   const { push } = useHistory()
-  const { url } = useRouteMatch()
+  const { tokenName } = AssetManagerContainer.useContainer()
 
   return (
     <OperationsWrapper>
       <Button
         icon={<SendOutlined translate="send" />}
         style={{ marginRight: '16px', height: '40px' }}
-        onClick={() => push(`${url}/send`)}
+        onClick={() => push(`/assets/${tokenName}/send`)}
       >
         {t('Send')}
       </Button>
       <Button
         icon={<DownloadOutlined translate="receive" />}
         style={{ height: '40px' }}
-        onClick={() => push(`${url}/receive`)}
+        onClick={() => push(`/assets/${tokenName}/receive`)}
       >
         <span>{t('Receive')}</span>
       </Button>
@@ -39,9 +40,20 @@ const Operations = () => {
 }
 
 export const AssetBalance: React.FC = () => {
+  const { tokenName } = useParams<{ tokenName?: string }>()
+  const { setTokenName } = AssetManagerContainer.useContainer()
+
+  useEffect(() => {
+    if (tokenName) {
+      setTokenName(tokenName)
+    }
+  }, [tokenName, setTokenName])
+
+  const headerElement = tokenName ? <AssetManagerHeader showGoBack /> : <WalletConnectionStatusHeader />
+
   return (
     <>
-      <WalletConnectionStatusHeader />
+      {headerElement}
       <BalanceStatus />
       <Operations />
       <TokenTabs />
