@@ -13,7 +13,7 @@ import WalletContainer from '../../../../containers/wallet'
 import OrderContainer from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import { getTimeString, pendingOrders } from '../../../../utils'
-import { ERC20_LIST, ETHER_SCAN_URL, EXPLORER_URL, HISTORY_QUERY_KEY } from '../../../../constants'
+import { COMMISSION_FEE, ERC20_LIST, ETHER_SCAN_URL, EXPLORER_URL, HISTORY_QUERY_KEY } from '../../../../constants'
 import type { OrderRecord } from '../../../../utils'
 import { ReactComponent as InfoSvg } from '../../../../assets/svg/info.svg'
 import {
@@ -154,8 +154,8 @@ const columns = [
       let result = '-'
       if (paidAmount && paidAmount !== '0' && tradedAmount && tradedAmount !== '0') {
         const price = order.isBid
-          ? new BigNumber(paidAmount).div(tradedAmount)
-          : new BigNumber(tradedAmount).div(paidAmount)
+          ? new BigNumber(paidAmount).div(1 + COMMISSION_FEE).div(tradedAmount)
+          : new BigNumber(tradedAmount).div(new BigNumber(paidAmount).div(1 + COMMISSION_FEE))
         result = displayPayOrReceive(price.toString())
       }
       return (
