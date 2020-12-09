@@ -41,7 +41,7 @@
         "transactionFee": "Transaction Fee",
         "learnWhy": "Learn why",
         "receive": "Receive",
-        "freeNow": "❤️ Free Now",
+        "freeNow": "FREE NOW",
         "crossChain": "Cross Chain",
         "crossMeta": "You will receive additional 187 CKB given free by Crosschain Relayer. ",
         "orderMeta": "Placing this Order will lock your additional {{amount}} CKB in the Order. "

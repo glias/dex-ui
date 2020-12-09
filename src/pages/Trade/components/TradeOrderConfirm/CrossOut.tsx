@@ -46,7 +46,7 @@ const CrossChain = () => {
       {
         desc: i18n.t('trade.result.crossFee'),
         value: i18n.t('trade.result.freeNow'),
-        unit: '',
+        unit: 'free-now',
       },
       {
         desc: i18n.t('trade.result.transactionFee'),
