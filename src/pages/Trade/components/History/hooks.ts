@@ -4,8 +4,15 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
+import { submittedOrders } from 'utils/cache'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
-import { ckb, getAllHistoryOrders, getForceBridgeHistory, getTransactionHeader } from '../../../../APIs'
+import {
+  checkSubmittedTxs,
+  ckb,
+  getAllHistoryOrders,
+  getForceBridgeHistory,
+  getTransactionHeader,
+} from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import { REJECT_ERROR_CODE } from '../../../../constants'
@@ -138,7 +145,10 @@ export const usePollingOrderStatus = ({
       }
 
       const checkCkbTransaction = (txHash: string, index: number) => {
-        ckb.rpc.getTransaction(txHash).then(res => {
+        if (!txHash) {
+          return
+        }
+        ckb.rpc.getTransaction(`0x${txHash}`).then(res => {
           if (res.txStatus?.status === TransactionStatus.Committed) {
             // eslint-disable-next-line no-param-reassign
             cells[index].isLoaded = true
@@ -181,6 +191,7 @@ export const usePollOrderList = ({
   ckbAddress: string
 }) => {
   const { setAndCacheSubmittedOrders } = useContainer(OrderContainer)
+
   useEffect(() => {
     dispatch({ type: ActionType.UpdateOrderList, value: [] as Array<Order> })
 
@@ -231,10 +242,33 @@ export const usePollOrderList = ({
               const blockHeader = resList[i]
               parsed[i].createdAt = blockHeader.timestamp
             }
-            dispatch({
-              type: ActionType.UpdateOrderList,
-              value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-            })
+
+            const hashes: string[] = submittedOrders.get(ckbAddress).map((o: any) => o.key.split(':')[0])
+            if (!hashes.length) {
+              dispatch({
+                type: ActionType.UpdateOrderList,
+                value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+              })
+            } else {
+              checkSubmittedTxs(hashes)
+                .then(resList => {
+                  const unconfirmedHashes = hashes.filter((_, i) => !resList[i])
+                  setAndCacheSubmittedOrders(orders =>
+                    orders.filter(order => unconfirmedHashes.includes(order.key.split(':')[0])),
+                  )
+
+                  dispatch({
+                    type: ActionType.UpdateOrderList,
+                    value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+                  })
+                })
+                .catch(() => {
+                  dispatch({
+                    type: ActionType.UpdateOrderList,
+                    value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+                  })
+                })
+            }
           })
           .catch(err => {
             console.warn(`[History Polling]: ${err.message}`)

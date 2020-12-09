@@ -283,9 +283,13 @@ const OrderModal = ({
                 )}
               </span>
               <span className={styles.hash}>
-                <a target="_blank" rel="noopener noreferrer" href={url}>
-                  {txHash}
-                </a>
+                {txHash === '...' ? (
+                  '-'
+                ) : (
+                  <a target="_blank" rel="noopener noreferrer" href={url}>
+                    {txHash}
+                  </a>
+                )}
               </span>
             </div>
           )
