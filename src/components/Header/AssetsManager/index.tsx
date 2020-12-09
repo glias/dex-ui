@@ -14,12 +14,12 @@ const Control = () => {
   const { pathname } = useLocation()
   const { replace } = useHistory()
 
-  if (pathname === '/') replace('/assets/CKB')
+  if (pathname === '/') replace('/assets')
 
   return (
     <>
       <Switch>
-        <Route exact path="/assets/:tokenName" component={AssetBalance} />
+        <Route exact path={['/assets', '/assets/:tokenName']} component={AssetBalance} />
         <Route exact path="/assets/:tokenName/receive" component={Receive} />
         <Route exact path="/assets/:tokenName/send/confirm" component={SendConfirm} />
         <Route exact path="/assets/:tokenName/send" component={Send} />
@@ -50,14 +50,12 @@ export const AssetManager: React.FC = () => {
   })
 
   return (
-    <AssetManagerContainer.Provider>
-      <AssetManagerWrapper>
-        <div className="content">
-          <MemoryRouter>
-            <Control />
-          </MemoryRouter>
-        </div>
-      </AssetManagerWrapper>
-    </AssetManagerContainer.Provider>
+    <AssetManagerWrapper>
+      <MemoryRouter>
+        <AssetManagerContainer.Provider>
+          <Control />
+        </AssetManagerContainer.Provider>
+      </MemoryRouter>
+    </AssetManagerWrapper>
   )
 }

@@ -1,11 +1,11 @@
 import BigNumber from 'bignumber.js'
 import Token from 'components/Token'
-import WalletContainer, { isCkbWallet } from 'containers/wallet'
-import React, { useMemo } from 'react'
+import { isCkbWallet } from 'containers/wallet'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { Balance } from '../Balance'
+import { AssetManagerContainer } from '../hooks'
 import { Description } from './Description'
 
 const BalanceStatusWrapper = styled.div`
@@ -35,10 +35,7 @@ const BalanceStatusWrapper = styled.div`
 
 export const BalanceStatus = () => {
   const { t } = useTranslation()
-  const { tokenName } = useParams<{ tokenName: string }>()
-  const { wallets } = WalletContainer.useContainer()
-
-  const wallet = useMemo(() => wallets.find(wallet => wallet.tokenName === tokenName), [tokenName, wallets])
+  const { wallet, tokenName } = AssetManagerContainer.useContainer()
 
   if (!wallet) return null
 

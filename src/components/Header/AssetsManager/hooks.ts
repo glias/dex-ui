@@ -1,7 +1,7 @@
 import PWCore, { Address, AddressType, Amount, AmountUnit, SimpleBuilder, SimpleSUDTBuilder, SUDT } from '@lay2/pw-core'
 import { TransactionDetailModel } from 'APIs'
 import WalletContainer, { Wallet } from 'containers/wallet'
-import { useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { createContainer } from 'unstated-next'
 import { spentCells } from 'utils'
@@ -112,9 +112,14 @@ function useWrapAddress(): (address: string | Address) => string {
 }
 
 function useAssetManager() {
-  const sudt = useSudt()
+  const [tokenName, setTokenName] = useState('CKB')
+  const { wallets } = WalletContainer.useContainer()
 
-  const decimals = sudt ? sudt.info?.decimals ?? 0 : AmountUnit.ckb
+  const sudt = useMemo(() => SUDT_LIST.find(sudt => sudt.info?.name === tokenName), [tokenName])
+  const decimals = useMemo(() => (sudt ? sudt.info?.decimals ?? 0 : AmountUnit.ckb), [sudt])
+  const wallet = useMemo(() => {
+    return wallets.find(wallet => wallet.tokenName === tokenName)
+  }, [wallets, tokenName])
 
   const wrapAddress = useWrapAddress()
 
@@ -124,8 +129,12 @@ function useAssetManager() {
     useSudt,
     sendCkb: useSendCkb(),
     sendSudt: useSendSudt(),
+
+    tokenName,
+    setTokenName,
     decimals,
     sudt,
+    wallet,
     wrapAddress,
   }
 }
