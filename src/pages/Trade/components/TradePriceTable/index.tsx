@@ -193,7 +193,7 @@ const TradePriceTable = () => {
   const getPlaceTableTimer = useRef<ReturnType<typeof setInterval> | undefined>()
 
   useEffect(() => {
-    const INTERVAL_TIME = 3000
+    const INTERVAL_TIME = 5000
 
     if (getPlaceTableTimer.current) {
       clearInterval(getPlaceTableTimer.current)
