@@ -5,7 +5,7 @@ import i18n from '../../../../utils/i18n'
 import { Container, Result } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
 import { ReactComponent as SuccessSVG } from '../../../../assets/svg/order-placed.svg'
-import { EXPLORER_URL } from '../../../../constants'
+import { ETHER_SCAN_URL, EXPLORER_URL } from '../../../../constants'
 
 export default function Trade() {
   const Order = useContainer(OrderContainer)
@@ -19,7 +19,7 @@ export default function Trade() {
 
   const url = useMemo(() => {
     if (isEthTransactions) {
-      return `https://etherscan.io/tx/${Order.txHash}`
+      return `${ETHER_SCAN_URL}tx/${Order.txHash}`
     }
 
     return `${EXPLORER_URL}transaction/${Order.txHash}`
