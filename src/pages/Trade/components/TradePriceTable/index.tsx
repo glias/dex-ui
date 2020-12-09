@@ -1,5 +1,5 @@
 import OrderContainer from 'containers/order'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import i18n from 'utils/i18n'
 import { getOrders, Orders, getCurrentPrice } from 'APIs'
 import { useContainer } from 'unstated-next'
@@ -190,30 +190,52 @@ const TradePriceTable = () => {
 
   const [currentPrice, setCurrentPrice] = useState('--')
 
+  const getPlaceTableTimer = useRef<ReturnType<typeof setInterval> | undefined>()
+
   useEffect(() => {
-    if (!lockHash) {
-      return
+    const INTERVAL_TIME = 3000
+
+    if (getPlaceTableTimer.current) {
+      clearInterval(getPlaceTableTimer.current)
     }
-    getOrders(sudt).then(res => {
-      const { data } = res
-      setOrders({
-        askOrders: data.ask_orders,
-        bidOrders: data.bid_orders,
-      })
-    })
-    getCurrentPrice(sudt)
-      .then(res => {
+
+    function getPriceTable() {
+      if (!lockHash) {
+        return
+      }
+      getOrders(sudt).then(res => {
         const { data } = res
-        const price = new BigNumber(data)
-          .div(PRICE_DECIMAL)
-          .times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT))
-          .toString()
-        setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : removeTrailingZero(price))
+        setOrders({
+          askOrders: data.ask_orders,
+          bidOrders: data.bid_orders,
+        })
       })
-      .catch(() => {
-        setCurrentPrice(i18n.t('trade.priceTable.empty'))
-      })
-  }, [sudt, lockHash])
+      getCurrentPrice(sudt)
+        .then(res => {
+          const { data } = res
+          const price = new BigNumber(data)
+            .div(PRICE_DECIMAL)
+            .times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT))
+            .toString()
+          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : removeTrailingZero(price))
+        })
+        .catch(() => {
+          setCurrentPrice(i18n.t('trade.priceTable.empty'))
+        })
+    }
+
+    getPlaceTableTimer.current = setInterval(() => {
+      getPriceTable()
+    }, INTERVAL_TIME)
+
+    getPriceTable()
+
+    return () => {
+      if (getPlaceTableTimer.current) {
+        clearInterval(getPlaceTableTimer.current)
+      }
+    }
+  }, [sudt, lockHash, getPlaceTableTimer])
 
   const hasCurrentPrice = useMemo(() => {
     return currentPrice !== i18n.t('trade.priceTable.empty')
