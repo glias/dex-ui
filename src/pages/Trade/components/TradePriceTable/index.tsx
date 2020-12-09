@@ -71,13 +71,19 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
     )
   }, [setPrice, price])
 
+  let priceClassName = isBid ? 'bid' : 'ask'
+
+  if (isEmpty) {
+    priceClassName = ''
+  }
+
   return (
     <Tr onClick={isEmpty ? undefined : onClick} cursor={isEmpty ? 'auto' : 'pointer'}>
       <Progress isBid={isBid} width={!progress ? undefined : `${progress}%`}>
         {!isBid ? payElement : receiveElement}
         {isBid ? payElement : receiveElement}
         <Td position="flex-end" fontWeight="bold">
-          <span>{price}</span>
+          <span className={priceClassName}>{price}</span>
         </Td>
       </Progress>
     </Tr>

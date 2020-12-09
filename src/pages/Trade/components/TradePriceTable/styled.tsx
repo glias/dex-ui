@@ -132,6 +132,16 @@ export const Td = styled.div`
   justify-content: ${(props: TdProps) => props.position};
   align-items: center;
   font-weight: ${(props: TdProps) => props.fontWeight ?? 'bold'};
+
+  span {
+    &.ask {
+      color: #d72903;
+    }
+
+    &.bid {
+      color: #048a21;
+    }
+  }
 `
 
 export const List = styled(Tr)`

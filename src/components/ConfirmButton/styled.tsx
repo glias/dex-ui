@@ -38,9 +38,11 @@ export const ButtonContainer = styled.div`
         color: white !important;
         background-color: ${(props: { bgColor?: HexString }) => `${shadeColor(props.bgColor ?? '#5C61DA')}!important`};
       }
-      &:disabled {
-        background-color: #ddd;
-        color: #888;
+      &.ant-btn {
+        &:disabled {
+          background-color: #ddd;
+          color: #888;
+        }
       }
       &:active {
         color: white;
