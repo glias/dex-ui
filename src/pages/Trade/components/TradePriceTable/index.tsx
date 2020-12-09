@@ -1,5 +1,5 @@
 import OrderContainer from 'containers/order'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import i18n from 'utils/i18n'
 import { getOrders, Orders, getCurrentPrice } from 'APIs'
 import { useContainer } from 'unstated-next'
@@ -190,14 +190,8 @@ const TradePriceTable = () => {
 
   const [currentPrice, setCurrentPrice] = useState('--')
 
-  const getPlaceTableTimer = useRef<ReturnType<typeof setInterval> | undefined>()
-
   useEffect(() => {
     const INTERVAL_TIME = 5000
-
-    if (getPlaceTableTimer.current) {
-      clearInterval(getPlaceTableTimer.current)
-    }
 
     function getPriceTable() {
       if (!lockHash) {
@@ -224,18 +218,16 @@ const TradePriceTable = () => {
         })
     }
 
-    getPlaceTableTimer.current = setInterval(() => {
+    const interval = setInterval(() => {
       getPriceTable()
     }, INTERVAL_TIME)
 
     getPriceTable()
 
     return () => {
-      if (getPlaceTableTimer.current) {
-        clearInterval(getPlaceTableTimer.current)
-      }
+      clearInterval(interval)
     }
-  }, [sudt, lockHash, getPlaceTableTimer])
+  }, [sudt, lockHash])
 
   const hasCurrentPrice = useMemo(() => {
     return currentPrice !== i18n.t('trade.priceTable.empty')
