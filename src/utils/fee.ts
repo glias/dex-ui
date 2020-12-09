@@ -43,6 +43,34 @@ export function removeTrailingZero(str: string) {
   return str.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1')
 }
 
+export function displayPrice(str: string) {
+  const amount = new BigNumber(str)
+  const intVal = amount.integerValue().toString()
+  if (intVal.length > 2) {
+    return amount.toFormat(2)
+  }
+
+  if (intVal.length === 0) {
+    const decimal = amount.decimalPlaces()
+    if (decimal <= 4) {
+      return amount.toFixed(4)
+    }
+
+    if (decimal >= 8) {
+      return amount.toFixed(8)
+    }
+
+    return amount.toFixed(decimal)
+  }
+
+  return amount.toFixed(4)
+}
+
+export function displayPayOrReceive(str: string) {
+  const amount = new BigNumber(str)
+  return amount.toFormat(4)
+}
+
 export default {
   calcBuyReceive,
   calcSellReceive,

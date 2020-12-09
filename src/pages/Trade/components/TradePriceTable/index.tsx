@@ -7,7 +7,7 @@ import { ERC20_LIST, SUDT_LIST } from 'constants/sudt'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
 import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT } from 'constants/number'
-import { calcTotalPay, removeTrailingZero } from 'utils/fee'
+import { calcTotalPay, displayPayOrReceive, displayPrice, removeTrailingZero } from 'utils/fee'
 import PWCore, { SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
 
@@ -136,9 +136,9 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
             <List
               setPrice={setPrice}
               progress={progress}
-              price={new BigNumber(price).toFormat(8)}
-              pay={new BigNumber(pay).toFormat(4)}
-              receive={receive.toFormat(4)}
+              price={displayPrice(price)}
+              pay={displayPayOrReceive(pay)}
+              receive={displayPayOrReceive(receive.toString())}
               key={key}
               isBid={isBid}
             />
@@ -152,9 +152,9 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
           <List
             setPrice={setPrice}
             progress={progress}
-            price={new BigNumber(price).toFormat(8)}
-            pay={new BigNumber(totalPay).toFormat(4)}
-            receive={receive.toFormat(4)}
+            price={displayPrice(price)}
+            pay={displayPayOrReceive(totalPay)}
+            receive={displayPayOrReceive(receive.toString())}
             key={key}
             isBid={isBid}
           />

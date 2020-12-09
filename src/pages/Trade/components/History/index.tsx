@@ -6,7 +6,7 @@ import { TradeFrame } from 'pages/Trade/styled'
 import { PageHeader, Table, Button, Spin, Tooltip, Modal, Divider, Progress, Input } from 'antd'
 import { SyncOutlined, SearchOutlined, CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 import { useContainer } from 'unstated-next'
-import { removeTrailingZero } from 'utils/fee'
+import { displayPayOrReceive, displayPrice } from 'utils/fee'
 import PWCore from '@lay2/pw-core'
 import styled from 'styled-components'
 import WalletContainer from '../../../../containers/wallet'
@@ -85,7 +85,7 @@ const columns = [
       const unit = `CKB per ${order.tokenName}`
       return (
         <Tooltip title={price}>
-          {price}
+          {displayPrice(price)}
           <div className={styles.unit}>{unit}</div>
         </Tooltip>
       )
@@ -102,7 +102,7 @@ const columns = [
       const unit = `${!order.isBid ? order.tokenName : 'CKB'}`
       return (
         <Tooltip title={amount}>
-          {removeTrailingZero(amount)}
+          {displayPayOrReceive(amount)}
           <div className={styles.unit}>{unit}</div>
         </Tooltip>
       )
@@ -119,7 +119,7 @@ const columns = [
       const unit = `${order.isBid ? order.tokenName : 'CKB'}`
       return (
         <Tooltip title={amount}>
-          {removeTrailingZero(amount)}
+          {displayPayOrReceive(amount)}
           <div className={styles.unit}>{unit}</div>
         </Tooltip>
       )
@@ -156,7 +156,7 @@ const columns = [
         const price = order.isBid
           ? new BigNumber(paidAmount).div(tradedAmount)
           : new BigNumber(tradedAmount).div(paidAmount)
-        result = removeTrailingZero(price.toFixed(8, 1))
+        result = displayPayOrReceive(price.toString())
       }
       return (
         <Tooltip title={result}>
