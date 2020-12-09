@@ -90,7 +90,7 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
   const base = new BigNumber(10)
   const renderedOrders: Array<Orders | { empty: boolean }> = []
   let maxPrice = new BigNumber(0)
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 7; i++) {
     const order = orders[i]
     if (order) {
       const price = new BigNumber(order.price).div(PRICE_DECIMAL)
