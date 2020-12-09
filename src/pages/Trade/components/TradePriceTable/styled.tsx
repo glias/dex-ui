@@ -23,7 +23,7 @@ const ASK_BG_COLOR = '#fae2d0'
 const BID_BG_COLOR = '#d8ebd9'
 
 export const AskTable = styled(Table)`
-  margin-top: 14px;
+  margin-top: 16px;
   background-color: ${ASK_BG_COLOR};
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -104,7 +104,7 @@ export const TableContainer = styled.div`
   display: flex;
   flex-direction: column;
   li {
-    height: 44px;
+    height: 32px;
     background-color: ${(props: { isBid: boolean }) => (!props.isBid ? '#fefefe' : '#f6f6f6')};
     padding-right: 0px;
     &:nth-child(even) {
@@ -118,7 +118,7 @@ export const THead = styled(Tr)`
   font-size: 12px;
   line-height: 14px;
   color: #000000;
-  height: 44px;
+  height: 40px;
 `
 
 export interface TdProps {
