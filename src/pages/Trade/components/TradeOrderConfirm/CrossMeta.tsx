@@ -1,4 +1,5 @@
 import React from 'react'
+import { README_URL } from 'constants/url'
 import { MetaContainer } from './styled'
 import i18n from '../../../../utils/i18n'
 // import { ReactComponent as GiftSVG } from '../../../../assets/svg/gift.svg'
@@ -14,7 +15,7 @@ export const CrossMeta = () => {
         <div>
           {i18n.t('trade.result.crossMeta')}
           <a
-            href="https://github.com/glias/dex-ui/blob/dev/faq.md#why-lock-my-addtional-ckb-when-i-place-an-order"
+            href={`${README_URL}#why-lock-my-addtional-ckb-when-i-place-an-order`}
             target="_blank"
             rel="noreferrer noopener"
           >
