@@ -449,7 +449,7 @@ export default function OrderTable() {
               type="number"
               required
               size="large"
-              disabled={insufficientCKB}
+              disabled={insufficientCKB || isRelaying}
               step="any"
               value={pay}
               onChange={e => setPay(e.target.value)}
@@ -478,7 +478,7 @@ export default function OrderTable() {
                   placeholder="0"
                   suffix="CKB"
                   size="large"
-                  disabled={insufficientCKB}
+                  disabled={insufficientCKB || isRelaying}
                   required
                   width="211px"
                   type="number"
