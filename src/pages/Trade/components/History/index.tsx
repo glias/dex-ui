@@ -129,11 +129,10 @@ const columns = [
     title: 'Filled(%)',
     dataIndex: 'executed',
     key: 'price',
-    render: (executed: string, _: unknown, index: number) => {
-      const isOdd = index % 2 === 0
+    render: (executed: string) => {
       return (
         <Progress
-          trailColor={isOdd ? 'white' : undefined}
+          trailColor="#C4C4C4"
           type="circle"
           className={styles.bold}
           width={28}
@@ -260,7 +259,7 @@ const OrderModal = ({
       onCancel={() => setModalVisable(false)}
     >
       <div className={styles.modalBody}>
-        <Progress percent={parseInt(executed, 10)} type="circle" />
+        <Progress percent={parseInt(executed, 10)} type="circle" trailColor="#C4C4C4" />
         <h3>{realStatus}</h3>
       </div>
       <div className={styles.records}>
