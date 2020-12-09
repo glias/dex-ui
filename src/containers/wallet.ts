@@ -13,6 +13,7 @@ import {
   IS_DEVNET,
   ORDER_BOOK_LOCK_SCRIPT,
   PW_DEV_CHAIN_CONFIG,
+  SUDT_DEP,
   SUDT_GLIA,
   SUDT_LIST,
 } from '../constants'
@@ -204,6 +205,11 @@ export function useWallet() {
         IS_DEVNET ? 2 : undefined,
         IS_DEVNET ? PW_DEV_CHAIN_CONFIG : undefined,
       )
+
+      // TODO FIXME HACKED
+      // Aggron testnet sudt dep code has updated, hard code here before PW upgrade
+      // https://github.com/nervosnetwork/rfcs/pull/214
+      PWCore.config.sudtType.cellDep = SUDT_DEP
 
       const [ethAddr] = await newWeb3.eth.getAccounts()
       const ethBalance = await newWeb3.eth.getBalance(ethAddr)
