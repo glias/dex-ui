@@ -223,6 +223,9 @@
   justify-content: center;
   align-items: center;
   flex: 1;
+}
+
+.hash a {
   color: #5C61DA;
   text-decoration: underline;
 }
