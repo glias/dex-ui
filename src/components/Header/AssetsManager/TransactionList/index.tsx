@@ -2,13 +2,14 @@ import { Col, List, Row, Spin, Tooltip, Typography } from 'antd'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { useHistory, useParams, useRouteMatch } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { SUDT_LIST } from '../../../../constants/sudt'
 import { getCkbTransferSummaries, getSudtTransferSummaries, TransactionDirection, TransactionSummary } from '../api'
 import { Balance } from '../Balance'
 import { RadioItem, RadioTabs } from '../components/RadioTabs'
 import { TransactionStatusIcon } from '../components/TransactionStatus'
+import { AssetManagerContainer } from '../hooks'
 
 const { Text, Title } = Typography
 
@@ -46,9 +47,9 @@ const TransactionListItemWrapper = styled.div`
 const TransactionListItem: React.FC<TransactionListItemProps> = (props: TransactionListItemProps) => {
   const { transaction: tx } = props
   const { push } = useHistory()
-  const match = useRouteMatch()
+
   return (
-    <TransactionListItemWrapper onClick={() => push(`${match.url}/transactions/${tx.txHash}`)}>
+    <TransactionListItemWrapper onClick={() => push(`/assets/${tx.tokenName}/transactions/${tx.txHash}`)}>
       <Row gutter={8} align="middle">
         <Col flex="40px">
           <TransactionStatusIcon status={tx.status} direction={tx.direction} filled width={18} />
@@ -79,13 +80,10 @@ const TransactionListWrapper = styled.div`
   }
 `
 
-interface TransactionListProps {
-  tokenName?: string
-}
-export const TransactionList: React.FC<TransactionListProps> = (/* props: TransactionListProps */) => {
+export const TransactionList = () => {
   const { t } = useTranslation()
   const [transferDirection, setTransferDirectionFilter] = useState<'all' | TransactionDirection>('all')
-  const { tokenName } = useParams<{ tokenName: string }>()
+  const { tokenName } = AssetManagerContainer.useContainer()
 
   const { data: txs, isLoading } = useQuery<TransactionSummary[]>(
     ['transactions', tokenName, transferDirection],
