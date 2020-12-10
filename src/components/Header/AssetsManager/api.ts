@@ -46,14 +46,16 @@ function syncWithLocalStorage(tokenName: string, summaries: TransactionSummary[]
   const hashes = summaries.map(s => s.txHash)
   removePendingTransactions(hashes)
 
-  const cleanedSummaries = getPendingTransactions().map<TransactionSummary>(tx => ({
-    amount: tx.amount,
-    date: formatDateTime(Number(tx.timestamp)),
-    tokenName,
-    txHash: tx.txHash,
-    direction: tx.direction,
-    status: tx.status,
-  }))
+  const cleanedSummaries = getPendingTransactions()
+    .filter(tx => tx.tokenName === tokenName)
+    .map<TransactionSummary>(tx => ({
+      amount: tx.amount,
+      date: formatDateTime(Number(tx.timestamp)),
+      tokenName,
+      txHash: tx.txHash,
+      direction: tx.direction,
+      status: tx.status,
+    }))
 
   return summaries.concat(cleanedSummaries).sort((l, r) => r.date.localeCompare(l.date))
 }
