@@ -2,11 +2,11 @@ import { Address, AddressType, Amount, AmountUnit, SimpleBuilder, SimpleSUDTBuil
 import { Divider, Form, Input } from 'antd'
 import { BigNumber } from 'bignumber.js'
 import Token from 'components/Token'
-import WalletContainer, { isCkbWallet } from 'containers/wallet'
-import React, { useCallback, useState } from 'react'
+import { isCkbWallet } from 'containers/wallet'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
-import { useHistory, useParams, useRouteMatch } from 'react-router-dom'
+import { useHistory, useRouteMatch } from 'react-router-dom'
 import styled from 'styled-components'
 import { AssetManagerHeader } from '../AssetManagerHeader'
 import { Balance } from '../Balance'
@@ -67,28 +67,29 @@ const AmountControlLabelWrapper = styled.div`
 
 export const Send: React.FC = () => {
   const { t } = useTranslation()
-  const { tokenName } = useParams<{ tokenName: string }>()
   const [form] = Form.useForm()
   const { push } = useHistory()
   const match = useRouteMatch()
-  const { useSudt } = AssetManagerContainer.useContainer()
-  const sudt = useSudt()
+  const { sudt, wallet, tokenName, decimals } = AssetManagerContainer.useContainer()
 
-  const { wallets } = WalletContainer.useContainer()
-  const wallet = wallets.find(wallet => wallet.tokenName === tokenName)
-  let freeAmount: BigNumber
-  if (!wallet) freeAmount = new BigNumber(0)
-  else if (isCkbWallet(wallet)) freeAmount = wallet.free
-  else freeAmount = wallet.balance
+  const freeAmount: BigNumber = useMemo(() => {
+    if (!wallet) return new BigNumber(0)
+    if (isCkbWallet(wallet)) return wallet.free
+    return wallet.balance
+  }, [wallet])
+
+  const maxPayableAmount: BigNumber = useMemo(() => {
+    if (!wallet) return new BigNumber(0)
+    if (!isCkbWallet(wallet)) return freeAmount
+    return freeAmount.minus(62)
+  }, [freeAmount, wallet])
 
   const [inputAllValidated, setInputAllValidated] = useState(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedValidateInput = useCallback(
-    debounce(() => {
-      const fieldsAllTouched = form.isFieldsTouched(['amount', 'to'], true)
-      const noInputError = form.getFieldsError().flatMap(info => info.errors).length === 0
-      const isValidated = !!(fieldsAllTouched && noInputError)
-      setInputAllValidated(isValidated)
+    debounce(async () => {
+      await form.validateFields(['amount', 'to'])
+      setInputAllValidated(true)
     }, 200),
     [form, setInputAllValidated],
   )
@@ -102,7 +103,7 @@ export const Send: React.FC = () => {
       const toAddress = new Address(to, toAddressType)
 
       if (tokenName === 'CKB') {
-        const builder = new SimpleBuilder(toAddress, new Amount(amount))
+        const builder = new SimpleBuilder(toAddress, new Amount(amount, AmountUnit.ckb))
         await builder.build()
 
         const fee = builder.getFee().toString()
@@ -117,10 +118,10 @@ export const Send: React.FC = () => {
 
       return fee
     },
-    { enabled: inputAllValidated && form },
+    { enabled: inputAllValidated },
   )
 
-  function validateInput() {
+  async function validateInput() {
     setInputAllValidated(false)
     debouncedValidateInput()
   }
@@ -133,11 +134,12 @@ export const Send: React.FC = () => {
     const inputNumber = new BigNumber(input)
     asserts(input && !inputNumber.isNaN(), t(`Amount should be a valid number`))
 
-    const balance = new BigNumber(wallet.balance.toString())
-    asserts(inputNumber.lt(balance), t('Amount should less than the MAX'))
+    const balance = freeAmount
+    asserts(inputNumber.lte(balance), t('Amount should less than the MAX'))
     asserts(inputNumber.gt(0), t('Amount should more than 0'))
     if (!isCkb) return
 
+    asserts(inputNumber.decimalPlaces() <= decimals, t(`The value up to ${decimals} precision`))
     asserts(inputNumber.gte(61), t('Amount should large than 61'))
     asserts(
       balance.minus(inputNumber).gte(61),
@@ -155,7 +157,8 @@ export const Send: React.FC = () => {
   }
 
   function setAllBalanceToAmount() {
-    form.setFieldsValue({ amount: wallet?.balance })
+    form.setFieldsValue({ amount: maxPayableAmount.toString() })
+    validateInput()
   }
 
   const amountLabel = (
@@ -170,7 +173,7 @@ export const Send: React.FC = () => {
       >
         {t('Max')}
         :&nbsp;
-        <Balance value={freeAmount} fixedTo={4} />
+        <Balance value={maxPayableAmount} />
       </span>
     </AmountControlLabelWrapper>
   )
@@ -199,11 +202,15 @@ export const Send: React.FC = () => {
           <Token tokenName={tokenName} />
         </header>
         <Form form={form} onValuesChange={validateInput} autoComplete="off" layout="vertical" onFinish={onFinish}>
-          <Form.Item label={t('To')} name="to" rules={[{ validator: validateAddress }]}>
+          <Form.Item
+            label={t('To')}
+            name="to"
+            rules={[{ validator: validateAddress, validateTrigger: ['onChange', 'onBlur'] }]}
+          >
             <Input.TextArea rows={4} placeholder={t('To')} />
           </Form.Item>
           {amountLabel}
-          <Form.Item rules={[{ validator: validateAmount }]} name="amount">
+          <Form.Item rules={[{ validator: validateAmount, validateTrigger: ['onChange', 'onBlur'] }]} name="amount">
             <Input suffix={tokenName} placeholder={t('Amount')} type="number" size="large" />
           </Form.Item>
           <Divider />
