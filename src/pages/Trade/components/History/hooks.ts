@@ -329,7 +329,7 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
         return hash
       } catch (error) {
         dispatch({ type: ActionType.RemovePendingId, value: orderId })
-        if (error.code === ErrorCode.UserRejct) {
+        if (error.code === ErrorCode.UserReject) {
           throw new Error('Transaction Declined')
         }
         throw error
