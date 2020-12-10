@@ -1,5 +1,5 @@
 import { CellDep, DepType, OutPoint, Script, HashType, SUDT } from '@lay2/pw-core'
-import { buildShadowAssetSUDT } from './erc20'
+import { buildShadowAssetSUDT, ERC20_LIST } from './erc20'
 
 export const SUDT_DEP = new CellDep(DepType.code, new OutPoint(process.env.REACT_APP_SUDT_DEP_OUT_POINT!, '0x0'))
 
@@ -21,11 +21,22 @@ export const SUDT_CK_ETH = buildShadowAssetSUDT({
   decimals: 18,
 })
 
-export const ERC20_LIST = ['DAI', 'USDT', 'USDC']
-
 export type IssuerLockHash = string
 
-export const SUDT_LIST = [SUDT_GLIA, SUDT_CK_ETH]
+export const SHADOW_ASSETS = ERC20_LIST.map(erc20 => {
+  const { tokenName, decimals, address } = erc20
+  const symbol = `ck${tokenName}`
+  return buildShadowAssetSUDT(
+    {
+      symbol,
+      name: symbol,
+      decimals,
+    },
+    address,
+  )
+})
+
+export const SUDT_LIST = [SUDT_GLIA, SUDT_CK_ETH].concat(SHADOW_ASSETS)
 
 export const SUDT_MAP = new Map<IssuerLockHash, SUDT>()
 SUDT_LIST.forEach(sudt => {

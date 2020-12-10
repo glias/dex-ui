@@ -1,7 +1,7 @@
 import { MenuOutlined } from '@ant-design/icons'
 import PWCore from '@lay2/pw-core'
 import { Badge, Button, Menu, Modal, Popover } from 'antd'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
@@ -29,10 +29,8 @@ const Header = () => {
   }
 
   const [visibleWallet, setVisibleWallet] = useState(false)
-  const updateWalletTimer = useRef<ReturnType<typeof setInterval> | undefined>()
 
-  const { web3ModalRef } = Wallet
-  const { connectWallet, /* disconnectWallet, */ resetWallet } = Wallet
+  const { connectWallet, resetWallet, web3ModalRef, ethWallet, web3, connecting, reloadWallet } = Wallet
 
   const handleWalletConnect = useCallback(
     () =>
@@ -63,21 +61,21 @@ const Header = () => {
     if (web3ModalRef.current.cachedProvider) {
       handleWalletConnect()
     }
+  })
 
+  useEffect(() => {
     const INTERVAL_TIME = 10000
-    updateWalletTimer.current = setInterval(() => {
+    const interval = setInterval(() => {
       const address = PWCore.provider?.address?.toCKBAddress?.() ?? ''
-      if (Wallet.connecting === false && address) {
-        Wallet.reloadWallet(address)
+      if (connecting === false && address) {
+        reloadWallet(address, ethWallet.address, web3!)
       }
     }, INTERVAL_TIME)
 
     return () => {
-      if (updateWalletTimer.current) {
-        clearInterval(updateWalletTimer.current)
-      }
+      clearInterval(interval)
     }
-  })
+  }, [ethWallet.address, web3, connecting, reloadWallet])
 
   const gotoHome = () => {
     history.push('/')

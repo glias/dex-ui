@@ -62,7 +62,7 @@ const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
   const [buyer, seller] = pairs
   const Order = useContainer(OrderContainer)
   const disabled = useMemo(() => {
-    if ((buyer === 'ETH' || ERC20_LIST.includes(buyer)) && seller === 'CKB') {
+    if ((buyer === 'ETH' || ERC20_LIST.some(e => e.tokenName === buyer)) && seller === 'CKB') {
       return true
     }
     return false
@@ -316,6 +316,9 @@ export default function OrderTable() {
             break
           }
           case OrderMode.CrossChain: {
+            const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
+            const sudt = SUDT_LIST.find(s => s.info?.symbol === `ck${sudtTokenName}`)
+            const erc20 = ERC20_LIST.find(e => e.tokenName === sudtTokenName)
             const res = await placeCrossChainOrder(
               pay,
               price,
@@ -323,17 +326,34 @@ export default function OrderTable() {
               Wallet.ckbWallet.address,
               Wallet.ethWallet.address,
               Wallet.web3!,
+              sudt!,
+              erc20?.address,
             )
             Order.setTx(res.data)
             break
           }
           case OrderMode.CrossIn: {
-            const res = await shadowAssetCrossIn(pay, Wallet.ckbWallet.address, Wallet.ethWallet.address, Wallet.web3!)
+            const sudtTokenName = Order.pair.find(p => p !== 'CKB')
+            const erc20 = ERC20_LIST.find(e => e.tokenName === sudtTokenName)
+            const res = await shadowAssetCrossIn(
+              pay,
+              Wallet.ckbWallet.address,
+              Wallet.ethWallet.address,
+              Wallet.web3!,
+              erc20?.address,
+            )
             Order.setTx(res.data)
             break
           }
           case OrderMode.CrossOut: {
-            const res = await shadowAssetCrossOut(pay, Wallet.ckbWallet.address, Wallet.ethWallet.address)
+            const sudtTokenName = Order.pair.find(p => p !== 'CKB')
+            const erc20 = ERC20_LIST.find(e => e.tokenName === sudtTokenName)
+            const res = await shadowAssetCrossOut(
+              pay,
+              Wallet.ckbWallet.address,
+              Wallet.ethWallet.address,
+              erc20?.address,
+            )
             Order.setTx(res.data.raw_tx)
             break
           }
@@ -363,20 +383,13 @@ export default function OrderTable() {
     Order.receive,
   ])
 
-  // const perSuffix = useMemo(() => {
-  //   if (Order.pair.includes('ETH')) {
-  //     return `CKB per ETH`
-  //   }
-  //   return `CKB per ${Order.currentSudtTokenName}`
-  // }, [Order.pair, Order.currentSudtTokenName])
-
   const onPairSelect = useCallback(() => {
     if (!Wallet.connecting) {
       setStep(OrderStep.Select)
     }
   }, [Wallet.connecting, setStep])
 
-  const { createBridgeCell, ckbWallet, getBridgeCell, lockHash } = Wallet
+  const { createBridgeCell, getBridgeCell, lockHash, erc20Wallets } = Wallet
 
   const [reactor, setReactor] = useState(0)
 
@@ -387,27 +400,36 @@ export default function OrderTable() {
       return false
     }
     const [firstToken, secondToken] = Order.pair
-    if (firstToken === 'ETH' && secondToken === 'CKB') {
-      const bridgeCell = getBridgeCell(ethAddress, 'cross-order')
+    const isFirstTokenERC20 = erc20Wallets.some(e => e.tokenName === firstToken)
+    const tokenAddress = erc20Wallets.find(e => e.tokenName === firstToken)?.address ?? ethAddress
+    const isERC20CrossIn =
+      isFirstTokenERC20 && secondToken === `ck${erc20Wallets.find(e => e.tokenName === firstToken)?.tokenName}`
+    if ((firstToken === 'ETH' || isFirstTokenERC20) && secondToken === 'CKB') {
+      const bridgeCell = getBridgeCell(tokenAddress, 'cross-order')
       return !bridgeCell
     }
-    if (firstToken === 'ETH' && secondToken === 'ckETH') {
-      const bridgeCell = getBridgeCell(ethAddress, 'cross-in')
+    if ((firstToken === 'ETH' && secondToken === 'ckETH') || isERC20CrossIn) {
+      const bridgeCell = getBridgeCell(tokenAddress, 'cross-in')
       return !bridgeCell
     }
     return false
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Order.orderMode, Order.pair, reactor, getBridgeCell])
+  }, [Order.orderMode, Order.pair, reactor, getBridgeCell, erc20Wallets])
 
   useEffect(() => {
     const [firstToken, secondToken] = Order.pair
-    if (firstToken === 'ETH' && secondToken === 'CKB') {
-      createBridgeCell(ethAddress, 'cross-order', () => setReactor(Math.random()))
+    const isFirstTokenERC20 = erc20Wallets.some(e => e.tokenName === firstToken)
+    const tokenAddress = erc20Wallets.find(e => e.tokenName === firstToken)?.address ?? ethAddress
+    const isERC20CrossIn =
+      isFirstTokenERC20 && secondToken === `ck${erc20Wallets.find(e => e.tokenName === firstToken)?.tokenName}`
+    if ((firstToken === 'ETH' || isFirstTokenERC20) && secondToken === 'CKB') {
+      createBridgeCell(tokenAddress, 'cross-order', () => setReactor(Math.random()))
     }
-    if (firstToken === 'ETH' && secondToken === 'ckETH') {
-      createBridgeCell(ethAddress, 'cross-in', () => setReactor(Math.random()))
+    if ((firstToken === 'ETH' && secondToken === 'ckETH') || isERC20CrossIn) {
+      createBridgeCell(tokenAddress, 'cross-in', () => setReactor(Math.random()))
     }
-  }, [Order.pair, createBridgeCell, ckbWallet.address])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Order.pair, createBridgeCell])
 
   const [firstToken, secondToken] = Order.pair
 

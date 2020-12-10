@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
 import { useContainer } from 'unstated-next'
 import SelectToken from 'components/SelectToken'
-import { SUDT_LIST, ERC20_LIST } from 'constants/sudt'
+import { SUDT_LIST } from 'constants/sudt'
 import { Wallet } from 'containers/wallet'
 import { useDidMount } from 'hooks'
-import { setForceBridgeServer } from 'constants/erc20'
+import { setForceBridgeServer, ERC20_LIST } from 'constants/erc20'
 import TradeOrderTable from './components/TradeOrderTable'
 import History from './components/History'
 import TradeOrderConfirm from './components/TradeOrderConfirm'
@@ -25,11 +25,14 @@ const Trade = () => {
       const isSelectingSUDT = SUDT_LIST.some(
         sudt => sudt.info?.symbol === selectedToken && !selectedToken.startsWith('ck'),
       )
-      const isSelecttingERC20 = selectedToken.startsWith('ck')
+      const isSelectingShadowERC20 = selectedToken.startsWith('ck')
+      const isBuyerERC20 = ERC20_LIST.some(e => e.tokenName === buyerToken)
+      const isSellerERC20 = ERC20_LIST.some(e => e.tokenName === sellerToken)
+      const isSelectingERC20 = ERC20_LIST.some(e => e.tokenName === selectedToken)
 
       switch (selectedToken) {
         case sellerToken:
-          if (selectedToken === 'CKB' && (buyerToken === 'ETH' || ERC20_LIST.includes(buyerToken))) {
+          if (selectedToken === 'CKB' && (buyerToken === 'ETH' || isBuyerERC20)) {
             setBuyerToken('CKB')
             setSellerToken(`ck${buyerToken}`)
           } else {
@@ -37,7 +40,7 @@ const Trade = () => {
           }
           break
         case 'CKB':
-          if (sellerToken === 'ETH' || ERC20_LIST.includes(sellerToken)) {
+          if (sellerToken === 'ETH' || isSellerERC20) {
             setBuyerToken(sellerToken)
             setSellerToken('CKB')
           } else {
@@ -60,15 +63,15 @@ const Trade = () => {
               setBuyerToken(selectedToken)
               setSellerToken('CKB')
             }
-          } else if (isSelecttingERC20) {
+          } else if (isSelectingShadowERC20) {
             if (sellerToken === 'CKB' || sellerToken.slice(2) === selectedToken) {
               setBuyerToken(selectedToken)
             } else {
               setBuyerToken(selectedToken)
               setSellerToken('CKB')
             }
-          } else if (selectedToken.startsWith('ck')) {
-            if (sellerToken === 'CKB' || sellerToken === selectedToken.slice(2)) {
+          } else if (isSelectingERC20) {
+            if (sellerToken === `ck${selectedToken}` || sellerToken === 'CKB') {
               setBuyerToken(selectedToken)
             } else {
               setBuyerToken(selectedToken)
@@ -85,13 +88,14 @@ const Trade = () => {
   const onSecondTokenSelect = useCallback(
     (selectedToken: string) => {
       const isBuyerETH = buyerToken === 'ETH'
-      const isBuyerERC20 = ERC20_LIST.includes(buyerToken)
+      const isBuyerERC20 = ERC20_LIST.some(e => e.tokenName === buyerToken)
+      const isSelectingERC20 = ERC20_LIST.some(e => e.tokenName === selectedToken)
       if (selectedToken === buyerToken) {
         togglePair()
       } else if (selectedToken === 'CKB' && (isBuyerETH || isBuyerERC20)) {
         setBuyerToken(sellerToken)
         setSellerToken('CKB')
-      } else if ((selectedToken === 'ETH' || ERC20_LIST.includes(selectedToken)) && buyerToken === 'CKB') {
+      } else if ((selectedToken === 'ETH' || isSelectingERC20) && buyerToken === 'CKB') {
         setBuyerToken(selectedToken)
         setSellerToken('CKB')
       } else {
@@ -123,9 +127,13 @@ const Trade = () => {
       const isBuyerSUDT = SUDT_LIST.some(
         sudt => sudt.info?.symbol === buyerToken && !sudt.info?.symbol.startsWith('ck'),
       )
-      const isBuyerShadowAssert = SUDT_LIST.some(sudt => sudt.info?.symbol.startsWith('ck'))
+      const isBuyerShadowAssert = SUDT_LIST.some(
+        sudt => sudt.info?.symbol.startsWith('ck') && sudt.info?.symbol === buyerToken,
+      )
       const isCurrentCKB = wallet.tokenName === 'CKB'
       const isSwapable = buyerToken === wallet.tokenName
+      const isBuyerERC20 = ERC20_LIST.some(e => e.tokenName === buyerToken)
+
       switch (buyerToken) {
         case 'CKB':
           return true
@@ -138,7 +146,7 @@ const Trade = () => {
           if (isBuyerShadowAssert) {
             return wallet.tokenName === buyerToken.slice(2) || isCurrentCKB || isSwapable
           }
-          if (ERC20_LIST.includes(buyerToken)) {
+          if (isBuyerERC20) {
             return wallet.tokenName.slice(2) === buyerToken || isCurrentCKB
           }
           break
