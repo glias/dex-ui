@@ -23,10 +23,11 @@ import { calcAskReceive, calcTotalPay } from 'utils/fee'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
-import { CKB_NODE_URL, ETH_DECIMAL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
+import { CKB_NODE_URL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
 export * from './checkSubmittedTxs'
+export * from './bridge'
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL!
 const FORCE_BRIDGER_SERVER_URL = 'http://121.196.29.165:3003'
@@ -204,15 +205,17 @@ export async function shadowAssetCrossOut(
   ckbAddress: string,
   ethAddress: string,
   tokenAddress = '0x0000000000000000000000000000000000000000',
+  decimal = ETH_DECIMAL_INT,
   bridgeFee = '0x0',
 ) {
-  const amount = `0x${new BigNumber(pay).times(ETH_DECIMAL).toString(16)}`
+  const amount = `0x${new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toString(16)}`
   return axios.post(`${FORCE_BRIDGER_SERVER_URL}/burn`, {
     from_lockscript_addr: ckbAddress,
     unlock_fee: bridgeFee,
     amount,
     token_address: tokenAddress,
     recipient_address: ethAddress,
+    sender: ethAddress,
   })
 }
 
@@ -222,9 +225,10 @@ export async function shadowAssetCrossIn(
   ethAddress: string,
   web3: Web3,
   tokenAddress = '0x0000000000000000000000000000000000000000',
+  decimal = ETH_DECIMAL_INT,
   bridgeFee = '0x0',
 ) {
-  const amount = `0x${new BigNumber(calcTotalPay(pay)).times(ETH_DECIMAL).toString(16)}`
+  const amount = `0x${new BigNumber(calcTotalPay(pay)).times(new BigNumber(10).pow(decimal)).toString(16)}`
   const key = `${ckbAddress}-${tokenAddress}`
   const outpoints = replayResistOutpoints.get()[key]
   const op = outpoints.shift()
@@ -239,6 +243,7 @@ export async function shadowAssetCrossIn(
     sudt_extra_data: '',
     gas_price: toHexString(gasPrice),
     nonce: toHexString(nonce),
+    sender: ethAddress,
   })
   if (outpoints.length <= 1) {
     getOrCreateBridgeCell(ckbAddress, ethAddress).then(r => {
@@ -294,6 +299,7 @@ export async function placeCrossChainOrder(
   const nonce = await web3.eth.getTransactionCount(ethAddress)
 
   const res = await axios.post(`${FORCE_BRIDGER_SERVER_URL}/lock`, {
+    sender: ethAddress,
     token_address: tokenAddress,
     amount: toHexString(amount),
     bridge_fee: bridgeFee,

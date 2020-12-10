@@ -154,7 +154,7 @@ export const usePollingOrderStatus = ({
         }
 
         ckb.rpc.getTransaction(txHash).then(res => {
-          if (res.txStatus?.status === TransactionStatus.Committed) {
+          if (res?.txStatus?.status === TransactionStatus.Committed) {
             // eslint-disable-next-line no-param-reassign
             cells[index].isLoaded = true
             dispatch({

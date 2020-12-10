@@ -113,6 +113,7 @@ export default function OrderTable() {
   const [collectingCells, setCollectingCells] = useState(false)
   const [isPayInvalid, setIsPayInvalid] = useState(true)
   const [isPriceInvalid, setIsPriceInvalid] = useState(true)
+  const { web3, ethWallet } = Wallet
 
   const isCrossInOrOut = useMemo(() => {
     return Order.orderMode === OrderMode.CrossIn || Order.orderMode === OrderMode.CrossOut
@@ -293,6 +294,14 @@ export default function OrderTable() {
 
   const isNormalOrder = useMemo(() => OrderMode.Order === Order.orderMode, [Order.orderMode])
 
+  const { shouldApprove, approveERC20, approveText, isApproving, currentERC20 } = Order
+
+  const approve = useCallback(() => {
+    if (currentERC20 && web3 && ethWallet.address) {
+      approveERC20(currentERC20.tokenName, ethWallet.address, web3)
+    }
+  }, [currentERC20, web3, ethWallet.address, approveERC20])
+
   const onSubmit = useCallback(async () => {
     if (walletNotConnected) {
       Wallet.connectWallet()
@@ -333,26 +342,30 @@ export default function OrderTable() {
             break
           }
           case OrderMode.CrossIn: {
-            const sudtTokenName = Order.pair.find(p => p !== 'CKB')
-            const erc20 = ERC20_LIST.find(e => e.tokenName === sudtTokenName)
+            const [erc20TokenName, sudtTokenName] = Order.pair
+            const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
+            const erc20 = ERC20_LIST.find(e => e.tokenName === erc20TokenName)
             const res = await shadowAssetCrossIn(
               pay,
               Wallet.ckbWallet.address,
               Wallet.ethWallet.address,
               Wallet.web3!,
               erc20?.address,
+              sudt?.info?.decimals,
             )
             Order.setTx(res.data)
             break
           }
           case OrderMode.CrossOut: {
-            const sudtTokenName = Order.pair.find(p => p !== 'CKB')
-            const erc20 = ERC20_LIST.find(e => e.tokenName === sudtTokenName)
+            const [sudtTokenName, erc20TokenName] = Order.pair
+            const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
+            const erc20 = ERC20_LIST.find(e => e.tokenName === erc20TokenName)
             const res = await shadowAssetCrossOut(
               pay,
               Wallet.ckbWallet.address,
               Wallet.ethWallet.address,
               erc20?.address,
+              sudt?.info?.decimals,
             )
             Order.setTx(res.data.raw_tx)
             break
@@ -389,7 +402,7 @@ export default function OrderTable() {
     }
   }, [Wallet.connecting, setStep])
 
-  const { createBridgeCell, getBridgeCell, lockHash, erc20Wallets } = Wallet
+  const { createBridgeCell, getBridgeCell, lockHash } = Wallet
 
   const [reactor, setReactor] = useState(0)
 
@@ -400,10 +413,10 @@ export default function OrderTable() {
       return false
     }
     const [firstToken, secondToken] = Order.pair
-    const isFirstTokenERC20 = erc20Wallets.some(e => e.tokenName === firstToken)
-    const tokenAddress = erc20Wallets.find(e => e.tokenName === firstToken)?.address ?? ethAddress
+    const isFirstTokenERC20 = ERC20_LIST.some(e => e.tokenName === firstToken)
+    const tokenAddress = ERC20_LIST.find(e => e.tokenName === firstToken)?.address ?? ethAddress
     const isERC20CrossIn =
-      isFirstTokenERC20 && secondToken === `ck${erc20Wallets.find(e => e.tokenName === firstToken)?.tokenName}`
+      isFirstTokenERC20 && secondToken === `ck${ERC20_LIST.find(e => e.tokenName === firstToken)?.tokenName}`
     if ((firstToken === 'ETH' || isFirstTokenERC20) && secondToken === 'CKB') {
       const bridgeCell = getBridgeCell(tokenAddress, 'cross-order')
       return !bridgeCell
@@ -414,21 +427,20 @@ export default function OrderTable() {
     }
     return false
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Order.orderMode, Order.pair, reactor, getBridgeCell, erc20Wallets])
+  }, [Order.orderMode, Order.pair, reactor, getBridgeCell])
 
   useEffect(() => {
     const [firstToken, secondToken] = Order.pair
-    const isFirstTokenERC20 = erc20Wallets.some(e => e.tokenName === firstToken)
-    const tokenAddress = erc20Wallets.find(e => e.tokenName === firstToken)?.address ?? ethAddress
+    const isFirstTokenERC20 = ERC20_LIST.some(e => e.tokenName === firstToken)
+    const tokenAddress = ERC20_LIST.find(e => e.tokenName === firstToken)?.address ?? ethAddress
     const isERC20CrossIn =
-      isFirstTokenERC20 && secondToken === `ck${erc20Wallets.find(e => e.tokenName === firstToken)?.tokenName}`
+      isFirstTokenERC20 && secondToken === `ck${ERC20_LIST.find(e => e.tokenName === firstToken)?.tokenName}`
     if ((firstToken === 'ETH' || isFirstTokenERC20) && secondToken === 'CKB') {
       createBridgeCell(tokenAddress, 'cross-order', () => setReactor(Math.random()))
     }
     if ((firstToken === 'ETH' && secondToken === 'ckETH') || isERC20CrossIn) {
       createBridgeCell(tokenAddress, 'cross-in', () => setReactor(Math.random()))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Order.pair, createBridgeCell])
 
   const [firstToken, secondToken] = Order.pair
@@ -527,12 +539,22 @@ export default function OrderTable() {
           />
         </Form.Item>
         <Form.Item className="submit">
-          <ConfirmButton
-            text={submitStatus}
-            bgColor={Order.confirmButtonColor}
-            loading={collectingCells || Wallet.connecting}
-            disabled={disabled || insufficientCKB}
-          />
+          {shouldApprove ? (
+            <ConfirmButton
+              htmlType="button"
+              text={approveText}
+              loading={isApproving}
+              disabled={isApproving}
+              onClick={() => approve()}
+            />
+          ) : (
+            <ConfirmButton
+              text={submitStatus}
+              bgColor={Order.confirmButtonColor}
+              loading={collectingCells || Wallet.connecting}
+              disabled={disabled || insufficientCKB}
+            />
+          )}
         </Form.Item>
       </Form>
     </OrderTableContainer>
