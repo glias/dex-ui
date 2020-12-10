@@ -24,7 +24,7 @@ export default function TradePairConfirm() {
   const [disabled, setDisabled] = useState(false)
   const { address } = Wallet.ckbWallet
   const { setStep, setTxHash, setAndCacheSubmittedOrders, pay, price, orderType } = Order
-  const { reloadWallet } = Wallet
+  const { reloadWallet, ethWallet, web3 } = Wallet
 
   useEffect(() => {
     if (address === '') {
@@ -138,13 +138,24 @@ export default function TradePairConfirm() {
           break
       }
 
-      reloadWallet(PWCore.provider.address.toCKBAddress())
+      reloadWallet(PWCore.provider.address.toCKBAddress(), ethWallet.address, web3!)
     } catch (error) {
       Modal.error({ title: 'Submission Error', content: error.message })
     } finally {
       setDisabled(false)
     }
-  }, [reloadWallet, Order.tx, placeCrossChain, placeNormalOrder, Order.orderMode, setStep, setTxHash, burn])
+  }, [
+    reloadWallet,
+    Order.tx,
+    placeCrossChain,
+    placeNormalOrder,
+    Order.orderMode,
+    setStep,
+    setTxHash,
+    burn,
+    ethWallet.address,
+    web3,
+  ])
 
   const result: Record<OrderMode, JSX.Element> = {
     [OrderMode.Order]: <NormalOrder />,

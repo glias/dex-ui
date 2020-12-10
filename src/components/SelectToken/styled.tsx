@@ -18,6 +18,12 @@ export const Container = styled.div`
   }
 `
 
+export const Main = styled.main`
+  overflow: auto;
+  flex: 1;
+  max-height: 400px;
+`
+
 export const TokenContainer = styled.div`
   display: flex;
   flex-direction: row;

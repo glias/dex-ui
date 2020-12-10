@@ -5,7 +5,7 @@ import { createContainer, useContainer } from 'unstated-next'
 import { ORDER_CELL_CAPACITY, MAX_TRANSACTION_FEE, COMMISSION_FEE } from '../constants'
 import { submittedOrders as submittedOrdersCache } from '../utils'
 import type { OrderRecord } from '../utils'
-import { calcAskReceive, calcBidReceive } from '../utils/fee'
+import { calcAskReceive, calcBidReceive, removeTrailingZero } from '../utils/fee'
 import WalletContainer from './wallet'
 
 // eslint-disable-next-line no-shadow
@@ -40,7 +40,7 @@ export interface SubmittedOrder
 
 export function useOrder() {
   const Wallet = useContainer(WalletContainer)
-  const { ethWallet, sudtWallets } = Wallet
+  const { ethWallet, sudtWallets, erc20Wallets } = Wallet
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
@@ -80,6 +80,7 @@ export function useOrder() {
     const [buyer, seller] = pair
     const sudtWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && !buyer.startsWith('ck'))
     const shadowWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && buyer.startsWith('ck'))
+    const erc20Wallet = erc20Wallets.find(erc20 => erc20.tokenName === buyer)
     switch (buyer) {
       case 'CKB':
         return OrderMode.Order
@@ -98,9 +99,15 @@ export function useOrder() {
           }
           return OrderMode.CrossOut
         }
+        if (erc20Wallet) {
+          if (seller.slice(2) === buyer) {
+            return OrderMode.CrossIn
+          }
+          return OrderMode.CrossChain
+        }
         return OrderMode.Order
     }
-  }, [pair, sudtWallets])
+  }, [pair, sudtWallets, erc20Wallets])
 
   const orderType = useMemo(() => {
     const [p1] = pair
@@ -188,12 +195,13 @@ export function useOrder() {
     const [buyer, seller] = pair
     const sudtWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && !buyer.startsWith('ck'))
     const shadowWallet = sudtWallets.find(sudt => sudt.tokenName === buyer && buyer.startsWith('ck'))
+    const erc20Wallet = erc20Wallets.find(erc20 => erc20.tokenName === buyer)
     switch (buyer) {
       case 'CKB':
         setMaxPay(ckbMax)
         break
       case 'ETH':
-        setMaxPay(ethWallet.balance.minus(0.1).toString())
+        setMaxPay(removeTrailingZero(ethWallet.balance.minus(0.1).toString()))
         break
       default:
         if (sudtWallet) {
@@ -204,10 +212,12 @@ export function useOrder() {
           } else {
             setMaxPay(shadowWallet.balance.toString())
           }
+        } else if (erc20Wallet) {
+          setMaxPay(removeTrailingZero(erc20Wallet.balance.toString()))
         }
         break
     }
-  }, [ethWallet.balance, ckbMax, pair, sudtWallets])
+  }, [ethWallet.balance, ckbMax, pair, sudtWallets, erc20Wallets])
 
   const confirmButtonColor = useMemo(() => {
     switch (orderType) {

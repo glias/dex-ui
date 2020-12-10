@@ -23,7 +23,7 @@ import { calcAskReceive, calcTotalPay } from 'utils/fee'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
-import { CKB_NODE_URL, ETH_DECIMAL, ORDER_BOOK_LOCK_SCRIPT, SUDT_CK_ETH, SUDT_GLIA, SUDT_LIST } from '../constants'
+import { CKB_NODE_URL, ETH_DECIMAL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
 export * from './checkSubmittedTxs'
@@ -203,8 +203,8 @@ export async function shadowAssetCrossOut(
   pay: string,
   ckbAddress: string,
   ethAddress: string,
-  bridgeFee = '0x0',
   tokenAddress = '0x0000000000000000000000000000000000000000',
+  bridgeFee = '0x0',
 ) {
   const amount = `0x${new BigNumber(pay).times(ETH_DECIMAL).toString(16)}`
   return axios.post(`${FORCE_BRIDGER_SERVER_URL}/burn`, {
@@ -258,6 +258,7 @@ export async function placeCrossChainOrder(
   ckbAddress: string,
   ethAddress: string,
   web3: Web3,
+  sudt: SUDT,
   tokenAddress = '0x0000000000000000000000000000000000000000',
   bridgeFee = '0x0',
 ) {
@@ -267,13 +268,15 @@ export async function placeCrossChainOrder(
     new Amount(pay, ETH_DECIMAL_INT),
     OrderType.Ask,
     price,
-    SUDT_CK_ETH,
+    sudt,
     new DEXCollector() as any,
   )
 
-  const receive = calcAskReceive(builder.pay.toString(ETH_DECIMAL_INT), price)
-  const data = buildSellData(builder.totalPay.toString(ETH_DECIMAL_INT), receive, price, ETH_DECIMAL_INT).slice(2)
-  const amount = new BigNumber(builder.totalPay.toString(ETH_DECIMAL_INT)).times(ETH_DECIMAL).toString()
+  const decimal = sudt?.info?.decimals ?? ETH_DECIMAL_INT
+
+  const receive = calcAskReceive(builder.pay.toString(decimal), price)
+  const data = buildSellData(builder.totalPay.toString(decimal), receive, price, decimal).slice(2)
+  const amount = new BigNumber(builder.totalPay.toString(decimal)).times(new BigNumber(10).pow(decimal)).toString()
   const sudtData = data.slice(32, data.length)
 
   const orderLock = new Script(
