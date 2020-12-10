@@ -27,6 +27,9 @@
       "searchToken": "Search for token",
       "totalPay": "Total Pay",
       "dismiss": "Dismiss",
+      "approve": "Approve {{tokenName}}",
+      "approveInWallet": "Approving in Wallet",
+      "approveInChain": "Approving in Chain",
       "priceTable": {
         "pay": "Pay ({{token}})",
         "price": "Price (CKB per {{token}})",
