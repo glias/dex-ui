@@ -47,13 +47,17 @@ export function getLiveCells(typeCodeHash: string, typeArgs: string, lockCodeHas
   })
 }
 
-export function getCkbLiveCells(lock: Script, ckbAmount: string): Promise<AxiosResponse<Cell[]>> {
+export function getCkbLiveCells(
+  lock: Script,
+  ckbAmount: string,
+  skipSpentCells = false,
+): Promise<AxiosResponse<Cell[]>> {
   const params = {
     lock_code_hash: lock.codeHash,
     lock_hash_type: lock.hashType,
     lock_args: lock.args,
     ckb_amount: ckbAmount,
-    spent_cells: spentCells.get(),
+    spent_cells: skipSpentCells ? [] : spentCells.get(),
   }
 
   return axios.post(`${SERVER_URL}/cells-for-amount`, params)
