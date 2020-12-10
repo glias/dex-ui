@@ -48,6 +48,10 @@ export const ButtonContainer = styled.div`
         color: white;
         background-color: ${(props: { bgColor?: HexString }) => shadeColor(props.bgColor ?? '#5C61DA;')};
       }
+      &:focus {
+        color: white;
+        background-color: ${(props: { bgColor?: HexString }) => shadeColor(props.bgColor ?? '#5C61DA;')};
+      }
       &:hover {
         color: white;
         background-color: ${(props: { bgColor?: HexString }) => shadeColor(props.bgColor ?? '#5C61DA;')};
