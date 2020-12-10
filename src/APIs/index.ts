@@ -1,5 +1,5 @@
 import CKB from '@nervosnetwork/ckb-sdk-core'
-import PWCore, {
+import {
   Address,
   AddressType,
   Script,
@@ -468,7 +468,7 @@ export function relayEthToCKB(hash: string) {
 
 export const toolkitRPC = new ToolKitRpc(CKB_NODE_URL)
 
-export async function signForceBridgeTransaction(rawTx: RPC.RawTransaction, pw: PWCore) {
+export async function rawTransactionToPWTransaction(rawTx: RPC.RawTransaction) {
   const inputs = await Promise.all(
     rawTx.inputs.map(i =>
       Cell.loadFromBlockchain(toolkitRPC, new OutPoint(i.previous_output?.tx_hash!, i.previous_output?.index!)),
@@ -494,7 +494,7 @@ export async function signForceBridgeTransaction(rawTx: RPC.RawTransaction, pw: 
     Builder.WITNESS_ARGS.Secp256k1,
   ])
 
-  return pw.sendTransaction(tx)
+  return tx
 }
 
 export function getForceBridgeSettings() {
