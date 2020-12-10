@@ -56,7 +56,7 @@ function useSendCkb(): (address: string, shannonCkb: string) => Promise<string> 
         txHash,
       }
 
-      addPendingTransactions({ ...tx, timestamp: Date.now() })
+      addPendingTransactions({ ...tx, timestamp: Date.now(), tokenName: 'CKB' })
 
       return txHash
     },
@@ -93,7 +93,7 @@ function useSendSudt(): (address: string, amount: string, inputSudt?: SUDT) => P
         to: address,
         txHash,
       }
-      addPendingTransactions({ ...tx, timestamp: Date.now() })
+      addPendingTransactions({ ...tx, timestamp: Date.now(), tokenName: sudt.info?.name! })
       return txHash
     },
     [pw, paramSudt],
