@@ -9,6 +9,7 @@ import PWCore, {
   OutPoint,
   AmountUnit,
 } from '@lay2/pw-core'
+import { CKBNotEnough, LiveCellNotEnough } from 'exceptions'
 import { ORDER_BOOK_LOCK_DEP, SUDT_DEP, CKB_NODE_URL } from '../constants'
 
 export class CancelOrderBuilder extends Builder {
@@ -28,7 +29,12 @@ export class CancelOrderBuilder extends Builder {
     const cells = await this.collector.collect(this.address, { neededAmount: Builder.MIN_CHANGE })
 
     if (!cells.length) {
-      throw new Error('Cannot find extra cells for validation')
+      // @ts-ignore
+      const allCells = await this.collector.collect(this.address, { neededAmount: Builder.MIN_CHANGE }, true)
+      if (allCells.length) {
+        throw new LiveCellNotEnough()
+      }
+      throw new CKBNotEnough()
     }
 
     const [normalCell] = cells
