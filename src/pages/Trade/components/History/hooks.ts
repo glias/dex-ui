@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
+import { ErrorCode } from 'exceptions'
 import { submittedOrders } from 'utils/cache'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
 import {
@@ -15,7 +16,6 @@ import {
 } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
-import { REJECT_ERROR_CODE } from '../../../../constants'
 import type { RawOrder } from '../../../../utils'
 import { OrderInList } from '.'
 
@@ -329,7 +329,7 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
         return hash
       } catch (error) {
         dispatch({ type: ActionType.RemovePendingId, value: orderId })
-        if (error.code === REJECT_ERROR_CODE) {
+        if (error.code === ErrorCode.UserRejct) {
           throw new Error('Transaction Declined')
         }
         throw error
