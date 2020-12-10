@@ -2,7 +2,7 @@
 export enum ErrorCode {
   LiveCellNotEnough = 500,
   CKBNotEnough = 501,
-  UserRejct = 4001,
+  UserReject = 4001,
 }
 
 export class LiveCellNotEnough extends Error {
