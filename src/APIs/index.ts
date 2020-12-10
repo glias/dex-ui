@@ -267,17 +267,17 @@ export async function placeCrossChainOrder(
   tokenAddress = '0x0000000000000000000000000000000000000000',
   bridgeFee = '0x0',
 ) {
+  const decimal = sudt?.info?.decimals ?? ETH_DECIMAL_INT
+
   // TODO: remove place order
   const builder = new PlaceOrderBuilder(
     new Address(ckbAddress, AddressType.ckb),
-    new Amount(pay, ETH_DECIMAL_INT),
+    new Amount(pay, decimal),
     OrderType.Ask,
     price,
     sudt,
     new DEXCollector() as any,
   )
-
-  const decimal = sudt?.info?.decimals ?? ETH_DECIMAL_INT
 
   const receive = calcAskReceive(builder.pay.toString(decimal), price)
   const data = buildSellData(builder.totalPay.toString(decimal), receive, price, decimal).slice(2)
