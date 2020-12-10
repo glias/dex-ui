@@ -4,7 +4,7 @@ import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import HeaderWithGoback from 'components/HeaderWithGoback'
 import { Divider, Modal } from 'antd'
-import { relayEthToCKB, signForceBridgeTransaction } from 'APIs'
+import { relayEthToCKB } from 'APIs'
 import { TradePairConfirmBox, TradePairConfirmContent, Footer } from './styled'
 import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
@@ -105,8 +105,8 @@ export default function TradePairConfirm() {
   )
 
   const burn = useCallback(
-    async (tx: any) => {
-      const txHash = await signForceBridgeTransaction(tx, Wallet.pw!)
+    async (tx: Transaction) => {
+      const txHash = await Wallet.pw!.sendTransaction(tx)
       setTxHash(txHash!)
       setStep(OrderStep.Result)
     },

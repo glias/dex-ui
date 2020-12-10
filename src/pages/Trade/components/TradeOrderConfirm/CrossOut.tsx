@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { Divider } from 'antd'
+import { Builder } from '@lay2/pw-core'
 import { toFormatWithoutTrailingZero } from 'utils/fee'
 import i18n from 'utils/i18n'
 import { useContainer } from 'unstated-next'
@@ -19,6 +20,10 @@ const CrossChain = () => {
     return toFormatWithoutTrailingZero(Order.pay)
   }, [Order.pay])
 
+  const transactionFee = useMemo(() => {
+    return Order.tx ? Builder.calcFee(Order.tx).toString() : '0'
+  }, [Order.tx])
+
   const totalPayDetail = useMemo(() => {
     const list: Item[] = [
       {
@@ -28,13 +33,13 @@ const CrossChain = () => {
       },
       {
         desc: '',
-        value: '0',
+        value: transactionFee,
         unit: 'CKB',
       },
     ]
 
     return list
-  }, [pay, buyer])
+  }, [pay, buyer, transactionFee])
 
   const tradeDetails = useMemo(() => {
     const list: Item[] = [
@@ -50,12 +55,12 @@ const CrossChain = () => {
       },
       {
         desc: i18n.t('trade.result.transactionFee'),
-        value: '0',
+        value: transactionFee,
         unit: 'CKB',
       },
     ]
     return list
-  }, [buyer, pay])
+  }, [buyer, pay, transactionFee])
 
   const receiveDetail = useMemo(() => {
     const list: Item[] = [

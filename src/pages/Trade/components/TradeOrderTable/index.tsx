@@ -8,7 +8,7 @@ import { Address, Amount, AddressType, AmountUnit } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import { removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
-import { placeCrossChainOrder, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
+import { placeCrossChainOrder, rawTransactionToPWTransaction, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
@@ -367,7 +367,8 @@ export default function OrderTable() {
               erc20?.address,
               sudt?.info?.decimals,
             )
-            Order.setTx(res.data.raw_tx)
+            const tx = await rawTransactionToPWTransaction(res.data.raw_tx)
+            Order.setTx(tx)
             break
           }
           default:
