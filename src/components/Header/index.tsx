@@ -1,6 +1,6 @@
 import { MenuOutlined } from '@ant-design/icons'
 import PWCore from '@lay2/pw-core'
-import { Badge, Button, Menu, Modal, Popover } from 'antd'
+import { Button, Menu, Modal, Popover } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useContainer } from 'unstated-next'
@@ -119,13 +119,11 @@ const Header = () => {
                   getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
                   content={<AssetManager />}
                 >
-                  <Badge count="">
-                    <UserMeta>
-                      <img src={MetaMaskpng} alt="metaMask" />
-                      {truncateStr(ckbAddress)}
-                      <MenuOutlined style={{ marginLeft: '10px' }} translate="more" />
-                    </UserMeta>
-                  </Badge>
+                  <UserMeta>
+                    <img src={MetaMaskpng} alt="metaMask" />
+                    {truncateStr(ckbAddress)}
+                    <MenuOutlined style={{ marginLeft: '10px' }} translate="more" />
+                  </UserMeta>
                 </Popover>
               </>
             )}
