@@ -449,14 +449,17 @@ export interface ForceBridgeItem {
   id: string
 }
 
-export function getForceBridgeHistory(ckbAddress: string): Promise<AxiosResponse<ForceBridgeHistory>> {
+export function getForceBridgeHistory(
+  ckbAddress: string,
+  pureCross = false,
+): Promise<AxiosResponse<ForceBridgeHistory>> {
   const orderLock = new Script(
     ORDER_BOOK_LOCK_SCRIPT.codeHash,
     new Address(ckbAddress, AddressType.ckb).toLockScript().toHash(),
     ORDER_BOOK_LOCK_SCRIPT.hashType,
   )
   return axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_crosschain_history`, {
-    ckb_recipient_lockscript_addr: orderLock.toAddress().toCKBAddress(),
+    ckb_recipient_lockscript_addr: pureCross ? ckbAddress : orderLock.toAddress().toCKBAddress(),
   })
 }
 

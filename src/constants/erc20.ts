@@ -71,6 +71,12 @@ export const ERC20_USDC: ERC20 = {
   address: '0x1F0D2251f51b88FaFc90f06F7022FF8d82154B1a',
 }
 
+export const ERC20_ETH: ERC20 = {
+  tokenName: 'ETH',
+  decimals: 18,
+  address: '0x0000000000000000000000000000000000000000',
+}
+
 export const ERC20_LIST = [ERC20_DAI, ERC20_USDT, ERC20_USDC]
 
 export const setForceBridgeServer = (settings: any) => {

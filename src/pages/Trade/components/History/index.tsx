@@ -309,6 +309,12 @@ const OrderModal = ({
   )
 }
 
+export enum ShowStatus {
+  Open,
+  History,
+  CrossChain,
+}
+
 const History = () => {
   const [state, dispatch] = useReducer(reducer, {
     orderList: [],
@@ -452,23 +458,42 @@ const History = () => {
     ...state.orderList.filter(order => !submittedOrderList.some(submitted => submitted.key === order.key)),
   ].filter(order => orderFilter(type, order))
 
-  const [showOpenOrder, setShowOpenOrder] = useState(true)
+  const [showStatus, setShowStatus] = useState(ShowStatus.Open)
 
   const orders = useMemo(() => {
-    if (showOpenOrder) {
+    if (showStatus === ShowStatus.Open) {
       return orderList.filter(searchFilter).filter(o => o.status !== 'aborted' && o.status !== 'claimed')
     }
-    return orderList.filter(searchFilter).filter(o => o.status === 'aborted' || o.status === 'claimed')
-  }, [orderList, showOpenOrder, searchFilter])
+    if (showStatus === ShowStatus.History) {
+      return orderList.filter(searchFilter).filter(o => o.status === 'aborted' || o.status === 'claimed')
+    }
+    return []
+  }, [orderList, showStatus, searchFilter])
 
   const header = (
     <div className={styles.switcher}>
-      <button type="button" className={showOpenOrder ? styles.active : ''} onClick={() => setShowOpenOrder(true)}>
+      <button
+        type="button"
+        className={showStatus === ShowStatus.Open ? styles.active : ''}
+        onClick={() => setShowStatus(ShowStatus.Open)}
+      >
         My Open Orders
       </button>
       <Divider type="vertical" className={styles.divider} />
-      <button type="button" className={!showOpenOrder ? styles.active : ''} onClick={() => setShowOpenOrder(false)}>
+      <button
+        type="button"
+        className={showStatus === ShowStatus.History ? styles.active : ''}
+        onClick={() => setShowStatus(ShowStatus.History)}
+      >
         Order History
+      </button>
+      <Divider type="vertical" className={styles.divider} />
+      <button
+        type="button"
+        className={showStatus === ShowStatus.CrossChain ? styles.active : ''}
+        onClick={() => setShowStatus(ShowStatus.CrossChain)}
+      >
+        Cross Chain
       </button>
     </div>
   )

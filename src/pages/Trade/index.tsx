@@ -1,8 +1,9 @@
-import React, { useCallback } from 'react'
+/* eslint-disable no-console */
+import React, { useCallback, useEffect } from 'react'
 import { useContainer } from 'unstated-next'
 import SelectToken from 'components/SelectToken'
 import { SUDT_LIST } from 'constants/sudt'
-import { Wallet } from 'containers/wallet'
+import WalletContainer, { Wallet } from 'containers/wallet'
 import { useDidMount } from 'hooks'
 import { setForceBridgeServer, ERC20_LIST } from 'constants/erc20'
 import TradeOrderTable from './components/TradeOrderTable'
@@ -12,13 +13,27 @@ import TradeOrderResult from './components/TradeOrderResult'
 import TradePriceTable from './components/TradePriceTable'
 import { TradePage, TradeMain, TradeFrame, TradeContainer, OrderBookFrame } from './styled'
 import OrderContainer, { OrderStep } from '../../containers/order'
-import { getForceBridgeSettings } from '../../APIs'
+import { getForceBridgeSettings, getPureCrossChainHistory } from '../../APIs'
 
 const Trade = () => {
   const Order = useContainer(OrderContainer)
+  const { web3 } = useContainer(WalletContainer)
 
   const { selectingToken, setBuyerToken, setSellerToken, setStep, togglePair } = Order
   const [buyerToken, sellerToken] = Order.pair
+
+  useEffect(() => {
+    if (!web3) {
+      return
+    }
+
+    getPureCrossChainHistory(
+      'ckt1q3vvtay34wndv9nckl8hah6fzzcltcqwcrx79apwp2a5lkd07fdxx5ldy47qheqqyv8lasgjrv207juy8637c3ap33g',
+      web3,
+    ).then(res => {
+      console.log(res)
+    })
+  }, [web3])
 
   const onFirstTokenSelect = useCallback(
     (selectedToken: string) => {
