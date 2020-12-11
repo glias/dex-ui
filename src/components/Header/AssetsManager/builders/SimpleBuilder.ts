@@ -68,6 +68,13 @@ export class ForceSimpleBuilder extends Builder {
       return tx
     }
 
+    // when the change cell cannot offer the transaction fee, the transaction fee will offer by the receiver
+    if (changeCell.capacity.gte(Builder.MIN_CHANGE) && outputCell.capacity.gte(Builder.MIN_CHANGE.add(this.fee))) {
+      outputCell.capacity = outputCell.capacity.sub(this.fee)
+      tx.raw.outputs[0] = outputCell
+      return tx
+    }
+
     return this.build(this.fee)
   }
 
