@@ -1,4 +1,4 @@
-import PWCore, { Address, AddressType, Amount, AmountUnit, SimpleBuilder, SimpleSUDTBuilder, SUDT } from '@lay2/pw-core'
+import PWCore, { Address, AddressType, Amount, AmountUnit, SimpleSUDTBuilder, SUDT } from '@lay2/pw-core'
 import { TransactionDetailModel } from 'APIs'
 import WalletContainer, { Wallet } from 'containers/wallet'
 import { useCallback, useMemo, useState } from 'react'
@@ -7,6 +7,7 @@ import { createContainer } from 'unstated-next'
 import { spentCells } from 'utils'
 import { SUDT_LIST } from '../../../constants'
 import { TransactionDirection, TransactionStatus } from './api'
+import { ForceSimpleBuilder } from './builders/SimpleBuilder'
 import { asserts } from './helper'
 import { addPendingTransactions } from './pendingTxs'
 
@@ -39,7 +40,7 @@ function useSendCkb(): (address: string, shannonCkb: string) => Promise<string> 
     async (address: string, shannonCkb: string) => {
       asserts(pw)
 
-      const builder = new SimpleBuilder(wrapAddress(address), new Amount(shannonCkb, AmountUnit.shannon))
+      const builder = new ForceSimpleBuilder(wrapAddress(address), new Amount(shannonCkb, AmountUnit.shannon))
       const txHash = await pw.sendTransaction(builder)
       const built = await builder.build()
       spentCells.add(built.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
@@ -120,6 +121,7 @@ function useAssetManager() {
   const wallet = useMemo(() => {
     return wallets.find(wallet => wallet.tokenName === tokenName)
   }, [wallets, tokenName])
+  const isCkb = useMemo(() => tokenName === 'CKB', [tokenName])
 
   const wrapAddress = useWrapAddress()
 
@@ -132,10 +134,12 @@ function useAssetManager() {
 
     tokenName,
     setTokenName,
-    decimals,
+    decimal: decimals,
     sudt,
     wallet,
     wrapAddress,
+
+    isCkb,
   }
 }
 

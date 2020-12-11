@@ -1,5 +1,6 @@
-import { Address, AddressType, Amount, AmountUnit, SimpleBuilder, SimpleSUDTBuilder } from '@lay2/pw-core'
+import { Address, AddressType, Amount, AmountUnit, SimpleSUDTBuilder } from '@lay2/pw-core'
 import { Divider, Form, Input } from 'antd'
+import { FormItemProps } from 'antd/lib/form'
 import { BigNumber } from 'bignumber.js'
 import Token from 'components/Token'
 import { isCkbWallet } from 'containers/wallet'
@@ -10,6 +11,7 @@ import { useHistory, useRouteMatch } from 'react-router-dom'
 import styled from 'styled-components'
 import { AssetManagerHeader } from '../AssetManagerHeader'
 import { Balance } from '../Balance'
+import { ForceSimpleBuilder } from '../builders/SimpleBuilder'
 import { Button } from '../components/Button'
 import { asserts, debounce } from '../helper'
 import { AssetManagerContainer } from '../hooks'
@@ -67,10 +69,11 @@ const AmountControlLabelWrapper = styled.div`
 
 export const Send: React.FC = () => {
   const { t } = useTranslation()
-  const [form] = Form.useForm()
+  const [form] = Form.useForm<{ amount: string; to: string }>()
   const { push } = useHistory()
   const match = useRouteMatch()
-  const { sudt, wallet, tokenName, decimals } = AssetManagerContainer.useContainer()
+  const { sudt, wallet, tokenName, decimal: decimals } = AssetManagerContainer.useContainer()
+  const [shouldSendAllCkb, setShouldSendAllCkb] = useState(false)
 
   const freeAmount: BigNumber = useMemo(() => {
     if (!wallet) return new BigNumber(0)
@@ -78,24 +81,21 @@ export const Send: React.FC = () => {
     return wallet.balance
   }, [wallet])
 
-  const maxPayableAmount: BigNumber = useMemo(() => {
-    if (!wallet) return new BigNumber(0)
-    if (!isCkbWallet(wallet)) return freeAmount
-    return freeAmount.minus(62)
-  }, [freeAmount, wallet])
+  const maxPayableAmount: BigNumber = freeAmount
 
   const [inputAllValidated, setInputAllValidated] = useState(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedValidateInput = useCallback(
     debounce(async () => {
       await form.validateFields(['amount', 'to'])
+
       setInputAllValidated(true)
     }, 200),
     [form, setInputAllValidated],
   )
 
   const { data: transactionFee } = useQuery<string, unknown>(
-    ['getTransactionFee', tokenName, inputAllValidated],
+    ['getTransactionFee', tokenName, inputAllValidated, form.getFieldValue('amount')],
     async () => {
       const { amount, to } = form.getFieldsValue(['amount', 'to'])
       if (!inputAllValidated) return ''
@@ -103,7 +103,7 @@ export const Send: React.FC = () => {
       const toAddress = new Address(to, toAddressType)
 
       if (tokenName === 'CKB') {
-        const builder = new SimpleBuilder(toAddress, new Amount(amount, AmountUnit.ckb))
+        const builder = new ForceSimpleBuilder(toAddress, new Amount(amount))
         await builder.build()
 
         const fee = builder.getFee().toString()
@@ -129,6 +129,7 @@ export const Send: React.FC = () => {
   if (!wallet) return null
 
   async function validateAmount(_: any, input: any): Promise<void> {
+    setShouldSendAllCkb(false)
     const isCkb = tokenName === 'CKB'
     asserts(wallet)
     const inputNumber = new BigNumber(input)
@@ -141,12 +142,8 @@ export const Send: React.FC = () => {
 
     asserts(inputNumber.decimalPlaces() <= decimals, t(`The value up to ${decimals} precision`))
     asserts(inputNumber.gte(61), t('Amount should large than 61'))
-    asserts(
-      balance.minus(inputNumber).gte(61),
-      t(
-        `The remaining balance is too small(less than 61 CKB). So the transaction won't succeed. You can send less than 61 CKB out. \n Or do you want to send ALL your CKB out?`,
-      ),
-    )
+    const remainLessThanBasicCellCapacity = balance.minus(inputNumber).lt(61)
+    setShouldSendAllCkb(remainLessThanBasicCellCapacity)
   }
 
   async function validateAddress(_: any, input: string): Promise<void> {
@@ -181,7 +178,7 @@ export const Send: React.FC = () => {
   const transactionFeeTip = (
     <div style={{ marginBottom: '16px' }}>
       <div>{t('Transaction fee')}</div>
-      <div>{transactionFee ? <Balance value={transactionFee} type="CKB" /> : '-'}</div>
+      <div>{transactionFee ? <Balance value={transactionFee} suffix="CKB" /> : '-'}</div>
     </div>
   )
 
@@ -193,6 +190,15 @@ export const Send: React.FC = () => {
     const confirmUrl = `${match.url}/confirm?to=${to}&amount=${amount}&fee=${transactionFee}`
     push(confirmUrl)
   }
+
+  const amountFormItemProps: FormItemProps = shouldSendAllCkb
+    ? {
+        validateStatus: 'warning',
+        help: t(
+          `The remaining balance is too small(less than 61 CKB). So the transaction won't succeed. You can send less than 61 CKB out. \n Or do you want to send ALL your CKB out?`,
+        ),
+      }
+    : {}
 
   return (
     <>
@@ -210,7 +216,11 @@ export const Send: React.FC = () => {
             <Input.TextArea rows={4} placeholder={t('To')} />
           </Form.Item>
           {amountLabel}
-          <Form.Item rules={[{ validator: validateAmount, validateTrigger: ['onChange', 'onBlur'] }]} name="amount">
+          <Form.Item
+            {...amountFormItemProps}
+            rules={[{ validator: validateAmount, validateTrigger: ['onChange', 'onBlur'] }]}
+            name="amount"
+          >
             <Input suffix={tokenName} placeholder={t('Amount')} type="number" size="large" />
           </Form.Item>
           <Divider />
@@ -218,7 +228,7 @@ export const Send: React.FC = () => {
 
           <Form.Item>
             <Button htmlType="submit" size="large" block disabled={!inputAllValidated || !transactionFee}>
-              {t('Send')}
+              {shouldSendAllCkb ? t('Send All My CKB') : t('Send')}
             </Button>
           </Form.Item>
         </Form>
