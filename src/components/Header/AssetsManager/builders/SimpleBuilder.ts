@@ -8,21 +8,13 @@ import PWCore, {
   RawTransaction,
   Transaction,
 } from '@lay2/pw-core'
-import { SimpleACPBuilder } from '@lay2/pw-core/build/main/builders/simple-acp-builder'
 
 export class ForceSimpleBuilder extends Builder {
-  simpleACPBuilder: Builder
-
   constructor(private address: Address, private amount: Amount, feeRate?: number, collector?: Collector) {
     super(feeRate, collector)
-    this.simpleACPBuilder = new SimpleACPBuilder(this.address, this.amount, this.feeRate, this.collector)
   }
 
   async build(fee: Amount = Amount.ZERO): Promise<Transaction> {
-    if (this.amount.lt(Builder.MIN_CHANGE)) {
-      return this.simpleACPBuilder.build()
-    }
-
     const outputCell = new Cell(this.amount, this.address.toLockScript())
     const neededAmount = this.amount.add(fee)
     let inputSum = new Amount('0')
