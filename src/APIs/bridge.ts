@@ -43,7 +43,7 @@ export async function approveERC20ToBridge(
 }
 
 export enum CrossChainOrderStatus {
-  Finish = 'Finish',
+  Completed = 'Completed',
   ConfirmInETH = 'ConfirmInETH',
   ConfirmInCKB = 'ConfirmInCKB',
 }
@@ -61,7 +61,7 @@ export async function getPureCrossChainHistory(ckbAddress: string, web3: Web3) {
   const { crosschain_history: orders } = (await getForceBridgeHistory(ckbAddress, true)).data
 
   return Promise.all(
-    orders.map(order => {
+    orders.reverse().map(order => {
       return getCKBCrossChainInfo(order)
         .then(res => {
           return res
@@ -96,7 +96,7 @@ export async function getETHCrossChainInfo(order: ForceBridgeItem, web3: Web3): 
     tokenName: erc20.tokenName,
     amount,
     timestamp: `${timestamp}`,
-    status: CrossChainOrderStatus.Finish,
+    status: CrossChainOrderStatus.Completed,
     ckbTxHash: order.ckb_tx_hash!,
     ethTxHash: order.eth_lock_tx_hash,
   }
@@ -120,7 +120,7 @@ export async function getCKBCrossChainInfo(order: ForceBridgeItem): Promise<Cros
     tokenName,
     amount,
     timestamp: `${Number(block.header.timestamp)}`,
-    status: CrossChainOrderStatus.Finish,
+    status: CrossChainOrderStatus.Completed,
     ckbTxHash: order.ckb_tx_hash!,
     ethTxHash: order.eth_lock_tx_hash,
   }

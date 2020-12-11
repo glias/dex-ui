@@ -31,6 +31,7 @@ import {
   usePollingOrderStatus,
   HistoryAction,
 } from './hooks'
+import CrossChainHistory from './CrossChain'
 import styles from './history.module.css'
 
 export type OrderInList = OrderRecord | SubmittedOrder
@@ -511,22 +512,28 @@ const History = () => {
   return (
     <TradeFrame width="100%" height="auto">
       <PageHeader className={styles.header} title={header} extra={input} />
-      <Table
-        loading={state.isLoading}
-        className={styles.orders}
-        columns={[...columns, actionColumn]}
-        dataSource={orders}
-        rowClassName={(_, index) => (index % 2 === 0 ? `${styles.even} ${styles.td}` : `${styles.td}`)}
-        onHeaderRow={() => ({ className: styles.thead })}
-      />
-      {state.currentOrder ? (
-        <OrderModal
-          currentOrder={state.currentOrder}
-          modalVisable={modalVisable}
-          setModalVisable={setModalVisable}
-          dispatch={dispatch}
-        />
-      ) : null}
+      {showStatus === ShowStatus.CrossChain ? (
+        <CrossChainHistory />
+      ) : (
+        <>
+          <Table
+            loading={state.isLoading}
+            className={styles.orders}
+            columns={[...columns, actionColumn]}
+            dataSource={orders}
+            rowClassName={(_, index) => (index % 2 === 0 ? `${styles.even} ${styles.td}` : `${styles.td}`)}
+            onHeaderRow={() => ({ className: styles.thead })}
+          />
+          {state.currentOrder ? (
+            <OrderModal
+              currentOrder={state.currentOrder}
+              modalVisable={modalVisable}
+              setModalVisable={setModalVisable}
+              dispatch={dispatch}
+            />
+          ) : null}
+        </>
+      )}
     </TradeFrame>
   )
 }
