@@ -88,6 +88,7 @@ export const Send: React.FC = () => {
   const debouncedValidateInput = useCallback(
     debounce(async () => {
       await form.validateFields(['amount', 'to'])
+
       setInputAllValidated(true)
     }, 200),
     [form, setInputAllValidated],
