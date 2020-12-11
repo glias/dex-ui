@@ -60,7 +60,6 @@ export const HeaderPanel = styled.div`
 
 export const HeaderLogoBox = styled.h1`
   margin: 0 0 0 10px;
-  font-family: Lato;
   font-size: 18px;
   font-weight: 800;
   font-stretch: normal;
