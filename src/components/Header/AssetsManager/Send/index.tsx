@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import styled from 'styled-components'
+import { CKB_MIN_CHANGE_CKB } from '../../../../constants/number'
 import { AssetManagerHeader } from '../AssetManagerHeader'
 import { Balance } from '../Balance'
 import { ForceSimpleBuilder } from '../builders/SimpleBuilder'
@@ -148,7 +149,7 @@ export const Send: React.FC = () => {
 
   async function validateAddress(_: any, input: string): Promise<void> {
     asserts(
-      new Address(input, input.startsWith('ck') ? AddressType.ckb : AddressType.eth).valid(),
+      input && new Address(input, input.startsWith('ck') ? AddressType.ckb : AddressType.eth).valid(),
       t('Please input a valid address'),
     )
   }
@@ -195,7 +196,8 @@ export const Send: React.FC = () => {
     ? {
         validateStatus: 'warning',
         help: t(
-          `The remaining balance is too small(less than 61 CKB). So the transaction won't succeed. You can send less than 61 CKB out. \n Or do you want to send ALL your CKB out?`,
+          `The remaining balance is too small(less than 61 CKB). So the transaction won't succeed. You can send less than {{lessRemain}} CKB out. \n Or do you want to send ALL your CKB out?`,
+          { lessRemain: freeAmount.minus(CKB_MIN_CHANGE_CKB) },
         ),
       }
     : {}

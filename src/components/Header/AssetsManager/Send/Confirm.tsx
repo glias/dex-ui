@@ -93,7 +93,7 @@ export const SendConfirm = () => {
 
         <div className="label">{t('Transaction Fee')}</div>
         <div className="item">
-          <Balance value={fee} suffix="CKB" />
+          <Balance value={fee} suffix="CKB" maxDecimalPlaces={8} />
         </div>
 
         <Button className="btn-confirm" block size="large" onClick={onConfirm} loading={confirming}>

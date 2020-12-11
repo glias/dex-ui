@@ -17,3 +17,6 @@ export const MINIUM_RECEIVE = 0.00000001
 
 export const CKB_DECIMAL_INT = 8
 export const PRICE_DECIMAL_INT = 20
+
+export const CKB_MIN_CHANGE_CKB = new BigNumber(61)
+export const CKB_MIN_CHANGE_SHANNON = new BigNumber(61 * 10 ** 8)
