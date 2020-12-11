@@ -8,11 +8,22 @@ interface BalanceStyledProps {
   unitSize?: number
 }
 
+// interface FixedTo {
+//   decimalPlaces: number
+// }
+
+// function isFixedToConfig(x: unknown): x is FixedTo {
+//   return typeof x === 'object'
+// }
+
 export interface BalanceProps extends BalanceStyledProps {
   value: BigNumber.Value | Amount
   decimal?: number
-  type?: string
-  fixedTo?: number
+  suffix?: string
+  /**
+   * max decimal places, defaults to 4
+   */
+  maxDecimalPlaces?: number
 }
 
 const BalanceWrapper = styled.div<Required<BalanceStyledProps>>`
@@ -35,12 +46,15 @@ const BalanceWrapper = styled.div<Required<BalanceStyledProps>>`
 `
 
 export const Balance: React.FC<BalanceProps> = (props: BalanceProps) => {
-  const { value, type, size = 14, fixedTo, unitSize = 14, decimal = 0 } = props
+  const { value, suffix: type, size = 14, maxDecimalPlaces: fixedTo, unitSize = 14, decimal = 0 } = props
 
-  const balance = new BigNumber(value instanceof Amount ? value.toString() : value)
-    .div(10 ** decimal)
-    .abs()
-    .toFormat(fixedTo)
+  const balanceNum = new BigNumber(value instanceof Amount ? value.toString() : value).div(10 ** decimal).abs()
+  const decimalPlaces = balanceNum.decimalPlaces()
+  const balance: string = (() => {
+    if (fixedTo !== undefined) return balanceNum.toFormat(Math.min(fixedTo, decimalPlaces))
+    if (decimalPlaces >= 4) return balanceNum.toFormat(4)
+    return balanceNum.toFormat()
+  })()
 
   const [integers, decimals] = balance.split('.')
 
@@ -48,11 +62,7 @@ export const Balance: React.FC<BalanceProps> = (props: BalanceProps) => {
     <>
       <span className="balance-value">{integers}</span>
       {decimals && '.'}
-      {decimals && (
-        <small className="balance-decimals">
-          {decimals.substring(0, 4) === '0000' ? decimals : decimals.substring(0, 4)}
-        </small>
-      )}
+      {decimals && <small className="balance-decimals">{decimals}</small>}
     </>
   )
 

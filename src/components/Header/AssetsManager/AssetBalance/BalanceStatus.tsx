@@ -52,7 +52,7 @@ export const BalanceStatus = () => {
         <Token tokenName={tokenName} className="small" />
       </div>
       <div className="space-bottom">
-        <Balance value={total} type={tokenName} size={24} unitSize={20} />
+        <Balance value={total} suffix={tokenName} size={24} unitSize={20} />
       </div>
       <div className="balance-desc space-bottom">
         <div className="balance-desc-item">

@@ -47,6 +47,7 @@ const TransactionListItemWrapper = styled.div`
 const TransactionListItem: React.FC<TransactionListItemProps> = (props: TransactionListItemProps) => {
   const { transaction: tx } = props
   const { push } = useHistory()
+  const { isCkb, decimal } = AssetManagerContainer.useContainer()
 
   return (
     <TransactionListItemWrapper onClick={() => push(`/assets/${tx.tokenName}/transactions/${tx.txHash}`)}>
@@ -65,7 +66,12 @@ const TransactionListItem: React.FC<TransactionListItemProps> = (props: Transact
           </Row>
           <Row justify="end" className="amount" style={{ paddingTop: '4px' }}>
             <span className="symbol">{tx.direction === 'in' ? '+' : '-'}</span>
-            <Balance value={tx.amount} type={tx.tokenName} decimal={8} />
+            <Balance
+              value={tx.amount}
+              suffix={tx.tokenName}
+              maxDecimalPlaces={isCkb ? 8 : undefined}
+              decimal={decimal}
+            />
           </Row>
         </Col>
       </Row>
