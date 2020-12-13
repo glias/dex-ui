@@ -218,7 +218,7 @@ const TradePriceTable = () => {
             .div(PRICE_DECIMAL)
             .times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT))
             .toString()
-          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : removeTrailingZero(price))
+          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPayOrReceive(price))
         })
         .catch(() => {
           setCurrentPrice(i18n.t('trade.priceTable.empty'))
