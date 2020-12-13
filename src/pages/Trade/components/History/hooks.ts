@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
+import { ErrorCode } from 'exceptions'
 import { submittedOrders } from 'utils/cache'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
 import {
@@ -15,7 +16,6 @@ import {
 } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
-import { REJECT_ERROR_CODE } from '../../../../constants'
 import type { RawOrder } from '../../../../utils'
 import { OrderInList } from '.'
 
@@ -134,7 +134,7 @@ export const usePollingOrderStatus = ({
 
       const checkCkbStatus = (index: number) => {
         getForceBridgeHistory(ckbAddress).then(res => {
-          const forceBridgeItem = res.data.crosschain_history.find(p => p.eth_lock_tx_hash === cells?.[index]?.tx_hash)
+          const forceBridgeItem = res.data.crosschain_history.find(p => p.eth_tx_hash === cells?.[index]?.tx_hash)
           if (forceBridgeItem && forceBridgeItem.ckb_tx_hash) {
             // eslint-disable-next-line no-param-reassign
             cells[index].tx_hash = forceBridgeItem.ckb_tx_hash!
@@ -235,14 +235,14 @@ export const usePollOrderList = ({
                   // eslint-disable-next-line no-continue
                   continue
                 }
+                // debugger
                 setAndCacheSubmittedOrders(orders => {
-                  // eslint-disable-next-line no-console
-                  return orders.filter(o => o.key.split(':')[0] !== order.eth_lock_tx_hash)
+                  return orders.filter(o => o.key.split(':')[0] !== order.eth_tx_hash)
                 })
                 matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
                 // eslint-disable-next-line no-unused-expressions
                 matchedOrder.orderCells?.unshift({
-                  tx_hash: order.eth_lock_tx_hash,
+                  tx_hash: order.eth_tx_hash,
                   index: '',
                 })
               }
@@ -329,7 +329,7 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
         return hash
       } catch (error) {
         dispatch({ type: ActionType.RemovePendingId, value: orderId })
-        if (error.code === REJECT_ERROR_CODE) {
+        if (error.code === ErrorCode.UserReject) {
           throw new Error('Transaction Declined')
         }
         throw error

@@ -43,7 +43,7 @@ export const SendConfirm = () => {
   const payload: ConfirmParamsPayload = (parse(search) as unknown) as ConfirmParamsPayload
   const { t } = useTranslation()
   const { pw } = WalletContainer.useContainer()
-  const { useWallet, useSudt, sendCkb, sendSudt, decimals } = AssetManagerContainer.useContainer()
+  const { useWallet, useSudt, sendCkb, sendSudt, decimal } = AssetManagerContainer.useContainer()
   const wallet = useWallet()
   const { replace } = useHistory()
   const sudt = useSudt()
@@ -76,7 +76,7 @@ export const SendConfirm = () => {
 
         <div className="label">{t('Amount')}</div>
         <div className="item">
-          <Balance size={24} value={amount} type={tokenName} decimal={decimals} />
+          <Balance size={24} value={amount} suffix={tokenName} decimal={decimal} />
         </div>
 
         <Divider />
@@ -93,7 +93,7 @@ export const SendConfirm = () => {
 
         <div className="label">{t('Transaction Fee')}</div>
         <div className="item">
-          <Balance value={fee} type="CKB" />
+          <Balance value={fee} suffix="CKB" maxDecimalPlaces={8} />
         </div>
 
         <Button className="btn-confirm" block size="large" onClick={onConfirm} loading={confirming}>

@@ -9,18 +9,12 @@ import { useContainer } from 'unstated-next'
 import { displayPayOrReceive, displayPrice } from 'utils/fee'
 import PWCore from '@lay2/pw-core'
 import styled from 'styled-components'
+import { ErrorCode } from 'exceptions'
 import WalletContainer from '../../../../containers/wallet'
 import OrderContainer from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import { getTimeString, pendingOrders } from '../../../../utils'
-import {
-  COMMISSION_FEE,
-  ERC20_LIST,
-  ETHER_SCAN_URL,
-  EXPLORER_URL,
-  HISTORY_QUERY_KEY,
-  REJECT_ERROR_CODE,
-} from '../../../../constants'
+import { COMMISSION_FEE, ERC20_LIST, ETHER_SCAN_URL, EXPLORER_URL, HISTORY_QUERY_KEY } from '../../../../constants'
 import type { OrderRecord } from '../../../../utils'
 import { ReactComponent as InfoSvg } from '../../../../assets/svg/info.svg'
 import {
@@ -226,10 +220,10 @@ const OrderModal = ({
 
   // @ts-ignore
   const { status, orderCells, executed, pending } = currentOrder
-  const isCrossChain = ['ETH', ...ERC20_LIST].includes(currentOrder.tokenName)
+  const isCrossChain = ERC20_LIST.some(e => e.tokenName === currentOrder.tokenName) || currentOrder.tokenName === 'ETH'
 
   const cells = useMemo(() => {
-    if (status === 'aborted' && !pending) {
+    if ((status === 'aborted' || status === 'claimed') && !pending) {
       return orderCells?.concat({ tx_hash: lastOutpointTxHash, index: lastOutpointIndex }) ?? []
     }
     return orderCells || []
@@ -368,7 +362,7 @@ const History = () => {
       const handleClick = () => {
         handleWithdraw(order.key).catch(error => {
           const message =
-            error.code === REJECT_ERROR_CODE ? (
+            error.code !== ErrorCode.CKBNotEnough ? (
               error.message
             ) : (
               <span>
@@ -393,7 +387,7 @@ const History = () => {
           const txHash = pendingOrders.getOne(`${order.key}-pending`)
           statusOnClick({
             ...order,
-            status: 'aborted',
+            status: order.executed === '100%' ? 'claimed' : 'aborted',
             pending: true,
             orderCells: order.orderCells?.concat({ tx_hash: txHash ?? '', index: '0x' }),
           } as any)

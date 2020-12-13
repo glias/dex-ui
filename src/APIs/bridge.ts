@@ -58,7 +58,8 @@ export interface CrossChainOrder {
 }
 
 export async function getPureCrossChainHistory(ckbAddress: string, web3: Web3) {
-  const { crosschain_history: orders } = (await getForceBridgeHistory(ckbAddress, true)).data
+  const { ckb_to_eth, eth_to_ckb } = (await getForceBridgeHistory(ckbAddress, true)).data
+  const orders = ckb_to_eth.concat(eth_to_ckb)
 
   return Promise.all(
     orders.reverse().map(order => {
@@ -74,7 +75,7 @@ export async function getPureCrossChainHistory(ckbAddress: string, web3: Web3) {
 }
 
 export async function getETHCrossChainInfo(order: ForceBridgeItem, web3: Web3): Promise<CrossChainOrder> {
-  const txHash = order.eth_lock_tx_hash
+  const txHash = order.eth_tx_hash
   const receipt = await web3.eth.getTransactionReceipt(txHash)
   const [transfer] = receipt.logs
   const erc20 =
@@ -98,7 +99,7 @@ export async function getETHCrossChainInfo(order: ForceBridgeItem, web3: Web3): 
     timestamp: `${timestamp}`,
     status: CrossChainOrderStatus.Completed,
     ckbTxHash: order.ckb_tx_hash!,
-    ethTxHash: order.eth_lock_tx_hash,
+    ethTxHash: order.eth_tx_hash,
   }
 }
 
@@ -122,6 +123,6 @@ export async function getCKBCrossChainInfo(order: ForceBridgeItem): Promise<Cros
     timestamp: `${Number(block.header.timestamp)}`,
     status: CrossChainOrderStatus.Completed,
     ckbTxHash: order.ckb_tx_hash!,
-    ethTxHash: order.eth_lock_tx_hash,
+    ethTxHash: order.eth_tx_hash,
   }
 }

@@ -1,17 +1,19 @@
-import { MenuOutlined } from '@ant-design/icons'
+import { CloseOutlined, MenuOutlined } from '@ant-design/icons'
 import PWCore from '@lay2/pw-core'
-import { Badge, Button, Menu, Modal, Popover } from 'antd'
+import { Button, Menu, Modal, Popover } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
+import { FAUCET_URL } from 'constants/url'
 import MetaMaskpng from '../../assets/img/wallet/metamask.png'
 import WalletContainer from '../../containers/wallet'
 import { useDidMount } from '../../hooks'
 import i18n from '../../utils/i18n'
 import { AssetManager } from './AssetsManager'
 import { getChainData, getProviderOptions } from './chain'
-import { HeaderBox, HeaderContainer, HeaderLogoBox, HeaderMeta, HeaderPanel, MenuLiText, UserMeta } from './styled'
+import { Banner, HeaderBox, HeaderContainer, HeaderLogo, HeaderMeta, HeaderPanel, MenuLiText, UserMeta } from './styled'
+import { ReactComponent as GliasLogo } from '../../assets/svg/glias.svg'
 
 const CLOSE_BY_THE_USER_ERROR_MSG = 'Modal closed by user'
 const UNKNOWN_CONNECT_WALLET_FAILED = 'Connect wallet failed, please check wallet settings.'
@@ -81,58 +83,85 @@ const Header = () => {
     history.push('/')
   }
 
+  const [showBanner, setShowBanner] = useState(true)
+
   return (
-    <HeaderContainer>
-      <HeaderBox className="header-box">
-        <HeaderPanel>
-          <HeaderLogoBox onClick={gotoHome}>GLIASWAP</HeaderLogoBox>
-          <Menu
-            defaultSelectedKeys={[pathname.substring(1) || 'trade']}
-            mode="horizontal"
-            className="menu"
-            onClick={e => history.push(`/${e.key}`)}
-          >
-            <Menu.Item key="trade">
-              <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
-            </Menu.Item>
-            <Menu.Item key="pool">
-              <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
-            </Menu.Item>
-            <Menu.Item key="match">
-              <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
-            </Menu.Item>
-          </Menu>
-          <HeaderMeta id="header-meta">
-            {connectStatus !== 'connected' ? (
-              <Button className="btn-connect" onClick={handleWalletConnect} disabled={Wallet.connecting}>
-                {Wallet.connecting ? i18n.t('header.connecting') : i18n.t('header.wallet')}
-              </Button>
-            ) : (
-              <>
-                <Popover
-                  placement="bottomRight"
-                  title=""
-                  overlayClassName="popover-wallet"
-                  trigger="click"
-                  visible={visibleWallet}
-                  onVisibleChange={() => setVisibleWallet(!visibleWallet)}
-                  getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
-                  content={<AssetManager />}
-                >
-                  <Badge count="">
+    <>
+      {showBanner ? (
+        <Banner>
+          <div className="content">
+            <div>
+              Gliaswap is a DEX Demo developed by Nervos Team, currently deployed on CKB Aggron testnet and Ethereum
+              Ropsten testnet.
+            </div>
+            <div>
+              <a target="_blank" rel="noreferrer noopener" href={FAUCET_URL}>
+                Claim some Test Token
+              </a>
+              &nbsp;before you start trading. Use at your own risk.
+            </div>
+            <span className="close">
+              <CloseOutlined translate="close" onClick={() => setShowBanner(false)} />
+            </span>
+          </div>
+        </Banner>
+      ) : null}
+      <HeaderContainer>
+        <HeaderBox className="header-box">
+          <HeaderPanel>
+            <HeaderLogo onClick={gotoHome}>
+              <GliasLogo />
+              <span className="title">
+                GLIASWAP
+                <span className="detail">(Universal Passport Example)</span>
+              </span>
+            </HeaderLogo>
+            <Menu
+              defaultSelectedKeys={[pathname.substring(1) || 'trade']}
+              mode="horizontal"
+              className="menu"
+              onClick={e => history.push(`/${e.key}`)}
+            >
+              <Menu.Item key="trade" className="first">
+                <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
+              </Menu.Item>
+              <Menu.Item key="pool">
+                <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
+              </Menu.Item>
+              <Menu.Item key="match" className="last">
+                <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
+              </Menu.Item>
+            </Menu>
+            <HeaderMeta id="header-meta">
+              {connectStatus !== 'connected' ? (
+                <Button className="btn-connect" onClick={handleWalletConnect} disabled={Wallet.connecting}>
+                  {Wallet.connecting ? i18n.t('header.connecting') : i18n.t('header.wallet')}
+                </Button>
+              ) : (
+                <>
+                  <Popover
+                    placement="bottomRight"
+                    title=""
+                    overlayClassName="popover-wallet"
+                    trigger="click"
+                    visible={visibleWallet}
+                    onVisibleChange={() => setVisibleWallet(!visibleWallet)}
+                    getPopupContainer={() => document.getElementById('header-meta') as HTMLElement}
+                    content={<AssetManager />}
+                  >
                     <UserMeta>
                       <img src={MetaMaskpng} alt="metaMask" />
                       {truncateStr(ckbAddress)}
                       <MenuOutlined style={{ marginLeft: '10px' }} translate="more" />
                     </UserMeta>
-                  </Badge>
-                </Popover>
-              </>
-            )}
-          </HeaderMeta>
-        </HeaderPanel>
-      </HeaderBox>
-    </HeaderContainer>
+                  </Popover>
+                </>
+              )}
+            </HeaderMeta>
+          </HeaderPanel>
+        </HeaderBox>
+      </HeaderContainer>
+    </>
   )
 }
 
