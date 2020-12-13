@@ -8,6 +8,7 @@ import { getTimeString } from 'utils'
 import { ETHER_SCAN_URL, EXPLORER_URL } from 'constants/url'
 import styled from 'styled-components'
 import Web3 from 'web3'
+import OrderContainer from 'containers/order'
 import { ReactComponent as InfoSvg } from '../../../../assets/svg/info.svg'
 import styles from './history.module.css'
 
@@ -215,7 +216,7 @@ const OrderModal = ({
             )}
           </span>
           <span className={styles.hash}>
-            {secondTx === '-' ? (
+            {secondTx.length < 10 ? (
               '-'
             ) : (
               <a target="_blank" rel="noopener noreferrer" href={buildURL(secondTx)}>
@@ -232,6 +233,7 @@ const OrderModal = ({
 const CrossChainTable = () => {
   const [isLoading, setLoading] = useState(true)
   const { ckbWallet, web3 } = useContainer(WalletContainer)
+  const { setAndCacheCrossChainOrders, crossChainOrders } = useContainer(OrderContainer)
   const [orders, setOrders] = useState<CrossChainOrder[]>([])
   const [currentOrder, setCurrentOrder] = useState<CrossChainOrder | null>(null)
   const [modalVisable, setModalVisable] = useState(false)
@@ -244,6 +246,11 @@ const CrossChainTable = () => {
         getPureCrossChainHistory(ckbWallet.address, web3)
           .then(res => {
             setOrders(res)
+            setAndCacheCrossChainOrders(cacheOrders => {
+              return cacheOrders.filter(cache =>
+                res.every(o => o.ckbTxHash !== cache.ckbTxHash && o.ethTxHash !== cache.ethTxHash),
+              )
+            })
           })
           .finally(() => setLoading(false))
       }
@@ -258,7 +265,16 @@ const CrossChainTable = () => {
         clearInterval(interval)
       }
     }
-  }, [ckbWallet.address, web3])
+  }, [ckbWallet.address, web3, setAndCacheCrossChainOrders])
+
+  const orderList = useMemo(() => {
+    return [
+      ...crossChainOrders,
+      ...orders.filter(o =>
+        crossChainOrders.every(cache => cache.ckbTxHash !== o.ckbTxHash && cache.ethTxHash !== o.ethTxHash),
+      ),
+    ]
+  }, [crossChainOrders, orders])
 
   const actionColumn = {
     title: '',
@@ -284,7 +300,7 @@ const CrossChainTable = () => {
     <>
       <Table
         className={styles.orders}
-        dataSource={orders}
+        dataSource={orderList}
         rowKey="timestamp"
         columns={[...columns, actionColumn]}
         loading={isLoading}

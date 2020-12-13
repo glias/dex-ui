@@ -1,11 +1,11 @@
 import { Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
-import { approveERC20ToBridge, getAllowanceForTarget } from 'APIs'
+import { approveERC20ToBridge, CrossChainOrder, getAllowanceForTarget } from 'APIs'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import Web3 from 'web3'
 import { ORDER_CELL_CAPACITY, MAX_TRANSACTION_FEE, COMMISSION_FEE, ERC20_LIST } from '../constants'
-import { submittedOrders as submittedOrdersCache } from '../utils'
+import { submittedOrders as submittedOrdersCache, crossChainOrders as crossChainOrdersCache } from '../utils'
 import type { OrderRecord } from '../utils'
 import { calcAskReceive, calcBidReceive, removeTrailingZero } from '../utils/fee'
 import WalletContainer from './wallet'
@@ -64,6 +64,7 @@ export function useOrder() {
   const [historyOrders, setHistoryOrders] = useState<any[]>([])
   const { address } = Wallet.ckbWallet
   const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
+  const [crossChainOrders, setCrossChainOrders] = useState<Array<CrossChainOrder>>(crossChainOrdersCache.get(address))
   const ckbBalance = Wallet.ckbWallet.free.toString()
   const [maxPay, setMaxPay] = useState(ckbBalance)
   const [bestPrice] = useState('0.00')
@@ -76,8 +77,10 @@ export function useOrder() {
   useEffect(() => {
     if (!address) {
       setSubmittedOrders([])
+      setCrossChainOrders([])
     } else {
       setSubmittedOrders(submittedOrdersCache.get(address))
+      setCrossChainOrders(crossChainOrdersCache.get(address))
     }
   }, [address, setSubmittedOrders])
 
@@ -193,6 +196,8 @@ export function useOrder() {
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   type SubmittedOrdersUpdateFn<T = Array<SubmittedOrder>> = (_: T) => T
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  type crossChainOrdersUpdateFn<T = Array<CrossChainOrder>> = (_: T) => T
 
   const setAndCacheSubmittedOrders = useCallback(
     (updateFn: SubmittedOrdersUpdateFn) => {
@@ -204,6 +209,18 @@ export function useOrder() {
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [address, setSubmittedOrders],
+  )
+
+  const setAndCacheCrossChainOrders = useCallback(
+    (updateFn: crossChainOrdersUpdateFn) => {
+      setCrossChainOrders(orders => {
+        const newOrders = updateFn(orders)
+        crossChainOrdersCache.set(address, newOrders)
+        return newOrders
+      })
+    },
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    [address, setCrossChainOrders],
   )
 
   // TODO: max pay
@@ -373,6 +390,8 @@ export function useOrder() {
     setCurrentPairToken,
     orderMode,
     currentSudtTokenName,
+    setAndCacheCrossChainOrders,
+    crossChainOrders,
   }
 }
 

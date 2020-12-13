@@ -1,11 +1,15 @@
 import BigNumber from 'bignumber.js'
-import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from '../constants'
+import { COMMISSION_FEE, ORDER_CELL_CAPACITY, CROSS_CHAIN_FEE_RATE } from '../constants'
 
 export function calcBuyReceive(pay: string, price: string) {
   return new BigNumber(pay)
     .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
     .div(new BigNumber(price))
     .toFixed(8, 1)
+}
+
+export function calcCrossOutFee(pay: string) {
+  return new BigNumber(pay).times(1 + CROSS_CHAIN_FEE_RATE).toFixed(8, 1)
 }
 
 export function calcSellReceive(pay: string, price: string) {
