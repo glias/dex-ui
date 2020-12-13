@@ -222,7 +222,7 @@ const OrderModal = ({
   )
 }
 
-const CrossChainTable = () => {
+const CrossChainTable = ({ searchValue }: { searchValue: string }) => {
   const [isLoading, setLoading] = useState(true)
   const { ckbWallet, web3, ethWallet } = useContainer(WalletContainer)
   const { setAndCacheCrossChainOrders, crossChainOrders } = useContainer(OrderContainer)
@@ -237,6 +237,16 @@ const CrossChainTable = () => {
       }
     })
   }, [])
+
+  const searchFilter = useCallback(
+    (order: CrossChainOrder) => {
+      if (searchValue) {
+        return order.tokenName.toLowerCase().includes(searchValue.toLowerCase())
+      }
+      return Boolean
+    },
+    [searchValue],
+  )
 
   useEffect(() => {
     const INTERVAL_TIME = 5000
@@ -285,8 +295,10 @@ const CrossChainTable = () => {
       ...orders.filter(o =>
         crossChainOrders.every(cache => cache.ckbTxHash !== o.ckbTxHash && cache.ethTxHash !== o.ethTxHash),
       ),
-    ].sort((a, b) => (new BigNumber(a.timestamp).isLessThan(b.timestamp) ? 1 : -1))
-  }, [crossChainOrders, orders])
+    ]
+      .sort((a, b) => (new BigNumber(a.timestamp).isLessThan(b.timestamp) ? 1 : -1))
+      .filter(searchFilter)
+  }, [crossChainOrders, orders, searchFilter])
 
   const actionColumn = {
     title: '',

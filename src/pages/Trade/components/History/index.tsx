@@ -509,7 +509,7 @@ const History = () => {
     <TradeFrame width="100%" height="auto">
       <PageHeader className={styles.header} title={header} extra={input} />
       {showStatus === ShowStatus.CrossChain ? (
-        <CrossChainHistory />
+        <CrossChainHistory searchValue={searchValue} />
       ) : (
         <>
           <Table
