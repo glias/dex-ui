@@ -134,7 +134,7 @@ export const usePollingOrderStatus = ({
 
       const checkCkbStatus = (index: number) => {
         getForceBridgeHistory(ckbAddress).then(res => {
-          const forceBridgeItem = res.data.crosschain_history.find(p => p.eth_lock_tx_hash === cells?.[index]?.tx_hash)
+          const forceBridgeItem = res.data.crosschain_history.find(p => p.eth_tx_hash === cells?.[index]?.tx_hash)
           if (forceBridgeItem && forceBridgeItem.ckb_tx_hash) {
             // eslint-disable-next-line no-param-reassign
             cells[index].tx_hash = forceBridgeItem.ckb_tx_hash!
@@ -235,14 +235,14 @@ export const usePollOrderList = ({
                   // eslint-disable-next-line no-continue
                   continue
                 }
+                // debugger
                 setAndCacheSubmittedOrders(orders => {
-                  // eslint-disable-next-line no-console
-                  return orders.filter(o => o.key.split(':')[0] !== order.eth_lock_tx_hash)
+                  return orders.filter(o => o.key.split(':')[0] !== order.eth_tx_hash)
                 })
                 matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
                 // eslint-disable-next-line no-unused-expressions
                 matchedOrder.orderCells?.unshift({
-                  tx_hash: order.eth_lock_tx_hash,
+                  tx_hash: order.eth_tx_hash,
                   index: '',
                 })
               }
