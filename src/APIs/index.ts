@@ -19,11 +19,11 @@ import { TransactionDirection, TransactionStatus } from 'components/Header/Asset
 import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
 import Web3 from 'web3'
 import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
-import { calcAskReceive, calcTotalPay } from 'utils/fee'
+import { calcAskReceive } from 'utils/fee'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
-import { CKB_NODE_URL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
+import { CKB_NODE_URL, CROSS_CHAIN_FEE_RATE, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
 export * from './checkSubmittedTxs'
@@ -210,12 +210,15 @@ export async function shadowAssetCrossOut(
   ethAddress: string,
   tokenAddress = '0x0000000000000000000000000000000000000000',
   decimal = ETH_DECIMAL_INT,
-  bridgeFee = '0x0',
 ) {
-  const amount = `0x${new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toString(16)}`
+  const payWithDecimal = new BigNumber(pay).times(new BigNumber(10).pow(decimal))
+  const totalPay = payWithDecimal.times(1 + CROSS_CHAIN_FEE_RATE)
+  const amount = `0x${totalPay.toString(16)}`
+  const unlockFee = `0x${payWithDecimal.times(CROSS_CHAIN_FEE_RATE).toString(16)}`
+
   return axios.post(`${FORCE_BRIDGER_SERVER_URL}/burn`, {
     from_lockscript_addr: ckbAddress,
-    unlock_fee: bridgeFee,
+    unlock_fee: unlockFee,
     amount,
     token_address: tokenAddress,
     recipient_address: ethAddress,
@@ -232,7 +235,7 @@ export async function shadowAssetCrossIn(
   decimal = ETH_DECIMAL_INT,
   bridgeFee = '0x0',
 ) {
-  const amount = `0x${new BigNumber(calcTotalPay(pay)).times(new BigNumber(10).pow(decimal)).toString(16)}`
+  const amount = `0x${new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toString(16)}`
   const key = `${ckbAddress}-${tokenAddress}`
   const outpoints = replayResistOutpoints.get()[key]
   const op = outpoints.shift()

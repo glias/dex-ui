@@ -1,6 +1,8 @@
 import BigNumber from 'bignumber.js'
 
 export const COMMISSION_FEE = 0.003
+export const CROSS_CHAIN_FEE_RATE = 0.001
+
 export const PRICE_DECIMAL = new BigNumber(10).pow(new BigNumber(20))
 export const SUDT_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
 export const CKB_DECIMAL = new BigNumber(10).pow(new BigNumber(8))

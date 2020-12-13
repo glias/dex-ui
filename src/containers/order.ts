@@ -4,7 +4,13 @@ import { approveERC20ToBridge, getAllowanceForTarget } from 'APIs'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import Web3 from 'web3'
-import { ORDER_CELL_CAPACITY, MAX_TRANSACTION_FEE, COMMISSION_FEE, ERC20_LIST } from '../constants'
+import {
+  ORDER_CELL_CAPACITY,
+  MAX_TRANSACTION_FEE,
+  COMMISSION_FEE,
+  ERC20_LIST,
+  CROSS_CHAIN_FEE_RATE,
+} from '../constants'
 import { submittedOrders as submittedOrdersCache } from '../utils'
 import type { OrderRecord } from '../utils'
 import { calcAskReceive, calcBidReceive, removeTrailingZero } from '../utils/fee'
@@ -226,14 +232,18 @@ export function useOrder() {
           if (seller === 'CKB') {
             setMaxPay(new BigNumber(shadowWallet.balance.toString()).div(1 + COMMISSION_FEE).toString())
           } else {
-            setMaxPay(shadowWallet.balance.toString())
+            const max =
+              orderMode === OrderMode.CrossOut
+                ? shadowWallet.balance.div(1 + CROSS_CHAIN_FEE_RATE)
+                : shadowWallet.balance
+            setMaxPay(max.toString())
           }
         } else if (erc20Wallet) {
           setMaxPay(removeTrailingZero(erc20Wallet.balance.toString()))
         }
         break
     }
-  }, [ethWallet.balance, ckbMax, pair, sudtWallets, erc20Wallets])
+  }, [ethWallet.balance, ckbMax, pair, sudtWallets, erc20Wallets, orderMode])
 
   const confirmButtonColor = useMemo(() => {
     switch (orderType) {
