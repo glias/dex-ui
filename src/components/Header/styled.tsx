@@ -1,5 +1,4 @@
 import styled from 'styled-components'
-import BackGroundImage from '../../assets/svg/dex-background.svg'
 
 export const HeaderBox = styled.div`
   display: inline-block;
@@ -14,17 +13,39 @@ export const HeaderContainer = styled.div`
   text-align: center;
   position: absolute;
   width: 100%;
-  box-shadow: 3px 3px 8px 0 rgba(0, 0, 0, 0.08);
   height: 340px;
-  background-image: url(${BackGroundImage});
-  background-repeat: repeat;
-  background-position: center;
-  background-size: cover;
 `
 
 export const MenuLiText = styled.span`
   font-weight: bolder;
   font-size: 16px;
+`
+
+export const Banner = styled.div`
+  background-color: black;
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  color: white;
+  align-items: center;
+  .content {
+    div {
+      text-align: center;
+    }
+    a {
+      color: #5c61da;
+      text-decoration: underline;
+    }
+    .close {
+      cursor: pointer;
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+  }
 `
 
 export const HeaderPanel = styled.div`
@@ -40,25 +61,33 @@ export const HeaderPanel = styled.div`
     background-color: #6b70e0;
     border-bottom: 1px solid transparent;
   }
-  .ant-menu-item {
-    color: white;
-    border-bottom: 2px solid transparent;
-    margin: 0 40px !important;
-    &:hover {
-      color: white !important;
-      border-bottom: 2px solid white !important;
-    }
-    &.ant-menu-item-selected {
+  .menu {
+    .ant-menu-item {
       color: white;
-      border-bottom: 2px solid white;
-    }
-    .ant-menu-item-selected {
-      color: white;
+      border-bottom: 2px solid transparent;
+      margin: 0 40px;
+      &.first {
+        margin-left: 0;
+      }
+      &.right {
+        margin-right: 0;
+      }
+      &:hover {
+        color: white !important;
+        border-bottom: 2px solid white !important;
+      }
+      &.ant-menu-item-selected {
+        color: white;
+        border-bottom: 2px solid white;
+      }
+      .ant-menu-item-selected {
+        color: white;
+      }
     }
   }
 `
 
-export const HeaderLogoBox = styled.h1`
+export const HeaderLogo = styled.h1`
   margin: 0 0 0 10px;
   font-family: Lato;
   font-size: 18px;
@@ -70,6 +99,15 @@ export const HeaderLogoBox = styled.h1`
   text-align: left;
   color: #ffffff;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  .detail {
+    font-size: 12px;
+    margin-left: 4px;
+  }
+  .title {
+    margin-left: 9px;
+  }
 `
 
 export const UserMeta = styled.div`
