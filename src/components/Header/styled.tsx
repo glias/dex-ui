@@ -13,7 +13,6 @@ export const HeaderContainer = styled.div`
   text-align: center;
   position: absolute;
   width: 100%;
-  height: 340px;
 `
 
 export const MenuLiText = styled.span`
@@ -22,7 +21,7 @@ export const MenuLiText = styled.span`
 `
 
 export const Banner = styled.div`
-  background-color: black;
+  background-color: #18191a;
   position: relative;
   width: 100%;
   margin: 0 auto;
