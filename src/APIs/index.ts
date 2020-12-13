@@ -452,7 +452,7 @@ export interface ForceBridgeHistory {
 
 export interface ForceBridgeItem {
   ckb_tx_hash?: string
-  eth_lock_tx_hash: string
+  eth_tx_hash: string
   id: string
 }
 
