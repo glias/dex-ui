@@ -3,42 +3,39 @@ import { forceBridgeSettings } from 'utils'
 
 // eslint-disable-next-line import/no-mutable-exports
 export let FORCE_BRIDGE_SETTINGS = {
-  eth_token_locker_addr: '0xBE55E4980601CE75cd72969F0d8d2CE6d15ff556',
-  eth_ckb_chain_addr: '0x93213ee1e914d46e1E215a3F4775DA47A351901a',
+  eth_token_locker_addr: '0x9568e06B6CDA58eDf9469e4B6394184b4466a0b3',
+  eth_ckb_chain_addr: '0xD3fF5d9400f1A209af64aE1fBb0F627FDDB98B49',
   bridge_lockscript: {
-    code_hash: '5eec0b1466d50582e43b9d993d411d60f285bc2875564c89291644fd5cb46c1d',
+    code_hash: '7b802a58978016376e9b92d332c26b1ecdda11855b8250c9570bb2e2dd81f1c2',
     hash_type: 0,
-    outpoint: { tx_hash: 'faa9f0641e4022ebfc400564ca32614a0d7565e2499b843a0cdb498795b85b81', index: 0, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 0, dep_type: 0 },
   },
   bridge_typescript: {
-    code_hash: '5b7b101845e626b6f698e6dc77f20ce95f4cdda830bacabc0366b607e5c11c54',
+    code_hash: 'fe14b0c716bfcbf55067296e424031cb28a35855e8849d2921f23f7916d03b40',
     hash_type: 0,
-    outpoint: { tx_hash: 'faa9f0641e4022ebfc400564ca32614a0d7565e2499b843a0cdb498795b85b81', index: 1, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 1, dep_type: 0 },
   },
   light_client_typescript: {
-    code_hash: 'bbd1dac76e2bcfc5166c6bcdddf8a6cf7caf3012fe2f500a670aa676b64a447a',
+    code_hash: 'e2ff33937bc517ed32871a30dcf69a9cc237f81ffcb7f125beb4606ebc25513f',
     hash_type: 0,
-    outpoint: { tx_hash: 'faa9f0641e4022ebfc400564ca32614a0d7565e2499b843a0cdb498795b85b81', index: 2, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 2, dep_type: 0 },
   },
   light_client_lockscript: {
     code_hash: '7a031ad689c0acb49ee203fa22f6ff89e1a538baa6bf1c37576d074ebbfdf4ad',
     hash_type: 0,
-    outpoint: { tx_hash: 'faa9f0641e4022ebfc400564ca32614a0d7565e2499b843a0cdb498795b85b81', index: 3, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 3, dep_type: 0 },
   },
   recipient_typescript: {
-    code_hash: 'a6092132c9961b7d4def6542f510208af009713457673a7ed4af8d2a62fa58a9',
+    code_hash: '5da121aa6b22039b33aa373f8a0131e6db7eb60225afc63138b3d91ce2528ded',
     hash_type: 0,
-    outpoint: { tx_hash: 'faa9f0641e4022ebfc400564ca32614a0d7565e2499b843a0cdb498795b85b81', index: 4, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 4, dep_type: 0 },
   },
   sudt: {
     code_hash: 'c5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
     hash_type: 1,
     outpoint: { tx_hash: 'e12877ebd2c3c364dc46c5c992bcfaf4fee33fa13eebdf82c591fc9825aab769', index: 0, dep_type: 0 },
   },
-  light_client_cell_script: {
-    cell_script:
-      '59000000100000003000000031000000bbd1dac76e2bcfc5166c6bcdddf8a6cf7caf3012fe2f500a670aa676b64a447a0024000000e27327cda27e968850e2f8e99306e82b13dac918bfb4accc3bfcab4b10ff8dc701000000',
-  },
+  light_client_cell_script: { cell_script: '' },
   pw_locks: {
     inner: [
       { tx_hash: '57a62003daeab9d54aa29b944fc3b451213a5ebdf2e232216a3cfed0dde61b38', index: 0, dep_type: 0 },
