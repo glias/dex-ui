@@ -1,26 +1,17 @@
 import React, { useMemo } from 'react'
 import { Divider } from 'antd'
-import BigNumber from 'bignumber.js'
 import { toFormatWithoutTrailingZero } from 'utils/fee'
 import i18n from 'utils/i18n'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
-import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from 'constants/number'
+import { ORDER_CELL_CAPACITY } from 'constants/number'
 import { List, Item } from './list'
 import { OrderResult } from './styled'
 import { CrossMeta } from './CrossMeta'
 
-const CrossChain = () => {
+const CrossIn = () => {
   const Order = useContainer(OrderContainer)
   const [buyer, seller] = Order.pair
-  const tradeFee = useMemo(() => {
-    return toFormatWithoutTrailingZero(new BigNumber(Order.pay).times(COMMISSION_FEE).toString())
-  }, [Order.pay])
-
-  const totalPay = useMemo(() => {
-    const pay = new BigNumber(Order.pay).plus(new BigNumber(tradeFee))
-    return toFormatWithoutTrailingZero(pay.toString())
-  }, [Order.pay, tradeFee])
 
   // TODO: pay/receive/price as props
   const pay = useMemo(() => {
@@ -35,13 +26,13 @@ const CrossChain = () => {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.totalPay`),
-        value: totalPay,
+        value: pay,
         unit: buyer,
       },
     ]
 
     return list
-  }, [totalPay, buyer])
+  }, [pay, buyer])
 
   const tradeDetails = useMemo(() => {
     const list: Item[] = [
@@ -87,4 +78,4 @@ const CrossChain = () => {
   )
 }
 
-export default CrossChain
+export default CrossIn
