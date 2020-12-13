@@ -215,7 +215,7 @@ const OrderModal = ({
   setModalVisable: Function
   dispatch: React.Dispatch<HistoryAction>
 }) => {
-  const { web3, ckbWallet } = useContainer(WalletContainer)
+  const { web3, ckbWallet, ethWallet } = useContainer(WalletContainer)
   const [lastOutpointTxHash, lastOutpointIndex] = currentOrder.key.split(':')
 
   // @ts-ignore
@@ -241,6 +241,7 @@ const OrderModal = ({
     fetchListRef,
     pending,
     key: currentOrder.key,
+    ethAddress: ethWallet.address,
   })
 
   const realStatus = useMemo(() => {
@@ -327,6 +328,7 @@ const History = () => {
   const { submittedOrders: submittedOrderList } = useContainer(OrderContainer)
 
   const { address } = wallet.ckbWallet
+  const { ethWallet } = wallet
   const handleWithdraw = useHandleWithdrawOrder(address, dispatch)
 
   const [searchValue, setSearchValue] = useState('')
@@ -343,7 +345,7 @@ const History = () => {
 
   const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
-  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch, ckbAddress: address })
+  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch, ckbAddress: address, ethAddress: ethWallet.address })
 
   const statusOnClick = useCallback((order: OrderInList) => {
     setModalVisable(true)

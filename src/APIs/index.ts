@@ -455,10 +455,14 @@ export interface ForceBridgeItem {
   ckb_tx_hash?: string
   eth_tx_hash: string
   id: string
+  amount: string
+  token_addr: string
+  status: 'error' | 'pending' | 'success'
 }
 
 export function getForceBridgeHistory(
   ckbAddress: string,
+  ethAddress: string,
   pureCross = false,
 ): Promise<AxiosResponse<ForceBridgeHistory>> {
   const orderLock = new Script(
@@ -468,6 +472,7 @@ export function getForceBridgeHistory(
   )
   return axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_crosschain_history`, {
     ckb_recipient_lockscript_addr: pureCross ? ckbAddress : orderLock.toAddress().toCKBAddress(),
+    eth_recipient_addr: ethAddress,
   })
 }
 

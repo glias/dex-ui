@@ -1,9 +1,7 @@
 import { ckb, ForceBridgeItem, getForceBridgeHistory } from 'APIs'
 import BigNumber from 'bignumber.js'
-import { SHADOW_ASSETS, SUDT_CK_ETH } from 'constants/sudt'
-import { ERC20_ETH, ERC20_LIST, FORCE_BRIDGE_SETTINGS } from 'constants/erc20'
+import { ERC20, ERC20_ETH, ERC20_LIST, FORCE_BRIDGE_SETTINGS } from 'constants/erc20'
 import Web3 from 'web3'
-import { getAmountFromCellData } from 'utils'
 import { APPROVE_ABI } from './ABI'
 
 const uint256Max = `0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`
@@ -33,8 +31,8 @@ export async function approveERC20ToBridge(
       .once('transactionHash', () => {
         confirmCallback()
       })
-      .once('receipt', () => {
-        resolve()
+      .once('receipt', (r: any) => {
+        resolve(r)
       })
       .on('error', (err: any) => {
         reject(err)
@@ -55,67 +53,72 @@ export interface CrossChainOrder {
   ckbTxHash: string
   ethTxHash: string
   status: CrossChainOrderStatus
+  isLock: boolean
 }
 
-export async function getPureCrossChainHistory(ckbAddress: string, web3: Web3) {
-  const { ckb_to_eth, eth_to_ckb } = (await getForceBridgeHistory(ckbAddress, true)).data
-  const orders = ckb_to_eth.concat(eth_to_ckb)
+export function normalizeTxHash(txhash?: string) {
+  if (!txhash) {
+    return ''
+  }
+  if (txhash.startsWith('0x')) {
+    return txhash
+  }
+
+  return `0x${txhash}`
+}
+
+export function isSameTxHash(hash1?: string, hash2?: string) {
+  if (!hash1 || !hash2) {
+    return false
+  }
+
+  return normalizeTxHash(hash1) === normalizeTxHash(hash2)
+}
+
+export function normalizeBridgeOrders<T extends ForceBridgeItem>(orders: T[]): T[] {
+  return orders.map(order => {
+    return {
+      ...order,
+      eth_tx_hash: normalizeTxHash(order.eth_tx_hash),
+      ckb_tx_hash: normalizeTxHash(order.ckb_tx_hash),
+      token_addr: normalizeTxHash(order.token_addr),
+    }
+  })
+}
+
+export async function getPureCrossChainHistory(ckbAddress: string, ethAddress: string) {
+  const { ckb_to_eth, eth_to_ckb } = (await getForceBridgeHistory(ckbAddress, ethAddress, true)).data
+  const orders = normalizeBridgeOrders(
+    ckb_to_eth
+      .map(o => ({ ...o, isLock: false }))
+      .concat(eth_to_ckb.map(o => ({ ...o, isLock: true })))
+      .map(o => {
+        const erc20 = [ERC20_ETH, ...ERC20_LIST].find(e => e.address.toLowerCase() === o.token_addr.toLowerCase())
+        return {
+          ...o,
+          erc20,
+        }
+      })
+      .filter(e => e.status !== 'error' && e.erc20),
+  )
 
   return Promise.all(
-    orders.reverse().map(order => {
-      return getCKBCrossChainInfo(order)
-        .then(res => {
-          return res
-        })
-        .catch(() => {
-          return getETHCrossChainInfo(order, web3)
-        })
+    orders.map(order => {
+      return getCKBCrossChainInfo(order, order.isLock)
     }),
   )
 }
 
-export async function getETHCrossChainInfo(order: ForceBridgeItem, web3: Web3): Promise<CrossChainOrder> {
-  const txHash = order.eth_tx_hash
-  const receipt = await web3.eth.getTransactionReceipt(txHash)
-  const [transfer] = receipt.logs
-  const erc20 =
-    transfer.address === FORCE_BRIDGE_SETTINGS.eth_token_locker_addr
-      ? ERC20_ETH
-      : ERC20_LIST.find(e => e.address === transfer.address)!
-  if (!erc20) {
-    // eslint-disable-next-line no-debugger
-    debugger
-    return {} as any
-  }
-  const amount = new BigNumber(
-    erc20 === ERC20_ETH ? web3.utils.hexToNumberString(transfer.data.slice(0, 66)) : transfer.data,
-  )
-    .div(new BigNumber(10).pow(erc20?.decimals!))
-    .toFixed(4, 1)
-  const { timestamp } = await web3.eth.getBlock(transfer.blockNumber)
-  return {
-    tokenName: erc20.tokenName,
-    amount,
-    timestamp: `${timestamp}`,
-    status: CrossChainOrderStatus.Completed,
-    ckbTxHash: order.ckb_tx_hash!,
-    ethTxHash: order.eth_tx_hash,
-  }
-}
-
-export async function getCKBCrossChainInfo(order: ForceBridgeItem): Promise<CrossChainOrder> {
+export async function getCKBCrossChainInfo(
+  order: ForceBridgeItem & { erc20?: ERC20 },
+  isLock: boolean,
+): Promise<CrossChainOrder> {
+  const erc20 = order.erc20!
   const txhash = order.ckb_tx_hash!
   const txWithStatus = await ckb.rpc.getTransaction(txhash)
-  const [sudtOutput] = txWithStatus.transaction.outputs
-  const [outputData] = txWithStatus.transaction.outputsData
-  const sudt = [SUDT_CK_ETH, ...SHADOW_ASSETS].find(s => s.toTypeScript().args === sudtOutput?.type?.args)
-  if (!sudt) {
-    throw new Error('')
-  }
-  const tokenName = sudt.info?.symbol!
-  const decimal = sudt.info?.decimals!
+  const { tokenName, decimals } = erc20
   const block = await ckb.rpc.getBlock(txWithStatus.txStatus.blockHash!)
-  const amount = new BigNumber(getAmountFromCellData(outputData, decimal)).toFormat(4)
+  const amount = new BigNumber(order.amount).div(new BigNumber(10).pow(decimals)).toFormat(4)
 
   return {
     tokenName,
@@ -124,5 +127,6 @@ export async function getCKBCrossChainInfo(order: ForceBridgeItem): Promise<Cros
     status: CrossChainOrderStatus.Completed,
     ckbTxHash: order.ckb_tx_hash!,
     ethTxHash: order.eth_tx_hash,
+    isLock,
   }
 }

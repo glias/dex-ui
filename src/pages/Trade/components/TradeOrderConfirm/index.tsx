@@ -85,12 +85,13 @@ export default function TradePairConfirm() {
             }
             if (OrderMode.CrossIn === Order.orderMode) {
               const crossChainOrder: CrossChainOrder = {
-                tokenName: `ck${firstToken}`,
+                tokenName: firstToken,
                 amount: pay,
                 timestamp: `${Date.now()}`,
                 ckbTxHash: '',
                 ethTxHash: hash,
                 status: CrossChainOrderStatus.ConfirmInETH,
+                isLock: true,
               }
               setAndCacheCrossChainOrders(orders => [crossChainOrder, ...orders])
             }
@@ -148,9 +149,10 @@ export default function TradePairConfirm() {
         tokenName: firstToken.slice(2),
         amount: removeTrailingZero(calcCrossOutFee(pay)),
         timestamp: `${Date.now()}`,
-        ckbTxHash: txHash.slice(2),
+        ckbTxHash: txHash,
         ethTxHash: '',
         status: CrossChainOrderStatus.ConfirmInCKB,
+        isLock: false,
       }
       setAndCacheCrossChainOrders(orders => [crossChainOrder, ...orders])
       setTxHash(txHash!)

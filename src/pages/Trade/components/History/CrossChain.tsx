@@ -1,7 +1,8 @@
 import { CheckCircleOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons'
 import { Button, Modal, Spin, Table, Tooltip } from 'antd'
-import { ckb, CrossChainOrder, CrossChainOrderStatus, getPureCrossChainHistory } from 'APIs'
+import { ckb, CrossChainOrder, CrossChainOrderStatus, getPureCrossChainHistory, isSameTxHash } from 'APIs'
 import WalletContainer from 'containers/wallet'
+import BigNumber from 'bignumber.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useContainer } from 'unstated-next'
 import { getTimeString } from 'utils'
@@ -52,10 +53,9 @@ const columns = [
     ellipsis: {
       showTitle: false,
     },
-    render: (tokenName: string) => {
-      const isShadow = tokenName.startsWith('ck')
-      const firstToken = isShadow ? tokenName.slice(2) : tokenName
-      const secondToken = firstToken.startsWith('ck') ? firstToken.slice(2) : `ck${firstToken}`
+    render: (tokenName: string, order: CrossChainOrder) => {
+      const firstToken = order.isLock ? tokenName : `ck${tokenName}`
+      const secondToken = !order.isLock ? tokenName : `ck${tokenName}`
       const pair = `${firstToken} ➜ ${secondToken}`
       return <span style={{ textTransform: 'none' }}>{pair}</span>
     },
@@ -93,39 +93,31 @@ const columns = [
 ]
 
 function buildTxHash(txhash: string) {
-  return `${txhash.startsWith('0x') ? '' : '0x'}${txhash.slice(0, 25)}...${txhash.slice(
-    txhash.length - 4,
-    txhash.length,
-  )}`
+  return `${txhash.slice(0, 25)}...${txhash.slice(txhash.length - 4, txhash.length)}`
 }
 
-function buildURL(txhash: string) {
-  return txhash.startsWith('0x') ? `${ETHER_SCAN_URL}tx/${txhash}` : `${EXPLORER_URL}transaction/0x${txhash}`
+function buildURL(txhash: string, isETH: boolean) {
+  return isETH ? `${ETHER_SCAN_URL}tx/${txhash}` : `${EXPLORER_URL}transaction/${txhash}`
 }
 
 const OrderModal = ({
   currentOrder,
   modalVisable,
   setModalVisable,
+  setOrderStatus,
   web3,
 }: {
   modalVisable: boolean
   currentOrder: CrossChainOrder
   setModalVisable: Function
+  // eslint-disable-next-line
+  setOrderStatus: (status: CrossChainOrderStatus) => void
   web3: Web3
 }) => {
-  const [order, setOrder] = useState(currentOrder)
-  const setOrderStatus = useCallback((status: CrossChainOrderStatus) => {
-    setOrder(prev => {
-      return {
-        ...prev,
-        status,
-      }
-    })
-  }, [])
+  const order = currentOrder
   const ckbTx = order.ckbTxHash ?? '-'
   const ethTx = order.ethTxHash ?? '-'
-  const isLock = order.tokenName.startsWith('ck')
+  const { isLock } = order
   const firstTx = isLock ? ethTx : ckbTx
   const secondTx = isLock ? ckbTx : ethTx
   const firstDescription = `Confirm in ${isLock ? 'ETH' : 'CKB'} chain`
@@ -201,7 +193,7 @@ const OrderModal = ({
             )}
           </span>
           <span className={styles.hash}>
-            <a target="_blank" rel="noopener noreferrer" href={buildURL(firstTx)}>
+            <a target="_blank" rel="noopener noreferrer" href={buildURL(firstTx, isLock)}>
               {buildTxHash(firstTx)}
             </a>
           </span>
@@ -219,7 +211,7 @@ const OrderModal = ({
             {secondTx.length < 10 ? (
               '-'
             ) : (
-              <a target="_blank" rel="noopener noreferrer" href={buildURL(secondTx)}>
+              <a target="_blank" rel="noopener noreferrer" href={buildURL(secondTx, !isLock)}>
                 {buildTxHash(secondTx)}
               </a>
             )}
@@ -232,24 +224,44 @@ const OrderModal = ({
 
 const CrossChainTable = () => {
   const [isLoading, setLoading] = useState(true)
-  const { ckbWallet, web3 } = useContainer(WalletContainer)
+  const { ckbWallet, web3, ethWallet } = useContainer(WalletContainer)
   const { setAndCacheCrossChainOrders, crossChainOrders } = useContainer(OrderContainer)
   const [orders, setOrders] = useState<CrossChainOrder[]>([])
   const [currentOrder, setCurrentOrder] = useState<CrossChainOrder | null>(null)
   const [modalVisable, setModalVisable] = useState(false)
+  const setOrderStatus = useCallback((status: CrossChainOrderStatus) => {
+    setCurrentOrder(prev => {
+      return {
+        ...prev!,
+        status,
+      }
+    })
+  }, [])
 
   useEffect(() => {
-    const INTERVAL_TIME = 3000
+    const INTERVAL_TIME = 5000
     let interval: number
-    if (ckbWallet.address && web3) {
+    if (ckbWallet.address && ethWallet.address && web3) {
       const getOrders = () => {
-        getPureCrossChainHistory(ckbWallet.address, web3)
+        getPureCrossChainHistory(ckbWallet.address, ethWallet.address)
           .then(res => {
             setOrders(res)
             setAndCacheCrossChainOrders(cacheOrders => {
-              return cacheOrders.filter(cache =>
-                res.every(o => o.ckbTxHash !== cache.ckbTxHash && o.ethTxHash !== cache.ethTxHash),
-              )
+              return cacheOrders.filter(cache => {
+                const matched = res.find(
+                  o => isSameTxHash(o.ckbTxHash, cache.ckbTxHash) || isSameTxHash(o.ethTxHash, cache.ethTxHash),
+                )
+
+                if (
+                  matched &&
+                  (isSameTxHash(matched.ckbTxHash, currentOrder?.ckbTxHash) ||
+                    isSameTxHash(matched.ethTxHash, currentOrder?.ethTxHash))
+                ) {
+                  setCurrentOrder(matched)
+                }
+
+                return !matched
+              })
             })
           })
           .finally(() => setLoading(false))
@@ -265,7 +277,7 @@ const CrossChainTable = () => {
         clearInterval(interval)
       }
     }
-  }, [ckbWallet.address, web3, setAndCacheCrossChainOrders])
+  }, [ckbWallet.address, web3, setAndCacheCrossChainOrders, ethWallet.address, currentOrder])
 
   const orderList = useMemo(() => {
     return [
@@ -273,7 +285,7 @@ const CrossChainTable = () => {
       ...orders.filter(o =>
         crossChainOrders.every(cache => cache.ckbTxHash !== o.ckbTxHash && cache.ethTxHash !== o.ethTxHash),
       ),
-    ]
+    ].sort((a, b) => (new BigNumber(a.timestamp).isLessThan(b.timestamp) ? 1 : -1))
   }, [crossChainOrders, orders])
 
   const actionColumn = {
@@ -313,6 +325,7 @@ const CrossChainTable = () => {
           modalVisable={modalVisable}
           setModalVisable={setModalVisable}
           web3={web3}
+          setOrderStatus={setOrderStatus}
         />
       ) : null}
     </>

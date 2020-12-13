@@ -72,6 +72,13 @@ export function displayPrice(str: string) {
 
 export function displayPayOrReceive(str: string) {
   const amount = new BigNumber(str)
+  const decimal = amount.decimalPlaces()
+  if (decimal <= 4) {
+    return amount.toFormat(4)
+  }
+  if (decimal >= 8) {
+    return amount.toFormat(8)
+  }
   return amount.toFormat(4)
 }
 
