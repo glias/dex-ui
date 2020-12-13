@@ -3,6 +3,8 @@
 body {
   margin: 0;
   padding: 0;
+  background: url('./assets/svg/bg.svg') no-repeat 50% fixed;
+  background-size: cover;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-overflow-scrolling: touch;

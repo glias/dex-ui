@@ -1,9 +1,9 @@
 import styled from 'styled-components'
+// import BackGroundImage from '../../assets/svg/bg.svg'
 
 export const TradePage = styled.div`
   min-height: calc(100% - 93px);
-  background-image: linear-gradient(to top, #eeeeee, #e8e8e8);
-  padding-top: 220px;
+  padding-top: 90px;
   width: 100%;
   padding-bottom: 60px;
 `
