@@ -1,6 +1,5 @@
 import PWCore, { Provider, SUDT } from '@lay2/pw-core'
-import { getSudtTransactions } from 'APIs'
-import { getCkbTransactions } from 'APIs/explorer'
+import { getCkbTransactions, getSudtTransactions } from 'APIs'
 import { DateTime } from 'luxon'
 import { getPendingTransactions, removePendingTransactions } from './pendingTxs'
 
@@ -93,25 +92,24 @@ function signedAmountToDirectedAmount(amount: string): DirectedAmount {
 
 interface GetCkbTransferSummariesOptions {
   direction?: TransactionDirection
+  provider?: Provider
 }
 
-export async function getCkbTransferSummaries(options?: GetCkbTransferSummariesOptions): Promise<TransactionSummary[]> {
-  const transactions = await getCkbTransactions(PWCore.provider.address.toCKBAddress())
-
+export async function getCkbTransferSummaries(
+  options: GetCkbTransferSummariesOptions = {},
+): Promise<TransactionSummary[]> {
+  const provider = options.provider || PWCore.provider
+  const res = await getCkbTransactions(provider.address.toLockScript())
+  const sudtTxs = res.data
   const tokenName = 'CKB'
 
-  let transfers = transactions.data.data.map<TransactionSummary>(tx => {
-    const { amount, direction } = signedAmountToDirectedAmount(tx.attributes.income)
-
-    return {
-      amount,
-      direction,
-      date: formatDateTime(tx.attributes.block_timestamp),
-      txHash: tx.attributes.transaction_hash,
-      tokenName,
-      status: TransactionStatus.Committed,
-    }
-  })
+  let transfers = sudtTxs.map<TransactionSummary>(tx => ({
+    ...signedAmountToDirectedAmount(tx.income),
+    tokenName,
+    txHash: tx.hash,
+    date: formatDateTime(tx.timestamp),
+    status: TransactionStatus.Committed,
+  }))
 
   transfers = syncWithLocalStorage(tokenName, transfers)
 
