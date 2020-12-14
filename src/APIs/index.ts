@@ -1,36 +1,36 @@
-import CKB from '@nervosnetwork/ckb-sdk-core'
 import {
   Address,
   AddressType,
-  Script,
-  SUDT,
+  Amount,
+  AmountUnit,
+  Builder,
+  Cell,
   CellDep,
   OutPoint,
   RawTransaction,
-  Cell,
-  Amount,
-  AmountUnit,
+  Script,
+  SUDT,
   Transaction,
-  Builder,
 } from '@lay2/pw-core'
-import PlaceOrderBuilder from 'pw/placeOrderBuilder'
-import DEXCollector from 'pw/dexCollector'
-import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
-import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
-import Web3 from 'web3'
-import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
-import { calcAskReceive, calcTotalPay } from 'utils/fee'
+import CKB from '@nervosnetwork/ckb-sdk-core'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
+import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
+import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
+import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
+import DEXCollector from 'pw/dexCollector'
+import PlaceOrderBuilder from 'pw/placeOrderBuilder'
+import { calcAskReceive } from 'utils/fee'
+import Web3 from 'web3'
+import { CKB_NODE_URL, CROSS_CHAIN_FEE_RATE, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { OrderType } from '../containers/order'
-import { CKB_NODE_URL, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
 export * from './checkSubmittedTxs'
 export * from './bridge'
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL!
-const FORCE_BRIDGER_SERVER_URL = 'http://121.196.29.165:3003'
+const FORCE_BRIDGER_SERVER_URL = process.env.REACT_APP_FORCE_BRIDGE_SERVER_URL!
 
 export const ckb = new CKB(CKB_NODE_URL)
 
@@ -171,7 +171,16 @@ export function getSudtTransactions(type: Script, lock: Script): Promise<AxiosRe
     lock_hash_type: lock.hashType,
     lock_args: lock.args,
   }
-  return axios.get<SudtTransaction[]>(`${SERVER_URL}/sudt-transactions`, { params })
+  return axios.get<SudtTransaction[]>(`${SERVER_URL}/transactions`, { params })
+}
+
+export function getCkbTransactions(lock: Script): Promise<AxiosResponse<SudtTransaction[]>> {
+  const params = {
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+  }
+  return axios.get<SudtTransaction[]>(`${SERVER_URL}/transactions`, { params })
 }
 
 export function getTransactionHeader(blockHashes: string[]) {
@@ -210,12 +219,15 @@ export async function shadowAssetCrossOut(
   ethAddress: string,
   tokenAddress = '0x0000000000000000000000000000000000000000',
   decimal = ETH_DECIMAL_INT,
-  bridgeFee = '0x0',
 ) {
-  const amount = `0x${new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toString(16)}`
+  const payWithDecimal = new BigNumber(pay).times(new BigNumber(10).pow(decimal))
+  const totalPay = payWithDecimal.times(1 + CROSS_CHAIN_FEE_RATE)
+  const amount = `0x${totalPay.toString(16)}`
+  const unlockFee = `0x${payWithDecimal.times(CROSS_CHAIN_FEE_RATE).toString(16)}`
+
   return axios.post(`${FORCE_BRIDGER_SERVER_URL}/burn`, {
     from_lockscript_addr: ckbAddress,
-    unlock_fee: bridgeFee,
+    unlock_fee: unlockFee,
     amount,
     token_address: tokenAddress,
     recipient_address: ethAddress,
@@ -232,7 +244,7 @@ export async function shadowAssetCrossIn(
   decimal = ETH_DECIMAL_INT,
   bridgeFee = '0x0',
 ) {
-  const amount = `0x${new BigNumber(calcTotalPay(pay)).times(new BigNumber(10).pow(decimal)).toString(16)}`
+  const amount = `0x${new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toString(16)}`
   const key = `${ckbAddress}-${tokenAddress}`
   const outpoints = replayResistOutpoints.get()[key]
   const op = outpoints.shift()
@@ -323,6 +335,7 @@ export async function placeCrossChainOrder(
 }
 
 export type Orders = Record<'receive' | 'price', string>[]
+
 export interface OrdersResult {
   bid_orders: Orders
   ask_orders: Orders
@@ -444,23 +457,32 @@ export function getCurrentPrice(sudt: SUDT = SUDT_GLIA): Promise<AxiosResponse<s
 }
 
 export interface ForceBridgeHistory {
-  crosschain_history: ForceBridgeItem[]
+  ckb_to_eth: ForceBridgeItem[]
+  eth_to_ckb: ForceBridgeItem[]
 }
 
 export interface ForceBridgeItem {
   ckb_tx_hash?: string
-  eth_lock_tx_hash: string
+  eth_tx_hash: string
   id: string
+  amount: string
+  token_addr: string
+  status: 'error' | 'pending' | 'success'
 }
 
-export function getForceBridgeHistory(ckbAddress: string): Promise<AxiosResponse<ForceBridgeHistory>> {
+export function getForceBridgeHistory(
+  ckbAddress: string,
+  ethAddress: string,
+  pureCross = false,
+): Promise<AxiosResponse<ForceBridgeHistory>> {
   const orderLock = new Script(
     ORDER_BOOK_LOCK_SCRIPT.codeHash,
     new Address(ckbAddress, AddressType.ckb).toLockScript().toHash(),
     ORDER_BOOK_LOCK_SCRIPT.hashType,
   )
   return axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_crosschain_history`, {
-    ckb_recipient_lockscript_addr: orderLock.toAddress().toCKBAddress(),
+    ckb_recipient_lockscript_addr: pureCross ? ckbAddress : orderLock.toAddress().toCKBAddress(),
+    eth_recipient_addr: ethAddress,
   })
 }
 

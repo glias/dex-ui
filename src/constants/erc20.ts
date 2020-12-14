@@ -3,42 +3,39 @@ import { forceBridgeSettings } from 'utils'
 
 // eslint-disable-next-line import/no-mutable-exports
 export let FORCE_BRIDGE_SETTINGS = {
-  eth_token_locker_addr: '0xB901C2F103bDFe286d2B21F1428dAa9790df2f68',
-  eth_ckb_chain_addr: '0x6Aaf07dCEAF11BD3e8f9bC0b569Dbb13F8De1C69',
+  eth_token_locker_addr: '0x9568e06B6CDA58eDf9469e4B6394184b4466a0b3',
+  eth_ckb_chain_addr: '0xD3fF5d9400f1A209af64aE1fBb0F627FDDB98B49',
   bridge_lockscript: {
     code_hash: '7b802a58978016376e9b92d332c26b1ecdda11855b8250c9570bb2e2dd81f1c2',
     hash_type: 0,
-    outpoint: { tx_hash: '0881580d0d50fc8804791970ac09a03749e8efce992b599d784d95ad315049a6', index: 0, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 0, dep_type: 0 },
   },
   bridge_typescript: {
     code_hash: 'fe14b0c716bfcbf55067296e424031cb28a35855e8849d2921f23f7916d03b40',
     hash_type: 0,
-    outpoint: { tx_hash: '0881580d0d50fc8804791970ac09a03749e8efce992b599d784d95ad315049a6', index: 1, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 1, dep_type: 0 },
   },
   light_client_typescript: {
     code_hash: 'e2ff33937bc517ed32871a30dcf69a9cc237f81ffcb7f125beb4606ebc25513f',
     hash_type: 0,
-    outpoint: { tx_hash: '0881580d0d50fc8804791970ac09a03749e8efce992b599d784d95ad315049a6', index: 2, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 2, dep_type: 0 },
   },
   light_client_lockscript: {
     code_hash: '7a031ad689c0acb49ee203fa22f6ff89e1a538baa6bf1c37576d074ebbfdf4ad',
     hash_type: 0,
-    outpoint: { tx_hash: '0881580d0d50fc8804791970ac09a03749e8efce992b599d784d95ad315049a6', index: 3, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 3, dep_type: 0 },
   },
   recipient_typescript: {
     code_hash: '5da121aa6b22039b33aa373f8a0131e6db7eb60225afc63138b3d91ce2528ded',
     hash_type: 0,
-    outpoint: { tx_hash: '0881580d0d50fc8804791970ac09a03749e8efce992b599d784d95ad315049a6', index: 4, dep_type: 0 },
+    outpoint: { tx_hash: '17e44aabf1b96b1735fffa23419718615d829aa7e661ab02815b293fac5742e4', index: 4, dep_type: 0 },
   },
   sudt: {
     code_hash: 'c5e5dcf215925f7ef4dfaf5f4b4f105bc321c02776d6e7d52a1db3fcd9d011a4',
     hash_type: 1,
     outpoint: { tx_hash: 'e12877ebd2c3c364dc46c5c992bcfaf4fee33fa13eebdf82c591fc9825aab769', index: 0, dep_type: 0 },
   },
-  light_client_cell_script: {
-    cell_script:
-      '59000000100000003000000031000000e2ff33937bc517ed32871a30dcf69a9cc237f81ffcb7f125beb4606ebc25513f002400000080aaf9007ddf876d7b51138f80a92854f26cbf7d3d91b5b2fb32d5ca888ede0801000000',
-  },
+  light_client_cell_script: { cell_script: '' },
   pw_locks: {
     inner: [
       { tx_hash: '57a62003daeab9d54aa29b944fc3b451213a5ebdf2e232216a3cfed0dde61b38', index: 0, dep_type: 0 },
@@ -69,6 +66,12 @@ export const ERC20_USDC: ERC20 = {
   tokenName: 'USDT',
   decimals: 6,
   address: '0x1F0D2251f51b88FaFc90f06F7022FF8d82154B1a',
+}
+
+export const ERC20_ETH: ERC20 = {
+  tokenName: 'ETH',
+  decimals: 18,
+  address: '0x0000000000000000000000000000000000000000',
 }
 
 export const ERC20_LIST = [ERC20_DAI, ERC20_USDT, ERC20_USDC]

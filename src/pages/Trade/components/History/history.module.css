@@ -218,6 +218,14 @@
   border-right: 1px solid #e7e7e7;
 }
 
+.chain {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 180px;
+  border-right: 1px solid #e7e7e7;
+}
+
 .hash {
   display: flex;
   justify-content: center;

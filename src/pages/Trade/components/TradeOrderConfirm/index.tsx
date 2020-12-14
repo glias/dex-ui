@@ -4,13 +4,21 @@ import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import HeaderWithGoback from 'components/HeaderWithGoback'
 import { Divider, Modal } from 'antd'
-import { relayEthToCKB } from 'APIs'
+import { SUDT_LIST } from 'constants/sudt'
+import { DEFAULT_PAY_DECIMAL } from 'constants/number'
+import { CrossChainOrder, CrossChainOrderStatus, relayEthToCKB } from 'APIs'
 import { TradePairConfirmBox, TradePairConfirmContent, Footer } from './styled'
 import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
-import { calcAskReceive, calcBidReceive, calcTotalPay } from '../../../../utils/fee'
+import {
+  calcAskReceive,
+  calcBidReceive,
+  calcCrossOutFee,
+  calcTotalPay,
+  removeTrailingZero,
+} from '../../../../utils/fee'
 import { spentCells } from '../../../../utils'
 import { Pairs } from './pairs'
 import CrossChain from './CrossChain'
@@ -23,7 +31,17 @@ export default function TradePairConfirm() {
   const Order = useContainer(OrderContainer)
   const [disabled, setDisabled] = useState(false)
   const { address } = Wallet.ckbWallet
-  const { setStep, setTxHash, setAndCacheSubmittedOrders, pay, price, orderType } = Order
+  const {
+    setStep,
+    setTxHash,
+    setAndCacheSubmittedOrders,
+    pay,
+    price,
+    orderType,
+    setAndCacheCrossChainOrders,
+    pair,
+  } = Order
+  const [firstToken, secondToken] = pair
   const { reloadWallet, ethWallet, web3 } = Wallet
 
   useEffect(() => {
@@ -67,6 +85,18 @@ export default function TradePairConfirm() {
               }
               setAndCacheSubmittedOrders(orders => [submittedOrder, ...orders])
             }
+            if (OrderMode.CrossIn === Order.orderMode) {
+              const crossChainOrder: CrossChainOrder = {
+                tokenName: firstToken,
+                amount: pay,
+                timestamp: `${Date.now()}`,
+                ckbTxHash: '',
+                ethTxHash: hash,
+                status: CrossChainOrderStatus.ConfirmInETH,
+                isLock: true,
+              }
+              setAndCacheCrossChainOrders(orders => [crossChainOrder, ...orders])
+            }
             resolve(hash)
           })
           .on('error', err => {
@@ -74,7 +104,17 @@ export default function TradePairConfirm() {
           })
       })
     },
-    [Wallet.ethWallet.address, setAndCacheSubmittedOrders, pay, price, Order.pair, Wallet.web3, Order.orderMode],
+    [
+      Wallet.ethWallet.address,
+      setAndCacheSubmittedOrders,
+      pay,
+      price,
+      Order.pair,
+      Wallet.web3,
+      Order.orderMode,
+      firstToken,
+      setAndCacheCrossChainOrders,
+    ],
   )
 
   const placeNormalOrder = useCallback(
@@ -84,13 +124,13 @@ export default function TradePairConfirm() {
 
       const isBid = orderType === OrderType.Bid
       const receiveCalc = isBid ? calcBidReceive : calcAskReceive
-
+      const sudt = SUDT_LIST.find(s => s.info?.symbol === secondToken)
       const submittedOrder: SubmittedOrder = {
         key: `${txHash}:0x0`,
         isBid,
         status: 'pending',
         pay: calcTotalPay(pay),
-        receive: receiveCalc(pay, price),
+        receive: receiveCalc(pay, price, sudt?.info?.decimals ?? DEFAULT_PAY_DECIMAL),
         price,
         executed: '0%',
         createdAt: `${Date.now()}`,
@@ -101,16 +141,26 @@ export default function TradePairConfirm() {
       setTxHash(txHash!)
       setStep(OrderStep.Result)
     },
-    [setStep, setTxHash, setAndCacheSubmittedOrders, pay, price, Wallet.pw, orderType, Order.pair],
+    [setStep, setTxHash, setAndCacheSubmittedOrders, pay, price, Wallet.pw, orderType, Order.pair, secondToken],
   )
 
   const burn = useCallback(
     async (tx: Transaction) => {
       const txHash = await Wallet.pw!.sendTransaction(tx)
+      const crossChainOrder: CrossChainOrder = {
+        tokenName: firstToken.slice(2),
+        amount: removeTrailingZero(calcCrossOutFee(pay)),
+        timestamp: `${Date.now()}`,
+        ckbTxHash: txHash,
+        ethTxHash: '',
+        status: CrossChainOrderStatus.ConfirmInCKB,
+        isLock: false,
+      }
+      setAndCacheCrossChainOrders(orders => [crossChainOrder, ...orders])
       setTxHash(txHash!)
       setStep(OrderStep.Result)
     },
-    [Wallet.pw, setTxHash, setStep],
+    [Wallet.pw, setTxHash, setStep, setAndCacheCrossChainOrders, firstToken, pay],
   )
 
   const onConfirm = useCallback(async () => {

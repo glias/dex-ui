@@ -1,5 +1,6 @@
 import PWCore, { Address, AddressType, AmountUnit, Script, SUDT, Web3ModalProvider } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
+import { Modal } from 'antd'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { createContainer } from 'unstated-next'
 import { replayResistOutpoints } from 'utils'
@@ -239,6 +240,17 @@ export function useWallet() {
       })
 
       const newWeb3 = new Web3(provider)
+      const chainID = await newWeb3.eth.getChainId()
+
+      if (chainID !== 3) {
+        Modal.error({
+          title: 'Connect Wallet error',
+          content:
+            'This Ethereum network is not supported. Please connect your Ethereum wallet to Ropsten Test Network.',
+        })
+        throw new Error('Connect Wallet error')
+      }
+
       const newPw = await new PWCore(CKB_NODE_URL).init(
         new Web3ModalProvider(newWeb3),
         new DEXCollector(),

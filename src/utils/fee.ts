@@ -1,11 +1,15 @@
 import BigNumber from 'bignumber.js'
-import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from '../constants'
+import { COMMISSION_FEE, ORDER_CELL_CAPACITY, CROSS_CHAIN_FEE_RATE } from '../constants'
 
 export function calcBuyReceive(pay: string, price: string) {
   return new BigNumber(pay)
     .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
     .div(new BigNumber(price))
     .toFixed(8, 1)
+}
+
+export function calcCrossOutFee(pay: string) {
+  return new BigNumber(pay).times(1 + CROSS_CHAIN_FEE_RATE).toFixed(8, 1)
 }
 
 export function calcSellReceive(pay: string, price: string) {
@@ -24,8 +28,8 @@ export function calcAskReceive(pay: string, price: string) {
   return new BigNumber(pay).times(price).toFixed(8, 1)
 }
 
-export function calcBidReceive(pay: string, price: string) {
-  return new BigNumber(pay).div(price).toFixed(8, 1)
+export function calcBidReceive(pay: string, price: string, decimal: number) {
+  return new BigNumber(pay).div(price).toFixed(decimal, 1)
 }
 
 export function calcBuyAmount(pay: string) {
@@ -68,6 +72,13 @@ export function displayPrice(str: string) {
 
 export function displayPayOrReceive(str: string) {
   const amount = new BigNumber(str)
+  const decimal = amount.decimalPlaces()
+  if (decimal <= 4) {
+    return amount.toFormat(4)
+  }
+  if (decimal >= 8) {
+    return amount.toFormat(8)
+  }
   return amount.toFormat(4)
 }
 

@@ -17,6 +17,7 @@ import {
   // MINIUM_RECEIVE,
   ERC20_LIST,
   SUDT_LIST,
+  DEFAULT_PAY_DECIMAL,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
 import {
@@ -207,10 +208,17 @@ export default function OrderTable() {
     setIsPayInvalid(false)
   }, [maxPay, formRef, setPay, insufficientCKB])
 
+  const [firstToken, secondToken] = Order.pair
+
+  const payDecimal = useMemo(() => {
+    const sudt = SUDT_LIST.find(s => s.info?.symbol === firstToken)
+    const erc20 = ERC20_LIST.find(e => e.tokenName === firstToken)
+    return sudt?.info?.decimals ?? erc20?.decimals ?? DEFAULT_PAY_DECIMAL
+  }, [firstToken])
+
   const checkPay = useCallback(
     (_: any, value: string): Promise<void> => {
       const val = new BigNumber(value)
-      const decimal = 8
 
       if (val.isLessThan(0)) {
         setIsPayInvalid(true)
@@ -222,9 +230,9 @@ export default function OrderTable() {
         return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
       }
 
-      if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
+      if (!new BigNumber(val).decimalPlaces(payDecimal).isEqualTo(val)) {
         setIsPayInvalid(true)
-        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
+        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal: payDecimal }))
       }
 
       if (new BigNumber(value).gt(maxPay)) {
@@ -236,7 +244,7 @@ export default function OrderTable() {
 
       return Promise.resolve()
     },
-    [maxPay],
+    [maxPay, payDecimal],
   )
 
   const checkPrice = useCallback(
@@ -443,8 +451,6 @@ export default function OrderTable() {
       createBridgeCell(tokenAddress, 'cross-in', () => setReactor(Math.random()))
     }
   }, [Order.pair, createBridgeCell])
-
-  const [firstToken, secondToken] = Order.pair
 
   return (
     <OrderTableContainer id="order-box" isBid={isBid}>

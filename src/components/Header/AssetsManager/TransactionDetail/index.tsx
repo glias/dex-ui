@@ -87,8 +87,8 @@ const ResultMain: React.FC<ResultMainProps> = (props: ResultMainProps) => {
 const TransactionDescription = (props: { transaction: TransactionDetailModel; txHash: string; tokenName: string }) => {
   const { t } = useTranslation()
   const { transaction: tx, txHash, tokenName } = props
-  const { amount, from, to, blockNumber, fee } = tx
-  const { wrapAddress, decimal, isCkb } = AssetManagerContainer.useContainer()
+  const { amount, blockNumber, fee } = tx
+  const { decimal, isCkb } = AssetManagerContainer.useContainer()
 
   return (
     <table>
@@ -112,16 +112,6 @@ const TransactionDescription = (props: { transaction: TransactionDetailModel; tx
           <td>
             <Balance value={fee} decimal={8} suffix="CKB" maxDecimalPlaces={8} />
           </td>
-        </tr>
-
-        <tr>
-          <th>{t('To')}</th>
-          <td>{wrapAddress(to)}</td>
-        </tr>
-
-        <tr>
-          <th>{t('From')}</th>
-          <td>{wrapAddress(from)}</td>
         </tr>
 
         <tr>
