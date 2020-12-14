@@ -40,16 +40,14 @@ const Operations = () => {
 }
 
 export const AssetBalance: React.FC = () => {
-  const { tokenName } = useParams<{ tokenName?: string }>()
+  const { tokenName: paramTokenName } = useParams<{ tokenName?: string }>()
   const { setTokenName } = AssetManagerContainer.useContainer()
 
   useEffect(() => {
-    if (tokenName) {
-      setTokenName(tokenName)
-    }
-  }, [tokenName, setTokenName])
+    setTokenName(paramTokenName || 'CKB')
+  }, [paramTokenName, setTokenName])
 
-  const headerElement = tokenName ? <AssetManagerHeader showGoBack /> : <WalletConnectionStatusHeader />
+  const headerElement = paramTokenName ? <AssetManagerHeader showGoBack /> : <WalletConnectionStatusHeader />
 
   return (
     <>

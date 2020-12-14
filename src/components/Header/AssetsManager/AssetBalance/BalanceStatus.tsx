@@ -3,6 +3,7 @@ import Token from 'components/Token'
 import { isCkbWallet } from 'containers/wallet'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { useParams, useRouteMatch } from 'react-router-dom'
 import styled from 'styled-components'
 import { Balance } from '../Balance'
 import { AssetManagerContainer } from '../hooks'
@@ -14,6 +15,7 @@ const BalanceStatusWrapper = styled.div`
 
   .space-bottom {
     margin-bottom: 16px;
+
     &-large {
       margin-bottom: 32px;
     }
@@ -25,6 +27,7 @@ const BalanceStatusWrapper = styled.div`
     &-item {
       border-right: 4px solid #e1e1e1;
       flex: 1;
+
       :last-child {
         border-right: none;
         padding: 0 4px;
@@ -36,6 +39,8 @@ const BalanceStatusWrapper = styled.div`
 export const BalanceStatus = () => {
   const { t } = useTranslation()
   const { wallet, tokenName } = AssetManagerContainer.useContainer()
+  const { tokenName: paramTokenName } = useParams<{ tokenName: string }>()
+  const { url } = useRouteMatch()
 
   if (!wallet) return null
 
@@ -45,14 +50,19 @@ export const BalanceStatus = () => {
     locked: wallet.lockedOrder,
   }
 
+  // only show suffix when /assets
+  const suffix = url === '/assets' ? 'CKB' : undefined
+
   const total = new BigNumber(free).plus(inUse).plus(locked)
   return (
     <BalanceStatusWrapper>
+      {paramTokenName && (
+        <div className="space-bottom">
+          <Token tokenName={tokenName} className="small" />
+        </div>
+      )}
       <div className="space-bottom">
-        <Token tokenName={tokenName} className="small" />
-      </div>
-      <div className="space-bottom">
-        <Balance value={total} suffix={tokenName} size={24} unitSize={20} />
+        <Balance value={total} suffix={suffix} size={24} unitSize={20} />
       </div>
       <div className="balance-desc space-bottom">
         <div className="balance-desc-item">
