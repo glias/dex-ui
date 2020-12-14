@@ -64,7 +64,7 @@ export interface SubmittedOrder
 
 export function useOrder() {
   const Wallet = useContainer(WalletContainer)
-  const { ethWallet, sudtWallets, erc20Wallets, web3 } = Wallet
+  const { ethWallet, sudtWallets, erc20Wallets, web3, connecting } = Wallet
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
@@ -210,6 +210,9 @@ export function useOrder() {
 
   const setAndCacheSubmittedOrders = useCallback(
     (updateFn: SubmittedOrdersUpdateFn) => {
+      if (connecting) {
+        return
+      }
       setSubmittedOrders(orders => {
         const newOrders = updateFn(orders)
         submittedOrdersCache.set(address, newOrders)
@@ -217,7 +220,7 @@ export function useOrder() {
       })
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [address, setSubmittedOrders],
+    [address, setSubmittedOrders, connecting],
   )
 
   const setAndCacheCrossChainOrders = useCallback(
