@@ -6,6 +6,14 @@ import { AppHeader } from 'mobile/components/Header/AppHeader'
 import Trade from 'pages/Trade'
 import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Route, Switch, useHistory, useLocation } from 'react-router-dom'
+import styled from 'styled-components'
+import BackgroundImageUrl from '../../assets/img/dex-bg.png'
+
+const MobileWrapper = styled.div`
+  position: relative;
+  background: url('${BackgroundImageUrl}') fixed center;
+  background-size: cover;
+`
 
 const Control = () => {
   useNotifyTransaction()
@@ -32,10 +40,10 @@ const RouterRoot = () => {
   }, [])
 
   return (
-    <>
+    <MobileWrapper>
       <AppHeader />
       {connectStatus === 'connected' && <Control />}
-    </>
+    </MobileWrapper>
   )
 }
 
