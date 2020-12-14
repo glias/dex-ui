@@ -157,7 +157,7 @@ export class PlaceOrderBuilder extends Builder {
     const inputs: Cell[] = []
 
     const orderOutput = new Cell(buyCellCapacity, this.orderLock, this.sudt.toTypeScript())
-    const receive = calcBidReceive(this.pay.toString(), this.price)
+    const receive = calcBidReceive(this.pay.toString(), this.price, this.decimal)
     orderOutput.setHexData(buildBuyData(receive, this.price, this.decimal))
     // fill the inputs
     const cells = await this.collector.collect(this.address, { neededAmount: neededCapacity })

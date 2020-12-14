@@ -4,6 +4,8 @@ import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import HeaderWithGoback from 'components/HeaderWithGoback'
 import { Divider, Modal } from 'antd'
+import { SUDT_LIST } from 'constants/sudt'
+import { DEFAULT_PAY_DECIMAL } from 'constants/number'
 import { CrossChainOrder, CrossChainOrderStatus, relayEthToCKB } from 'APIs'
 import { TradePairConfirmBox, TradePairConfirmContent, Footer } from './styled'
 import i18n from '../../../../utils/i18n'
@@ -39,7 +41,7 @@ export default function TradePairConfirm() {
     setAndCacheCrossChainOrders,
     pair,
   } = Order
-  const [firstToken] = pair
+  const [firstToken, secondToken] = pair
   const { reloadWallet, ethWallet, web3 } = Wallet
 
   useEffect(() => {
@@ -122,13 +124,13 @@ export default function TradePairConfirm() {
 
       const isBid = orderType === OrderType.Bid
       const receiveCalc = isBid ? calcBidReceive : calcAskReceive
-
+      const sudt = SUDT_LIST.find(s => s.info?.symbol === secondToken)
       const submittedOrder: SubmittedOrder = {
         key: `${txHash}:0x0`,
         isBid,
         status: 'pending',
         pay: calcTotalPay(pay),
-        receive: receiveCalc(pay, price),
+        receive: receiveCalc(pay, price, sudt?.info?.decimals ?? DEFAULT_PAY_DECIMAL),
         price,
         executed: '0%',
         createdAt: `${Date.now()}`,
@@ -139,7 +141,7 @@ export default function TradePairConfirm() {
       setTxHash(txHash!)
       setStep(OrderStep.Result)
     },
-    [setStep, setTxHash, setAndCacheSubmittedOrders, pay, price, Wallet.pw, orderType, Order.pair],
+    [setStep, setTxHash, setAndCacheSubmittedOrders, pay, price, Wallet.pw, orderType, Order.pair, secondToken],
   )
 
   const burn = useCallback(

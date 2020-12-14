@@ -10,6 +10,8 @@ import {
   COMMISSION_FEE,
   ERC20_LIST,
   CROSS_CHAIN_FEE_RATE,
+  SUDT_LIST,
+  DEFAULT_PAY_DECIMAL,
 } from '../constants'
 import { submittedOrders as submittedOrdersCache, crossChainOrders as crossChainOrdersCache } from '../utils'
 import type { OrderRecord } from '../utils'
@@ -169,14 +171,15 @@ export function useOrder() {
   }, [firstToken, secondToken])
 
   const receive = useMemo(() => {
-    const [buyToken] = pair
+    const [buyToken, seller] = pair
     if (!pay || !price) {
       return '0'
     }
     switch (orderMode) {
       case OrderMode.Order:
         if (buyToken === 'CKB') {
-          return calcBidReceive(pay, price)
+          const sudt = SUDT_LIST.find(s => s.info?.symbol === seller)
+          return calcBidReceive(pay, price, sudt?.info?.decimals ?? DEFAULT_PAY_DECIMAL)
         }
         return calcAskReceive(pay, price)
       case OrderMode.CrossChain:

@@ -28,8 +28,8 @@ export function calcAskReceive(pay: string, price: string) {
   return new BigNumber(pay).times(price).toFixed(8, 1)
 }
 
-export function calcBidReceive(pay: string, price: string) {
-  return new BigNumber(pay).div(price).toFixed(8, 1)
+export function calcBidReceive(pay: string, price: string, decimal: number) {
+  return new BigNumber(pay).div(price).toFixed(decimal, 1)
 }
 
 export function calcBuyAmount(pay: string) {
