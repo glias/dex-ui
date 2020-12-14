@@ -11,7 +11,6 @@ import './utils/i18n'
 const AppDiv = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #fff;
 `
 const DesktopApp: React.FC = () => {
   return (
