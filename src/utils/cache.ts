@@ -1,9 +1,11 @@
+import { CrossChainOrder } from 'APIs'
 import type { SubmittedOrder } from '../containers/order'
 
 const PENDING_ORDERS_LABEL = 'ckb_dex_pending_orders'
 const SUBMITTED_ORDERS_LABEL = 'ckb_dex_submitted_orders'
 const SPENDT_CELLS_LABEL = 'ckb_dex_spent_cells'
 const force_bridge_settings = 'ckb_force_bridge_settings'
+const CROSS_CHAIN_ORDERS = 'ckb_cross_chain_orders'
 export const REPLAY_RESIST_OUTPOINT = 'ckb_replay_resist_outpoint'
 
 export interface SpentCell {
@@ -67,6 +69,19 @@ export const submittedOrders = {
   },
   set(address: string, orders: Array<SubmittedOrder>) {
     return localStorage.setItem(`${SUBMITTED_ORDERS_LABEL}:${address}`, JSON.stringify(orders))
+  },
+}
+
+export const crossChainOrders = {
+  get(address: string): CrossChainOrder[] {
+    try {
+      return JSON.parse(localStorage.getItem(`${CROSS_CHAIN_ORDERS}:${address}`)!) || []
+    } catch (err) {
+      return []
+    }
+  },
+  set(address: string, orders: Array<CrossChainOrder>) {
+    return localStorage.setItem(`${CROSS_CHAIN_ORDERS}:${address}`, JSON.stringify(orders))
   },
 }
 

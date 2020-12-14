@@ -1,5 +1,6 @@
 import PWCore, { Address, AddressType, AmountUnit, Script, SUDT, Web3ModalProvider } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
+import { Modal } from 'antd'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { createContainer } from 'unstated-next'
 import { replayResistOutpoints } from 'utils'
@@ -9,6 +10,8 @@ import { getCkbBalance, getOrCreateBridgeCell, getSudtBalance } from '../APIs'
 import {
   CKB_DECIMAL,
   CKB_NODE_URL,
+  ERC20,
+  ERC20_LIST,
   IssuerLockHash,
   IS_DEVNET,
   ORDER_BOOK_LOCK_SCRIPT,
@@ -23,7 +26,6 @@ export interface Wallet {
   balance: BigNumber
   lockedOrder: BigNumber
   address: string
-  bestPrice: string
   tokenName: string
 }
 
@@ -47,7 +49,6 @@ const defaultCkbWallet: CkbWallet = {
   free: new BigNumber(0),
   lockedOrder: new BigNumber(0),
   address: '',
-  bestPrice: '0.00',
   tokenName: 'CKB',
 }
 
@@ -55,7 +56,6 @@ const defaultSUDTWallet: SudtWallet = {
   balance: new BigNumber(0),
   lockedOrder: new BigNumber(0),
   address: '',
-  bestPrice: '0.00',
   lockHash: '',
   tokenName: 'GLIA',
 }
@@ -67,11 +67,19 @@ const defaultSUDTWallets = SUDT_LIST.map(sudt => {
   }
 })
 
+const defaultERC20Wallets = ERC20_LIST.map(erc20 => {
+  return {
+    balance: new BigNumber(0),
+    lockedOrder: new BigNumber(0),
+    address: erc20.address,
+    tokenName: erc20.tokenName,
+  }
+})
+
 const defaultEthWallet: Wallet = {
   balance: new BigNumber(0),
   lockedOrder: new BigNumber(0),
   address: '',
-  bestPrice: '0.00',
   tokenName: 'ETH',
 }
 
@@ -82,8 +90,10 @@ export function useWallet() {
   const [ckbWallet, setCkbWallet] = useState<CkbWallet>(defaultCkbWallet)
   const [connectStatus, setConnectStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const [ethWallet, setEthWallet] = useState<Wallet>(defaultEthWallet)
+  const web3Ref = useRef<Web3 | null>(null)
 
   const [sudtWallets, setSudtWallets] = useState<SudtWallet[]>(defaultSUDTWallets)
+  const [erc20Wallets, setERC20Wallets] = useState<Wallet[]>(defaultERC20Wallets)
   const [currentSudtLockHash, setCurrentSudtLockHash] = useState<IssuerLockHash>(SUDT_GLIA.issuerLockHash)
   const currentSudtWallet = useMemo(() => {
     return sudtWallets.find(w => w.lockHash === currentSudtLockHash)!
@@ -144,7 +154,6 @@ export function useWallet() {
       free,
       lockedOrder,
       address,
-      bestPrice: '0',
       tokenName: 'CKB',
     })
   }, [])
@@ -158,34 +167,66 @@ export function useWallet() {
       balance: free,
       lockedOrder,
       address: '',
-      bestPrice: '0',
       lockHash: sudt.issuerLockHash,
       tokenName: sudt.info?.symbol ?? '',
     }
   }, [])
 
   const reloadEthWallet = useCallback(async () => {
-    if (!web3) {
+    if (!web3Ref.current) {
       return
     }
-    const [ethAddr] = await web3.eth.getAccounts()
-    const ethBalance = await web3.eth.getBalance(ethAddr)
+    const [ethAddr] = await web3Ref.current.eth.getAccounts()
+    const ethBalance = await web3Ref.current.eth.getBalance(ethAddr)
 
     setEthBalance(new BigNumber(ethBalance).div(new BigNumber(10).pow(18)), ethAddr.toLowerCase())
-  }, [web3, setEthBalance])
+  }, [web3Ref, setEthBalance])
+
+  const reloadERC20Wallet = useCallback(async (erc20: ERC20, web3: Web3, ethAddress: string) => {
+    const contract = new web3.eth.Contract(
+      [
+        {
+          constant: true,
+          inputs: [{ name: '_owner', type: 'address' }],
+          name: 'balanceOf',
+          outputs: [{ name: 'balance', type: 'uint256' }],
+          type: 'function',
+        },
+      ],
+      erc20.address,
+    )
+
+    const balance = await contract.methods.balanceOf(ethAddress).call()
+
+    return {
+      balance: new BigNumber(balance).div(10 ** erc20.decimals),
+      lockedOrder: new BigNumber(0),
+      tokenName: erc20.tokenName,
+      address: erc20.address,
+    } as Wallet
+  }, [])
 
   const reloadSudtWallets = useCallback(async () => {
     const wallets = await Promise.all(SUDT_LIST.map(sudt => reloadSudtWallet(sudt)))
     setSudtWallets(wallets)
   }, [reloadSudtWallet])
 
+  const reloadERC20Wallets = useCallback(
+    async (web3: Web3, ethAddress: string) => {
+      const wallets = await Promise.all(ERC20_LIST.map(erc20 => reloadERC20Wallet(erc20, web3, ethAddress)))
+      setERC20Wallets(wallets)
+    },
+    [reloadERC20Wallet],
+  )
+
   const reloadWallet = useCallback(
-    (address: string) => {
-      reloadCkbWallet(address)
+    (ckbAddress: string, ethAddress: string, web3: Web3) => {
+      reloadCkbWallet(ckbAddress)
       reloadSudtWallets()
       reloadEthWallet()
+      reloadERC20Wallets(web3, ethAddress)
     },
-    [reloadCkbWallet, reloadSudtWallets, reloadEthWallet],
+    [reloadCkbWallet, reloadSudtWallets, reloadEthWallet, reloadERC20Wallets],
   )
 
   const connectWallet = useCallback(async () => {
@@ -199,6 +240,17 @@ export function useWallet() {
       })
 
       const newWeb3 = new Web3(provider)
+      const chainID = await newWeb3.eth.getChainId()
+
+      if (chainID !== 3) {
+        Modal.error({
+          title: 'Connect Wallet error',
+          content:
+            'This Ethereum network is not supported. Please connect your Ethereum wallet to Ropsten Test Network.',
+        })
+        throw new Error('Connect Wallet error')
+      }
+
       const newPw = await new PWCore(CKB_NODE_URL).init(
         new Web3ModalProvider(newWeb3),
         new DEXCollector(),
@@ -216,11 +268,12 @@ export function useWallet() {
       const ckbAddr = PWCore.provider.address.toCKBAddress()
 
       setWeb3(newWeb3)
+      web3Ref.current = newWeb3
       setPw(newPw)
 
       setEthBalance(new BigNumber(ethBalance).div(new BigNumber(10).pow(18)), ethAddr.toLowerCase())
       setCkbAddress(ckbAddr)
-      reloadWallet(ckbAddr)
+      reloadWallet(ckbAddr, ethAddr, newWeb3)
       setConnectStatus('connected')
     } catch (e) {
       setConnectStatus('disconnected')
@@ -247,8 +300,8 @@ export function useWallet() {
   }, [])
 
   const wallets = useMemo(() => {
-    return [ckbWallet, ethWallet, ...sudtWallets]
-  }, [ckbWallet, ethWallet, sudtWallets])
+    return [ckbWallet, ethWallet, ...sudtWallets, ...erc20Wallets]
+  }, [ckbWallet, ethWallet, sudtWallets, erc20Wallets])
 
   const lockHash = useMemo(() => (ckbWallet.address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [
     ckbWallet.address,
@@ -294,7 +347,7 @@ export function useWallet() {
       const ops = replayResistOutpoints.get()[key]
       const isOpsEmpty = !ops || (Array.isArray(ops) && ops.length === 0)
       if (isOpsEmpty) {
-        getOrCreateBridgeCell(recipientAddress).then(res => {
+        getOrCreateBridgeCell(recipientAddress, tokenAddress).then(res => {
           if (res && res.data) {
             replayResistOutpoints.add(key, res.data.outpoints)
             // eslint-disable-next-line no-unused-expressions
@@ -335,6 +388,7 @@ export function useWallet() {
     createBridgeCell,
     getBridgeCell,
     lockHash,
+    erc20Wallets,
   }
 }
 

@@ -7,7 +7,7 @@ import { SearchOutlined } from '@ant-design/icons'
 import i18n from 'utils/i18n'
 import HeaderWithGoback from 'components/HeaderWithGoback'
 import Token from 'components/Token'
-import { Container, TokenContainer } from './styled'
+import { Container, TokenContainer, Main } from './styled'
 import { Wallet, WalletContainer } from '../../containers/wallet'
 
 export interface SelectTokenProps {
@@ -44,7 +44,12 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }
     return wallets
       .filter(w => w.tokenName !== currentToken)
       .filter(filter)
-      .sort((w1, w2) => parseFloat(w2.balance.minus(w1.balance).toString()))
+      .sort((w1, w2) => {
+        if (w1.tokenName === 'CKB' || w2.tokenName === 'CKB') {
+          return 1
+        }
+        return parseFloat(w2.balance.minus(w1.balance).toString())
+      })
   }, [wallets, filter, currentToken])
 
   const searchFilter = useCallback(
@@ -75,9 +80,11 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }
         onChange={e => setSearchValue(e.target.value)}
         value={searchValue}
       />
-      {filteredWallets.filter(searchFilter).map(wallet => {
-        return <Item wallet={wallet} onClick={() => onSelect(wallet)} key={wallet.tokenName} />
-      })}
+      <Main>
+        {filteredWallets.filter(searchFilter).map(wallet => {
+          return <Item wallet={wallet} onClick={() => onSelect(wallet)} key={wallet.tokenName} />
+        })}
+      </Main>
     </Container>
   )
 }

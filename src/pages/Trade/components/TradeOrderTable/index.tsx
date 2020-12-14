@@ -8,7 +8,7 @@ import { Address, Amount, AddressType, AmountUnit } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import { removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
-import { placeCrossChainOrder, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
+import { placeCrossChainOrder, rawTransactionToPWTransaction, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
@@ -17,6 +17,7 @@ import {
   // MINIUM_RECEIVE,
   ERC20_LIST,
   SUDT_LIST,
+  DEFAULT_PAY_DECIMAL,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
 import {
@@ -62,7 +63,7 @@ const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
   const [buyer, seller] = pairs
   const Order = useContainer(OrderContainer)
   const disabled = useMemo(() => {
-    if ((buyer === 'ETH' || ERC20_LIST.includes(buyer)) && seller === 'CKB') {
+    if ((buyer === 'ETH' || ERC20_LIST.some(e => e.tokenName === buyer)) && seller === 'CKB') {
       return true
     }
     return false
@@ -113,6 +114,7 @@ export default function OrderTable() {
   const [collectingCells, setCollectingCells] = useState(false)
   const [isPayInvalid, setIsPayInvalid] = useState(true)
   const [isPriceInvalid, setIsPriceInvalid] = useState(true)
+  const { web3, ethWallet } = Wallet
 
   const isCrossInOrOut = useMemo(() => {
     return Order.orderMode === OrderMode.CrossIn || Order.orderMode === OrderMode.CrossOut
@@ -206,10 +208,17 @@ export default function OrderTable() {
     setIsPayInvalid(false)
   }, [maxPay, formRef, setPay, insufficientCKB])
 
+  const [firstToken, secondToken] = Order.pair
+
+  const payDecimal = useMemo(() => {
+    const sudt = SUDT_LIST.find(s => s.info?.symbol === firstToken)
+    const erc20 = ERC20_LIST.find(e => e.tokenName === firstToken)
+    return sudt?.info?.decimals ?? erc20?.decimals ?? DEFAULT_PAY_DECIMAL
+  }, [firstToken])
+
   const checkPay = useCallback(
     (_: any, value: string): Promise<void> => {
       const val = new BigNumber(value)
-      const decimal = 8
 
       if (val.isLessThan(0)) {
         setIsPayInvalid(true)
@@ -221,9 +230,9 @@ export default function OrderTable() {
         return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
       }
 
-      if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
+      if (!new BigNumber(val).decimalPlaces(payDecimal).isEqualTo(val)) {
         setIsPayInvalid(true)
-        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
+        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal: payDecimal }))
       }
 
       if (new BigNumber(value).gt(maxPay)) {
@@ -235,7 +244,7 @@ export default function OrderTable() {
 
       return Promise.resolve()
     },
-    [maxPay],
+    [maxPay, payDecimal],
   )
 
   const checkPrice = useCallback(
@@ -293,6 +302,14 @@ export default function OrderTable() {
 
   const isNormalOrder = useMemo(() => OrderMode.Order === Order.orderMode, [Order.orderMode])
 
+  const { shouldApprove, approveERC20, approveText, isApproving, currentERC20 } = Order
+
+  const approve = useCallback(() => {
+    if (currentERC20 && web3 && ethWallet.address) {
+      approveERC20(currentERC20.tokenName, ethWallet.address, web3)
+    }
+  }, [currentERC20, web3, ethWallet.address, approveERC20])
+
   const onSubmit = useCallback(async () => {
     if (walletNotConnected) {
       Wallet.connectWallet()
@@ -316,6 +333,9 @@ export default function OrderTable() {
             break
           }
           case OrderMode.CrossChain: {
+            const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
+            const sudt = SUDT_LIST.find(s => s.info?.symbol === `ck${sudtTokenName}`)
+            const erc20 = ERC20_LIST.find(e => e.tokenName === sudtTokenName)
             const res = await placeCrossChainOrder(
               pay,
               price,
@@ -323,18 +343,40 @@ export default function OrderTable() {
               Wallet.ckbWallet.address,
               Wallet.ethWallet.address,
               Wallet.web3!,
+              sudt!,
+              erc20?.address,
             )
             Order.setTx(res.data)
             break
           }
           case OrderMode.CrossIn: {
-            const res = await shadowAssetCrossIn(pay, Wallet.ckbWallet.address, Wallet.ethWallet.address, Wallet.web3!)
+            const [erc20TokenName, sudtTokenName] = Order.pair
+            const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
+            const erc20 = ERC20_LIST.find(e => e.tokenName === erc20TokenName)
+            const res = await shadowAssetCrossIn(
+              pay,
+              Wallet.ckbWallet.address,
+              Wallet.ethWallet.address,
+              Wallet.web3!,
+              erc20?.address,
+              sudt?.info?.decimals,
+            )
             Order.setTx(res.data)
             break
           }
           case OrderMode.CrossOut: {
-            const res = await shadowAssetCrossOut(pay, Wallet.ckbWallet.address, Wallet.ethWallet.address)
-            Order.setTx(res.data.raw_tx)
+            const [sudtTokenName, erc20TokenName] = Order.pair
+            const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
+            const erc20 = ERC20_LIST.find(e => e.tokenName === erc20TokenName)
+            const res = await shadowAssetCrossOut(
+              pay,
+              Wallet.ckbWallet.address,
+              Wallet.ethWallet.address,
+              erc20?.address,
+              sudt?.info?.decimals,
+            )
+            const tx = await rawTransactionToPWTransaction(res.data.raw_tx)
+            Order.setTx(tx)
             break
           }
           default:
@@ -363,20 +405,13 @@ export default function OrderTable() {
     Order.receive,
   ])
 
-  // const perSuffix = useMemo(() => {
-  //   if (Order.pair.includes('ETH')) {
-  //     return `CKB per ETH`
-  //   }
-  //   return `CKB per ${Order.currentSudtTokenName}`
-  // }, [Order.pair, Order.currentSudtTokenName])
-
   const onPairSelect = useCallback(() => {
     if (!Wallet.connecting) {
       setStep(OrderStep.Select)
     }
   }, [Wallet.connecting, setStep])
 
-  const { createBridgeCell, ckbWallet, getBridgeCell, lockHash } = Wallet
+  const { createBridgeCell, getBridgeCell, lockHash } = Wallet
 
   const [reactor, setReactor] = useState(0)
 
@@ -387,12 +422,16 @@ export default function OrderTable() {
       return false
     }
     const [firstToken, secondToken] = Order.pair
-    if (firstToken === 'ETH' && secondToken === 'CKB') {
-      const bridgeCell = getBridgeCell(ethAddress, 'cross-order')
+    const isFirstTokenERC20 = ERC20_LIST.some(e => e.tokenName === firstToken)
+    const tokenAddress = ERC20_LIST.find(e => e.tokenName === firstToken)?.address ?? ethAddress
+    const isERC20CrossIn =
+      isFirstTokenERC20 && secondToken === `ck${ERC20_LIST.find(e => e.tokenName === firstToken)?.tokenName}`
+    if ((firstToken === 'ETH' || isFirstTokenERC20) && secondToken === 'CKB') {
+      const bridgeCell = getBridgeCell(tokenAddress, 'cross-order')
       return !bridgeCell
     }
-    if (firstToken === 'ETH' && secondToken === 'ckETH') {
-      const bridgeCell = getBridgeCell(ethAddress, 'cross-in')
+    if ((firstToken === 'ETH' && secondToken === 'ckETH') || isERC20CrossIn) {
+      const bridgeCell = getBridgeCell(tokenAddress, 'cross-in')
       return !bridgeCell
     }
     return false
@@ -401,15 +440,17 @@ export default function OrderTable() {
 
   useEffect(() => {
     const [firstToken, secondToken] = Order.pair
-    if (firstToken === 'ETH' && secondToken === 'CKB') {
-      createBridgeCell(ethAddress, 'cross-order', () => setReactor(Math.random()))
+    const isFirstTokenERC20 = ERC20_LIST.some(e => e.tokenName === firstToken)
+    const tokenAddress = ERC20_LIST.find(e => e.tokenName === firstToken)?.address ?? ethAddress
+    const isERC20CrossIn =
+      isFirstTokenERC20 && secondToken === `ck${ERC20_LIST.find(e => e.tokenName === firstToken)?.tokenName}`
+    if ((firstToken === 'ETH' || isFirstTokenERC20) && secondToken === 'CKB') {
+      createBridgeCell(tokenAddress, 'cross-order', () => setReactor(Math.random()))
     }
-    if (firstToken === 'ETH' && secondToken === 'ckETH') {
-      createBridgeCell(ethAddress, 'cross-in', () => setReactor(Math.random()))
+    if ((firstToken === 'ETH' && secondToken === 'ckETH') || isERC20CrossIn) {
+      createBridgeCell(tokenAddress, 'cross-in', () => setReactor(Math.random()))
     }
-  }, [Order.pair, createBridgeCell, ckbWallet.address])
-
-  const [firstToken, secondToken] = Order.pair
+  }, [Order.pair, createBridgeCell])
 
   return (
     <OrderTableContainer id="order-box" isBid={isBid}>
@@ -505,12 +546,22 @@ export default function OrderTable() {
           />
         </Form.Item>
         <Form.Item className="submit">
-          <ConfirmButton
-            text={submitStatus}
-            bgColor={Order.confirmButtonColor}
-            loading={collectingCells || Wallet.connecting}
-            disabled={disabled || insufficientCKB}
-          />
+          {shouldApprove ? (
+            <ConfirmButton
+              htmlType="button"
+              text={approveText}
+              loading={isApproving}
+              disabled={isApproving}
+              onClick={() => approve()}
+            />
+          ) : (
+            <ConfirmButton
+              text={submitStatus}
+              bgColor={Order.confirmButtonColor}
+              loading={collectingCells || Wallet.connecting}
+              disabled={disabled || insufficientCKB}
+            />
+          )}
         </Form.Item>
       </Form>
     </OrderTableContainer>

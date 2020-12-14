@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
+import { ErrorCode } from 'exceptions'
 import { submittedOrders } from 'utils/cache'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
 import {
@@ -15,7 +16,6 @@ import {
 } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
-import { REJECT_ERROR_CODE } from '../../../../constants'
 import type { RawOrder } from '../../../../utils'
 import { OrderInList } from '.'
 
@@ -97,6 +97,7 @@ export const usePollingOrderStatus = ({
   dispatch,
   isCrossChain,
   ckbAddress,
+  ethAddress,
   pending,
   key,
 }: {
@@ -108,6 +109,7 @@ export const usePollingOrderStatus = ({
   dispatch: React.Dispatch<HistoryAction>
   ckbAddress: string
   pending: boolean
+  ethAddress: string
   key: string
 }) => {
   useEffect(() => {
@@ -133,8 +135,10 @@ export const usePollingOrderStatus = ({
       }
 
       const checkCkbStatus = (index: number) => {
-        getForceBridgeHistory(ckbAddress).then(res => {
-          const forceBridgeItem = res.data.crosschain_history.find(p => p.eth_lock_tx_hash === cells?.[index]?.tx_hash)
+        getForceBridgeHistory(ckbAddress, ethAddress).then(res => {
+          const { ckb_to_eth, eth_to_ckb } = res.data
+          const orders = ckb_to_eth.concat(eth_to_ckb)
+          const forceBridgeItem = orders.find(p => p.eth_tx_hash === cells?.[index]?.tx_hash)
           if (forceBridgeItem && forceBridgeItem.ckb_tx_hash) {
             // eslint-disable-next-line no-param-reassign
             cells[index].tx_hash = forceBridgeItem.ckb_tx_hash!
@@ -154,7 +158,7 @@ export const usePollingOrderStatus = ({
         }
 
         ckb.rpc.getTransaction(txHash).then(res => {
-          if (res.txStatus?.status === TransactionStatus.Committed) {
+          if (res?.txStatus?.status === TransactionStatus.Committed) {
             // eslint-disable-next-line no-param-reassign
             cells[index].isLoaded = true
             dispatch({
@@ -189,7 +193,7 @@ export const usePollingOrderStatus = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key])
+  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key, ethAddress])
 }
 
 export const usePollOrderList = ({
@@ -197,11 +201,13 @@ export const usePollOrderList = ({
   dispatch,
   fetchListRef,
   ckbAddress,
+  ethAddress,
 }: {
   lockArgs: string
   dispatch: React.Dispatch<HistoryAction>
   fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
   ckbAddress: string
+  ethAddress: string
 }) => {
   const { setAndCacheSubmittedOrders } = useContainer(OrderContainer)
 
@@ -222,10 +228,16 @@ export const usePollOrderList = ({
               return order
             })
             try {
-              const { crosschain_history: orderHistory } = (await getForceBridgeHistory(ckbAddress)).data
+              const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
+              for (let i = 0; i < resList.length; i++) {
+                const blockHeader = resList[i]
+                parsed[i].createdAt = blockHeader.timestamp
+              }
+              const { eth_to_ckb, ckb_to_eth } = (await getForceBridgeHistory(ckbAddress, ethAddress)).data
+              const orderHistory = eth_to_ckb.concat(ckb_to_eth)
               for (let i = 0; i < orderHistory.length; i++) {
                 const order = orderHistory[i]
-                const index = res.findIndex(r => r.order_cells?.[0]?.tx_hash === `0x${order.ckb_tx_hash}`)
+                const index = res.findIndex(r => r.order_cells?.[0]?.tx_hash === order.ckb_tx_hash)
                 if (index < 0) {
                   // eslint-disable-next-line no-continue
                   continue
@@ -236,21 +248,14 @@ export const usePollOrderList = ({
                   continue
                 }
                 setAndCacheSubmittedOrders(orders => {
-                  // eslint-disable-next-line no-console
-                  return orders.filter(o => o.key.split(':')[0] !== order.eth_lock_tx_hash)
+                  return orders.filter(o => o.key.split(':')[0] !== order.eth_tx_hash)
                 })
                 matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
                 // eslint-disable-next-line no-unused-expressions
                 matchedOrder.orderCells?.unshift({
-                  tx_hash: order.eth_lock_tx_hash,
+                  tx_hash: order.eth_tx_hash,
                   index: '',
                 })
-              }
-
-              const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
-              for (let i = 0; i < resList.length; i++) {
-                const blockHeader = resList[i]
-                parsed[i].createdAt = blockHeader.timestamp
               }
             } catch (error) {
               // eslint-disable-next-line no-console
@@ -305,7 +310,7 @@ export const usePollOrderList = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [lockArgs, dispatch, fetchListRef, ckbAddress, setAndCacheSubmittedOrders])
+  }, [lockArgs, dispatch, fetchListRef, ckbAddress, setAndCacheSubmittedOrders, ethAddress])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {
@@ -329,7 +334,7 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
         return hash
       } catch (error) {
         dispatch({ type: ActionType.RemovePendingId, value: orderId })
-        if (error.code === REJECT_ERROR_CODE) {
+        if (error.code === ErrorCode.UserReject) {
           throw new Error('Transaction Declined')
         }
         throw error

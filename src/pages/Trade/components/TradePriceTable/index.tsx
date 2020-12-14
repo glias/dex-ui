@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import i18n from 'utils/i18n'
 import { getOrders, Orders, getCurrentPrice } from 'APIs'
 import { useContainer } from 'unstated-next'
-import { ERC20_LIST, SUDT_LIST } from 'constants/sudt'
+import { SUDT_LIST } from 'constants/sudt'
+import { ERC20_LIST } from 'constants/erc20'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
 import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT } from 'constants/number'
@@ -182,7 +183,7 @@ const TradePriceTable = () => {
   })
   const sudtToken = useMemo(() => {
     const token = pair.find(t => t !== 'CKB')!
-    if (token === 'ETH' || ERC20_LIST.includes(token)) {
+    if (token === 'ETH' || ERC20_LIST.some(e => e.tokenName === token)) {
       return `ck${token}`
     }
     return token
@@ -217,7 +218,7 @@ const TradePriceTable = () => {
             .div(PRICE_DECIMAL)
             .times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT))
             .toString()
-          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : removeTrailingZero(price))
+          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPayOrReceive(price))
         })
         .catch(() => {
           setCurrentPrice(i18n.t('trade.priceTable.empty'))

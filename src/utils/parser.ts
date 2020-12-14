@@ -1,5 +1,12 @@
 import BigNumber from 'bignumber.js'
-import { PRICE_DECIMAL, CKB_DECIMAL, COMMISSION_FEE, SUDT_LIST, CKB_DECIMAL_INT } from '../constants'
+import {
+  PRICE_DECIMAL,
+  CKB_DECIMAL,
+  COMMISSION_FEE,
+  SUDT_LIST,
+  CKB_DECIMAL_INT,
+  DEFAULT_PAY_DECIMAL,
+} from '../constants'
 
 export interface OrderCell {
   tx_hash: string
@@ -42,7 +49,7 @@ export const parseOrderRecord = ({
 }: RawOrder) => {
   const { tokenName } = rest
   const sudt = SUDT_LIST.find(s => s.info?.symbol === tokenName)
-  const sudtDecimalInt = sudt?.info?.decimals! ?? 8
+  const sudtDecimalInt = sudt?.info?.decimals! ?? DEFAULT_PAY_DECIMAL
   const sudtDecimal = new BigNumber(10).pow(sudtDecimalInt)
   const key = `${last_order_cell_outpoint.tx_hash}:${last_order_cell_outpoint.index}`
 
@@ -56,9 +63,6 @@ export const parseOrderRecord = ({
     1 + +COMMISSION_FEE,
   )
 
-  const turnoverRate = new BigNumber(turnover_rate)
-  const isClaimable = turnoverRate.isGreaterThan(0.999) && turnoverRate.isLessThan(1)
-
   return {
     key,
     pay: `${payAmount.toFixed(4, 1)}`,
@@ -66,7 +70,7 @@ export const parseOrderRecord = ({
     tradedAmount: `${tradedAmount}`,
     isBid,
     receive: `${orderAmount.toFixed(4, 1)}`,
-    executed: isClaimable ? '100%' : `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
+    executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
     price: `${priceInNum}`,
     status: status === 'claimable' ? 'completed' : status,
     tokenName: '',
