@@ -65,6 +65,7 @@ const defaultSUDTWallets = SUDT_LIST.map(sudt => {
   return {
     ...defaultSUDTWallet,
     lockHash: sudt.issuerLockHash,
+    tokenName: sudt.info?.name!,
   }
 })
 
