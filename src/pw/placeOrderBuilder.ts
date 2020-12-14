@@ -10,6 +10,7 @@ import {
   SUDT,
   SUDTCollector,
 } from '@lay2/pw-core'
+import { LiveCellNotEnough } from 'exceptions'
 import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
 import { buildSellData, buildChangeData, buildBuyData } from '../utils/buffer'
@@ -91,7 +92,7 @@ export class PlaceOrderBuilder extends Builder {
     })
 
     if (sudtSumAmount.lt(this.totalPay)) {
-      throw new Error(`Input SUDT amount not enough, need ${this.totalPay.toString()}, got ${sudtSumAmount.toString()}`)
+      throw new LiveCellNotEnough()
     }
 
     if (inputCapacity.lt(neededCapacity)) {
@@ -108,11 +109,7 @@ export class PlaceOrderBuilder extends Builder {
     }
 
     if (inputCapacity.lt(neededCapacity)) {
-      throw new Error(
-        `Input capacity not enough, need ${neededCapacity.toString(AmountUnit.ckb)}, got ${inputCapacity.toString(
-          AmountUnit.ckb,
-        )}`,
-      )
+      throw new LiveCellNotEnough()
     }
 
     const receive = calcAskReceive(this.pay.toString(this.decimal), this.price)
@@ -170,11 +167,7 @@ export class PlaceOrderBuilder extends Builder {
 
     const outputs = []
     if (inputCapacity.lt(neededCapacity)) {
-      throw new Error(
-        `Input capacity not enough, need ${neededCapacity.toString(AmountUnit.ckb)}, got ${inputCapacity.toString(
-          AmountUnit.ckb,
-        )}`,
-      )
+      throw new LiveCellNotEnough()
     }
 
     if (inputCapacity.lt(neededCapacity.add(Builder.MIN_CHANGE))) {
