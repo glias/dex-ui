@@ -157,7 +157,7 @@ const columns = [
         const price = order.isBid
           ? new BigNumber(paidAmount).div(1 + COMMISSION_FEE).div(tradedAmount)
           : new BigNumber(tradedAmount).div(new BigNumber(paidAmount).div(1 + COMMISSION_FEE))
-        result = displayPayOrReceive(price.toString())
+        result = displayPrice(price.toString())
       }
       return (
         <Tooltip title={result}>
