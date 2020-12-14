@@ -25,6 +25,7 @@ import {
   usePollingOrderStatus,
   HistoryAction,
 } from './hooks'
+import CrossChainHistory from './CrossChain'
 import styles from './history.module.css'
 
 export type OrderInList = OrderRecord | SubmittedOrder
@@ -214,7 +215,7 @@ const OrderModal = ({
   setModalVisable: Function
   dispatch: React.Dispatch<HistoryAction>
 }) => {
-  const { web3, ckbWallet } = useContainer(WalletContainer)
+  const { web3, ckbWallet, ethWallet } = useContainer(WalletContainer)
   const [lastOutpointTxHash, lastOutpointIndex] = currentOrder.key.split(':')
 
   // @ts-ignore
@@ -240,6 +241,7 @@ const OrderModal = ({
     fetchListRef,
     pending,
     key: currentOrder.key,
+    ethAddress: ethWallet.address,
   })
 
   const realStatus = useMemo(() => {
@@ -303,6 +305,12 @@ const OrderModal = ({
   )
 }
 
+export enum ShowStatus {
+  Open,
+  History,
+  CrossChain,
+}
+
 const History = () => {
   const [state, dispatch] = useReducer(reducer, {
     orderList: [],
@@ -320,6 +328,7 @@ const History = () => {
   const { submittedOrders: submittedOrderList } = useContainer(OrderContainer)
 
   const { address } = wallet.ckbWallet
+  const { ethWallet } = wallet
   const handleWithdraw = useHandleWithdrawOrder(address, dispatch)
 
   const [searchValue, setSearchValue] = useState('')
@@ -336,7 +345,7 @@ const History = () => {
 
   const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
-  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch, ckbAddress: address })
+  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch, ckbAddress: address, ethAddress: ethWallet.address })
 
   const statusOnClick = useCallback((order: OrderInList) => {
     setModalVisable(true)
@@ -446,23 +455,42 @@ const History = () => {
     ...state.orderList.filter(order => !submittedOrderList.some(submitted => submitted.key === order.key)),
   ].filter(order => orderFilter(type, order))
 
-  const [showOpenOrder, setShowOpenOrder] = useState(true)
+  const [showStatus, setShowStatus] = useState(ShowStatus.Open)
 
   const orders = useMemo(() => {
-    if (showOpenOrder) {
+    if (showStatus === ShowStatus.Open) {
       return orderList.filter(searchFilter).filter(o => o.status !== 'aborted' && o.status !== 'claimed')
     }
-    return orderList.filter(searchFilter).filter(o => o.status === 'aborted' || o.status === 'claimed')
-  }, [orderList, showOpenOrder, searchFilter])
+    if (showStatus === ShowStatus.History) {
+      return orderList.filter(searchFilter).filter(o => o.status === 'aborted' || o.status === 'claimed')
+    }
+    return []
+  }, [orderList, showStatus, searchFilter])
 
   const header = (
     <div className={styles.switcher}>
-      <button type="button" className={showOpenOrder ? styles.active : ''} onClick={() => setShowOpenOrder(true)}>
+      <button
+        type="button"
+        className={showStatus === ShowStatus.Open ? styles.active : ''}
+        onClick={() => setShowStatus(ShowStatus.Open)}
+      >
         My Open Orders
       </button>
       <Divider type="vertical" className={styles.divider} />
-      <button type="button" className={!showOpenOrder ? styles.active : ''} onClick={() => setShowOpenOrder(false)}>
+      <button
+        type="button"
+        className={showStatus === ShowStatus.History ? styles.active : ''}
+        onClick={() => setShowStatus(ShowStatus.History)}
+      >
         Order History
+      </button>
+      <Divider type="vertical" className={styles.divider} />
+      <button
+        type="button"
+        className={showStatus === ShowStatus.CrossChain ? styles.active : ''}
+        onClick={() => setShowStatus(ShowStatus.CrossChain)}
+      >
+        Cross Chain
       </button>
     </div>
   )
@@ -480,22 +508,28 @@ const History = () => {
   return (
     <TradeFrame width="100%" height="auto">
       <PageHeader className={styles.header} title={header} extra={input} />
-      <Table
-        loading={state.isLoading}
-        className={styles.orders}
-        columns={[...columns, actionColumn]}
-        dataSource={orders}
-        rowClassName={(_, index) => (index % 2 === 0 ? `${styles.even} ${styles.td}` : `${styles.td}`)}
-        onHeaderRow={() => ({ className: styles.thead })}
-      />
-      {state.currentOrder ? (
-        <OrderModal
-          currentOrder={state.currentOrder}
-          modalVisable={modalVisable}
-          setModalVisable={setModalVisable}
-          dispatch={dispatch}
-        />
-      ) : null}
+      {showStatus === ShowStatus.CrossChain ? (
+        <CrossChainHistory searchValue={searchValue} />
+      ) : (
+        <>
+          <Table
+            loading={state.isLoading}
+            className={styles.orders}
+            columns={[...columns, actionColumn]}
+            dataSource={orders}
+            rowClassName={(_, index) => (index % 2 === 0 ? `${styles.even} ${styles.td}` : `${styles.td}`)}
+            onHeaderRow={() => ({ className: styles.thead })}
+          />
+          {state.currentOrder ? (
+            <OrderModal
+              currentOrder={state.currentOrder}
+              modalVisable={modalVisable}
+              setModalVisable={setModalVisable}
+              dispatch={dispatch}
+            />
+          ) : null}
+        </>
+      )}
     </TradeFrame>
   )
 }

@@ -3,9 +3,9 @@ import BigNumber from 'bignumber.js'
 import { PRICE_DECIMAL_INT, CKB_DECIMAL_INT } from 'constants/number'
 import { removeTrailingZero } from './fee'
 
-export const getAmountFromCellData = (hex: string) => {
+export const getAmountFromCellData = (hex: string, decimal: number) => {
   const sudtAmount = hex.slice(0, 34)
-  return Amount.fromUInt128LE(sudtAmount).toString()
+  return Amount.fromUInt128LE(sudtAmount).toString(decimal)
 }
 
 export const buildBuyData = (orderAmount: string, price: string, sudtDecimal: number) => {
