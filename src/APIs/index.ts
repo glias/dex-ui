@@ -30,7 +30,7 @@ export * from './checkSubmittedTxs'
 export * from './bridge'
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL!
-const FORCE_BRIDGER_SERVER_URL = 'http://121.196.29.165:3003'
+const FORCE_BRIDGER_SERVER_URL = process.env.REACT_APP_FORCE_BRIDGE_SERVER_URL!
 
 export const ckb = new CKB(CKB_NODE_URL)
 
