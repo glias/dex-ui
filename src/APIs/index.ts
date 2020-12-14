@@ -1,29 +1,29 @@
-import CKB from '@nervosnetwork/ckb-sdk-core'
 import {
   Address,
   AddressType,
-  Script,
-  SUDT,
+  Amount,
+  AmountUnit,
+  Builder,
+  Cell,
   CellDep,
   OutPoint,
   RawTransaction,
-  Cell,
-  Amount,
-  AmountUnit,
+  Script,
+  SUDT,
   Transaction,
-  Builder,
 } from '@lay2/pw-core'
-import PlaceOrderBuilder from 'pw/placeOrderBuilder'
-import DEXCollector from 'pw/dexCollector'
-import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
-import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
-import Web3 from 'web3'
-import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
-import { calcAskReceive } from 'utils/fee'
+import CKB from '@nervosnetwork/ckb-sdk-core'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
-import { OrderType } from '../containers/order'
+import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
+import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
+import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
+import DEXCollector from 'pw/dexCollector'
+import PlaceOrderBuilder from 'pw/placeOrderBuilder'
+import { calcAskReceive } from 'utils/fee'
+import Web3 from 'web3'
 import { CKB_NODE_URL, CROSS_CHAIN_FEE_RATE, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
+import { OrderType } from '../containers/order'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
 export * from './checkSubmittedTxs'
@@ -172,6 +172,15 @@ export function getSudtTransactions(type: Script, lock: Script): Promise<AxiosRe
     lock_args: lock.args,
   }
   return axios.get<SudtTransaction[]>(`${SERVER_URL}/sudt-transactions`, { params })
+}
+
+export function getCkbTransactions(lock: Script): Promise<AxiosResponse<SudtTransaction[]>> {
+  const params = {
+    lock_code_hash: lock.codeHash,
+    lock_hash_type: lock.hashType,
+    lock_args: lock.args,
+  }
+  return axios.get<SudtTransaction[]>(`${SERVER_URL}/transactions`, { params })
 }
 
 export function getTransactionHeader(blockHashes: string[]) {
@@ -326,6 +335,7 @@ export async function placeCrossChainOrder(
 }
 
 export type Orders = Record<'receive' | 'price', string>[]
+
 export interface OrdersResult {
   bid_orders: Orders
   ask_orders: Orders
