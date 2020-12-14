@@ -171,7 +171,7 @@ export function getSudtTransactions(type: Script, lock: Script): Promise<AxiosRe
     lock_hash_type: lock.hashType,
     lock_args: lock.args,
   }
-  return axios.get<SudtTransaction[]>(`${SERVER_URL}/sudt-transactions`, { params })
+  return axios.get<SudtTransaction[]>(`${SERVER_URL}/transactions`, { params })
 }
 
 export function getCkbTransactions(lock: Script): Promise<AxiosResponse<SudtTransaction[]>> {
