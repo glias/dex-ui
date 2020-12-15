@@ -292,8 +292,12 @@ export default function OrderTable() {
       return i18n.t('header.connecting')
     }
 
+    if (Order.isCrossChainOnly) {
+      return i18n.t('trade.crossChain')
+    }
+
     return i18n.t('trade.placeOrder')
-  }, [Wallet.connecting])
+  }, [Wallet.connecting, Order.isCrossChainOnly])
 
   useEffect(() => {
     Order.reset()
