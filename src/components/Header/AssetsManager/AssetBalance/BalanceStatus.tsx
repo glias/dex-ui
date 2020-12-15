@@ -66,13 +66,13 @@ export const BalanceStatus = () => {
       </div>
       <div className="balance-desc space-bottom">
         <div className="balance-desc-item">
-          <Description label={t('Free')}>
+          <Description label={t('Available')}>
             <Balance value={free} />
           </Description>
         </div>
         {isCkbWallet(wallet) && (
           <div className="balance-desc-item">
-            <Description label={t('In Use')}>
+            <Description label={t('Occupied')}>
               <Balance value={inUse} />
             </Description>
           </div>
