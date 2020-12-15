@@ -288,6 +288,10 @@ export default function OrderTable() {
       return i18n.t('trade.crossChain')
     }
 
+    if (Order.isCrossChainOnly) {
+      return i18n.t('trade.crossChain')
+    }
+
     return i18n.t('trade.placeOrder')
   }, [Order.isCrossChainOnly])
 
