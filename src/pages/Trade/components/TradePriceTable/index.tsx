@@ -22,6 +22,15 @@ interface ListProps {
   setPrice?: (price: string) => void
 }
 
+const parseFormatedPrice = (price: string) => {
+  return removeTrailingZero(
+    price
+      .split('')
+      .filter(word => word !== ',')
+      .join(''),
+  )
+}
+
 const TableHead = ({ price, pay, receive, isBid }: Omit<ListProps, 'progress' & 'setPrice'>) => {
   const payElement = (
     <Td position={isBid ? 'center' : 'flex-end'}>
@@ -62,14 +71,7 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
 
   const onClick = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
-    setPrice?.(
-      removeTrailingZero(
-        price
-          .split('')
-          .filter(word => word !== ',')
-          .join(''),
-      ),
-    )
+    setPrice?.(parseFormatedPrice(price))
   }, [setPrice, price])
 
   let priceClassName = isBid ? 'bid' : 'ask'
@@ -242,7 +244,7 @@ const TradePriceTable = () => {
 
   const bestPriceOnClick = useCallback(() => {
     if (hasCurrentPrice) {
-      setPrice(currentPrice)
+      setPrice(parseFormatedPrice(currentPrice))
     }
   }, [hasCurrentPrice, currentPrice, setPrice])
 
