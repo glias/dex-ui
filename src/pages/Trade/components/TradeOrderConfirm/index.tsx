@@ -227,7 +227,7 @@ export default function TradePairConfirm() {
           onClick={onConfirm}
           disabled={disabled}
           loading={disabled}
-          text={i18n.t(`trade.confirmOrder`)}
+          text={Order.isCrossChainOnly ? i18n.t(`trade.confirm`) : i18n.t(`trade.confirmOrder`)}
           bgColor={Order.confirmButtonColor}
         />
       </Footer>

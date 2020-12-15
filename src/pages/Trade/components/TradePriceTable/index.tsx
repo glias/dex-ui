@@ -3,13 +3,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import i18n from 'utils/i18n'
 import { getOrders, Orders, getCurrentPrice } from 'APIs'
 import { useContainer } from 'unstated-next'
-import { SUDT_LIST } from 'constants/sudt'
+import { SUDTWithoutPw, SUDT_LIST } from 'constants/sudt'
 import { ERC20_LIST } from 'constants/erc20'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
 import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT } from 'constants/number'
 import { calcTotalPay, displayPayOrReceive, displayPrice, removeTrailingZero } from 'utils/fee'
-import PWCore, { SUDT } from '@lay2/pw-core'
+import { SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
 
 interface ListProps {
@@ -20,6 +20,15 @@ interface ListProps {
   progress?: string
   // eslint-disable-next-line
   setPrice?: (price: string) => void
+}
+
+const parseFormatedPrice = (price: string) => {
+  return removeTrailingZero(
+    price
+      .split('')
+      .filter(word => word !== ',')
+      .join(''),
+  )
 }
 
 const TableHead = ({ price, pay, receive, isBid }: Omit<ListProps, 'progress' & 'setPrice'>) => {
@@ -62,14 +71,7 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
 
   const onClick = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
-    setPrice?.(
-      removeTrailingZero(
-        price
-          .split('')
-          .filter(word => word !== ',')
-          .join(''),
-      ),
-    )
+    setPrice?.(parseFormatedPrice(price))
   }, [setPrice, price])
 
   let priceClassName = isBid ? 'bid' : 'ask'
@@ -174,26 +176,30 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
 const TradePriceTable = () => {
   const Order = useContainer(OrderContainer)
   const Wallet = useContainer(WalletContainer)
+  const { connecting } = Wallet
   const { setPrice } = useContainer(OrderContainer)
-  const { address } = Wallet.ckbWallet
+  // const { address } = Wallet.ckbWallet
   const { pair } = Order
   const [orders, setOrders] = useState<{ bidOrders: Orders; askOrders: Orders }>({
     bidOrders: [],
     askOrders: [],
   })
+
+  const token = useMemo(() => {
+    return pair.find(t => t !== 'CKB')!
+  }, [pair])
+
   const sudtToken = useMemo(() => {
-    const token = pair.find(t => t !== 'CKB')!
     if (token === 'ETH' || ERC20_LIST.some(e => e.tokenName === token)) {
       return `ck${token}`
     }
     return token
-  }, [pair])
+  }, [token])
 
   const sudt = useMemo(() => {
-    return SUDT_LIST.find(s => s.info?.symbol === sudtToken)!
+    const inst = SUDT_LIST.find(s => s.info?.symbol === sudtToken)!
+    return new SUDTWithoutPw(inst.issuerLockHash, inst.info)
   }, [sudtToken])
-
-  const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
   const [currentPrice, setCurrentPrice] = useState('--')
 
@@ -201,9 +207,6 @@ const TradePriceTable = () => {
     const INTERVAL_TIME = 5000
 
     function getPriceTable() {
-      if (!lockHash) {
-        return
-      }
       getOrders(sudt).then(res => {
         const { data } = res
         setOrders({
@@ -234,7 +237,7 @@ const TradePriceTable = () => {
     return () => {
       clearInterval(interval)
     }
-  }, [sudt, lockHash])
+  }, [sudt, connecting])
 
   const hasCurrentPrice = useMemo(() => {
     return currentPrice !== i18n.t('trade.priceTable.empty')
@@ -242,7 +245,7 @@ const TradePriceTable = () => {
 
   const bestPriceOnClick = useCallback(() => {
     if (hasCurrentPrice) {
-      setPrice(currentPrice)
+      setPrice(parseFormatedPrice(currentPrice))
     }
   }, [hasCurrentPrice, currentPrice, setPrice])
 
@@ -282,11 +285,11 @@ const TradePriceTable = () => {
 
   return (
     <Container>
-      <Header>{i18n.t('trade.priceTable.title', { token: sudtToken })}</Header>
+      <Header>{i18n.t('trade.priceTable.title', { token })}</Header>
       <AskTable>
         <TableHead
-          price={i18n.t('trade.priceTable.price', { token: sudtToken })}
-          pay={i18n.t('trade.priceTable.pay', { token: sudtToken })}
+          price={i18n.t('trade.priceTable.price', { token })}
+          pay={i18n.t('trade.priceTable.pay', { token })}
           receive={i18n.t('trade.priceTable.receive', { token: 'CKB' })}
           isBid={false}
         />
@@ -298,9 +301,9 @@ const TradePriceTable = () => {
       <BidTable>
         <TableBody isBid orders={orders.bidOrders} sudt={sudt} maxCKB={maxCKB} />
         <TableHead
-          price={i18n.t('trade.priceTable.price', { token: sudtToken })}
+          price={i18n.t('trade.priceTable.price', { token })}
           pay={i18n.t('trade.priceTable.pay', { token: 'CKB' })}
-          receive={i18n.t('trade.priceTable.receive', { token: sudtToken })}
+          receive={i18n.t('trade.priceTable.receive', { token })}
           isBid
         />
       </BidTable>

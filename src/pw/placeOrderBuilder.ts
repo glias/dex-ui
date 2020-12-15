@@ -10,6 +10,7 @@ import {
   SUDT,
   SUDTCollector,
 } from '@lay2/pw-core'
+import { LiveCellNotEnough } from 'exceptions'
 import BigNumber from 'bignumber.js'
 import { OrderType } from '../containers/order'
 import { buildSellData, buildChangeData, buildBuyData } from '../utils/buffer'
@@ -21,7 +22,7 @@ import {
   MAX_TRANSACTION_FEE,
   COMMISSION_FEE,
 } from '../constants'
-import { calcBidReceive, calcAskReceive } from '../utils/fee'
+import { calcBidReceive, calcAskReceive, removeTrailingZero } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -59,10 +60,16 @@ export class PlaceOrderBuilder extends Builder {
     this.orderType = orderType
     this.price = price
     this.pay = pay
+    this.sudt = sudt
     const amount = new BigNumber(this.pay.toString())
     this.decimal = sudt?.info?.decimals ?? AmountUnit.ckb
-    this.totalPay = new Amount(amount.plus(amount.times(COMMISSION_FEE)).toString())
-    this.sudt = sudt
+    this.totalPay = new Amount(
+      removeTrailingZero(
+        amount
+          .plus(amount.times(COMMISSION_FEE))
+          .toFixed(orderType === OrderType.Ask ? this.decimal : AmountUnit.ckb, 1),
+      ),
+    )
     this.orderLock = new Script(
       ORDER_BOOK_LOCK_SCRIPT.codeHash,
       this.address.toLockScript().toHash(),
@@ -91,7 +98,7 @@ export class PlaceOrderBuilder extends Builder {
     })
 
     if (sudtSumAmount.lt(this.totalPay)) {
-      throw new Error(`Input SUDT amount not enough, need ${this.totalPay.toString()}, got ${sudtSumAmount.toString()}`)
+      throw new LiveCellNotEnough()
     }
 
     if (inputCapacity.lt(neededCapacity)) {
@@ -108,11 +115,7 @@ export class PlaceOrderBuilder extends Builder {
     }
 
     if (inputCapacity.lt(neededCapacity)) {
-      throw new Error(
-        `Input capacity not enough, need ${neededCapacity.toString(AmountUnit.ckb)}, got ${inputCapacity.toString(
-          AmountUnit.ckb,
-        )}`,
-      )
+      throw new LiveCellNotEnough()
     }
 
     const receive = calcAskReceive(this.pay.toString(this.decimal), this.price)
@@ -170,11 +173,7 @@ export class PlaceOrderBuilder extends Builder {
 
     const outputs = []
     if (inputCapacity.lt(neededCapacity)) {
-      throw new Error(
-        `Input capacity not enough, need ${neededCapacity.toString(AmountUnit.ckb)}, got ${inputCapacity.toString(
-          AmountUnit.ckb,
-        )}`,
-      )
+      throw new LiveCellNotEnough()
     }
 
     if (inputCapacity.lt(neededCapacity.add(Builder.MIN_CHANGE))) {

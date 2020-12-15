@@ -42,3 +42,10 @@ export const SUDT_MAP = new Map<IssuerLockHash, SUDT>()
 SUDT_LIST.forEach(sudt => {
   SUDT_MAP.set(sudt.issuerLockHash, sudt)
 })
+
+// SUDT class that does not require PW initialization
+export class SUDTWithoutPw extends SUDT {
+  toTypeScript() {
+    return new Script(SUDT_TYPE_SCRIPT.codeHash, this.issuerLockHash, SUDT_TYPE_SCRIPT.hashType)
+  }
+}
