@@ -214,9 +214,12 @@ export function useWallet() {
   }, [reloadSudtWallet])
 
   const reloadERC20Wallets = useCallback(
-    async (web3: Web3, ethAddress: string) => {
-      const wallets = await Promise.all(ERC20_LIST.map(erc20 => reloadERC20Wallet(erc20, web3, ethAddress)))
-      setERC20Wallets(wallets)
+    (web3: Web3, ethAddress: string) => {
+      Promise.all(ERC20_LIST.map(erc20 => reloadERC20Wallet(erc20, web3, ethAddress)))
+        .then(wallets => {
+          setERC20Wallets(wallets)
+        })
+        .catch(() => ({}))
     },
     [reloadERC20Wallet],
   )
@@ -362,6 +365,10 @@ export function useWallet() {
     [lockHash, ckbWallet.address],
   )
 
+  const isWalletNotConnected = useMemo(() => {
+    return !ckbWallet.address
+  }, [ckbWallet.address])
+
   return {
     pw,
     web3,
@@ -392,6 +399,7 @@ export function useWallet() {
     getBridgeCell,
     lockHash,
     erc20Wallets,
+    isWalletNotConnected,
   }
 }
 

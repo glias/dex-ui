@@ -64,7 +64,7 @@ export interface SubmittedOrder
 
 export function useOrder() {
   const Wallet = useContainer(WalletContainer)
-  const { ethWallet, sudtWallets, erc20Wallets, web3, connecting } = Wallet
+  const { ethWallet, sudtWallets, erc20Wallets, web3, connecting, isWalletNotConnected } = Wallet
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
@@ -273,7 +273,7 @@ export function useOrder() {
   }, [orderMode])
 
   const confirmButtonColor = useMemo(() => {
-    if (isCrossChainOnly) {
+    if (isCrossChainOnly || isWalletNotConnected) {
       return undefined
     }
     switch (orderType) {
@@ -284,7 +284,7 @@ export function useOrder() {
       default:
         return BID_CONFIRM_COLOR
     }
-  }, [orderType, isCrossChainOnly])
+  }, [orderType, isCrossChainOnly, isWalletNotConnected])
 
   function reset() {
     setPay('')
