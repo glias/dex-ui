@@ -17,6 +17,11 @@ interface TransactionListItemProps {
   transaction: TransactionSummary
 }
 
+const SpinWrapper = styled.div`
+  padding: 30px;
+  text-align: center;
+`
+
 const TransactionListItemWrapper = styled.div`
   font-size: 12px;
   padding: 16px;
@@ -107,7 +112,12 @@ export const TransactionList = () => {
     setTransferDirectionFilter(direction as 'all' | TransactionDirection)
   }
 
-  if (isLoading) return <Spin size="large" tip="loading..." />
+  if (isLoading)
+    return (
+      <SpinWrapper>
+        <Spin size="large" tip="loading..." />
+      </SpinWrapper>
+    )
   const transferList =
     txs && txs.length ? (
       txs.map((tx: TransactionSummary) => <TransactionListItem key={tx.txHash} transaction={tx} />)
