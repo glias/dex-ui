@@ -1,6 +1,6 @@
-import { AssetManager } from 'components/Header/AssetsManager'
 import WalletContainer from 'containers/wallet'
 import { useNotifyTransaction } from 'hooks/useNotifyTransaction'
+import { AssetManager } from 'mobile/components/AssetManager'
 import { NavigationMenu } from 'mobile/components/Header'
 import { AppHeader } from 'mobile/components/Header/AppHeader'
 import Trade from 'pages/Trade'
@@ -20,7 +20,7 @@ const Control = () => {
 
   return (
     <Switch>
-      <Route exact path="/assets" component={AssetManager} />
+      <Route path="/assets" component={AssetManager} />
       <Route>
         <NavigationMenu />
         <Route exact path="/trade" component={Trade} />

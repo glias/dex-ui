@@ -35,7 +35,7 @@ const AssetManagerWrapper = styled.div`
   overflow-y: auto;
 `
 
-export const AssetManager: React.FC = () => {
+export const AssetManagerControl = () => {
   // check and clean the pending cell when the cell was dead
   useEffect(() => {
     const taskId = setInterval(() => {
@@ -50,11 +50,17 @@ export const AssetManager: React.FC = () => {
   })
 
   return (
+    <AssetManagerContainer.Provider>
+      <Control />
+    </AssetManagerContainer.Provider>
+  )
+}
+
+export const AssetManager: React.FC = () => {
+  return (
     <AssetManagerWrapper>
       <MemoryRouter>
-        <AssetManagerContainer.Provider>
-          <Control />
-        </AssetManagerContainer.Provider>
+        <AssetManagerControl />
       </MemoryRouter>
     </AssetManagerWrapper>
   )
