@@ -336,9 +336,12 @@ const History = () => {
   const searchFilter = useCallback(
     (order: OrderInList) => {
       if (searchValue) {
-        return order.tokenName.toLowerCase().includes(searchValue.toLowerCase())
+        if (searchValue.toLowerCase() === 'ckb') {
+          return true
+        }
+        return order.tokenName.toLowerCase() === searchValue.toLowerCase()
       }
-      return Boolean
+      return true
     },
     [searchValue],
   )
