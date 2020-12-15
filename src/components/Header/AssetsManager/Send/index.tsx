@@ -35,6 +35,7 @@ const SendWrapper = styled.div`
     height: 34px;
     padding: 10px;
   }
+
   .ant-input-affix-wrapper {
     background: #f6f6f6;
     border-radius: 16px;
@@ -45,6 +46,7 @@ const SendWrapper = styled.div`
   }
 
   /* Chrome, Safari, Edge, Opera */
+
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -52,6 +54,7 @@ const SendWrapper = styled.div`
   }
 
   /* Firefox */
+
   input[type='number'] {
     -moz-appearance: textfield;
   }
@@ -96,7 +99,7 @@ export const Send: React.FC = () => {
   )
 
   const { data: transactionFee } = useQuery<string, unknown>(
-    ['getTransactionFee', tokenName, inputAllValidated, form.getFieldValue('amount')],
+    ['getTransactionFee', tokenName, inputAllValidated, form.getFieldValue('amount'), decimals],
     async () => {
       const { amount, to } = form.getFieldsValue(['amount', 'to'])
       if (!inputAllValidated) return ''
@@ -104,20 +107,17 @@ export const Send: React.FC = () => {
       const toAddress = new Address(to, toAddressType)
 
       if (tokenName === 'CKB') {
-        const builder = new ForceSimpleBuilder(toAddress, new Amount(amount))
+        const builder = new ForceSimpleBuilder(toAddress, new Amount(amount, decimals))
         await builder.build()
 
-        const fee = builder.getFee().toString()
-        return fee
+        return builder.getFee().toString()
       }
 
       asserts(sudt)
 
-      const builder = new SimpleSUDTBuilder(sudt, toAddress, new Amount(amount))
+      const builder = new SimpleSUDTBuilder(sudt, toAddress, new Amount(amount, decimals))
       await builder.build()
-      const fee = builder.getFee().toString()
-
-      return fee
+      return builder.getFee().toString()
     },
     { enabled: inputAllValidated },
   )
