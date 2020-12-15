@@ -60,10 +60,12 @@ export class PlaceOrderBuilder extends Builder {
     this.orderType = orderType
     this.price = price
     this.pay = pay
+    this.sudt = sudt
     const amount = new BigNumber(this.pay.toString())
     this.decimal = sudt?.info?.decimals ?? AmountUnit.ckb
-    this.totalPay = new Amount(amount.plus(amount.times(COMMISSION_FEE)).toString())
-    this.sudt = sudt
+    this.totalPay = new Amount(
+      amount.plus(amount.times(COMMISSION_FEE)).toFixed(orderType === OrderType.Ask ? this.decimal : AmountUnit.ckb, 1),
+    )
     this.orderLock = new Script(
       ORDER_BOOK_LOCK_SCRIPT.codeHash,
       this.address.toLockScript().toHash(),
