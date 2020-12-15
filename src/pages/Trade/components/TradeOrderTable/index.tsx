@@ -442,7 +442,7 @@ export default function OrderTable() {
     }
   }, [Order.pair, createBridgeCell])
 
-  const placeOrderOrConnectWallet = !isWalletNotConnected ? (
+  const placeOrderOrConnectWallet = isWalletNotConnected ? (
     <ConfirmButton
       text={Wallet.connecting ? i18n.t('header.connecting') : i18n.t('header.wallet')}
       bgColor={Order.confirmButtonColor}

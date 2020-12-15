@@ -366,8 +366,8 @@ export function useWallet() {
   )
 
   const isWalletNotConnected = useMemo(() => {
-    return !ckbWallet.address
-  }, [ckbWallet.address])
+    return connectStatus !== 'connected'
+  }, [connectStatus])
 
   return {
     pw,
