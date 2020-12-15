@@ -268,7 +268,14 @@ export function useOrder() {
     }
   }, [ethWallet.balance, ckbMax, pair, sudtWallets, erc20Wallets, orderMode])
 
+  const isCrossChainOnly = useMemo(() => {
+    return orderMode === OrderMode.CrossIn || orderMode === OrderMode.CrossOut
+  }, [orderMode])
+
   const confirmButtonColor = useMemo(() => {
+    if (isCrossChainOnly) {
+      return undefined
+    }
     switch (orderType) {
       case OrderType.Bid:
         return BID_CONFIRM_COLOR
@@ -277,7 +284,7 @@ export function useOrder() {
       default:
         return BID_CONFIRM_COLOR
     }
-  }, [orderType])
+  }, [orderType, isCrossChainOnly])
 
   function reset() {
     setPay('')
@@ -339,7 +346,7 @@ export function useOrder() {
       case ApproveStatus.Signing:
         return `Approving In Wallet`
       case ApproveStatus.Confirming:
-        return `Approving In Chain`
+        return `Approving On Chain`
       default:
         return `Approve ${currentERC20?.tokenName}`
     }
@@ -408,6 +415,7 @@ export function useOrder() {
     currentSudtTokenName,
     setAndCacheCrossChainOrders,
     crossChainOrders,
+    isCrossChainOnly,
   }
 }
 

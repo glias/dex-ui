@@ -30,6 +30,8 @@
       "approve": "Approve {{tokenName}}",
       "approveInWallet": "Approving in Wallet",
       "approveInChain": "Approving in Chain",
+      "crossChain": "Cross Chain",
+      "confirm": "Confirm",
       "priceTable": {
         "pay": "Pay ({{token}})",
         "price": "Price (CKB per {{token}})",
