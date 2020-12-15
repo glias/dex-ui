@@ -114,7 +114,7 @@ export default function OrderTable() {
   const [collectingCells, setCollectingCells] = useState(false)
   const [isPayInvalid, setIsPayInvalid] = useState(true)
   const [isPriceInvalid, setIsPriceInvalid] = useState(true)
-  const { web3, ethWallet } = Wallet
+  const { web3, ethWallet, isWalletNotConnected } = Wallet
 
   const isCrossInOrOut = useMemo(() => {
     return Order.orderMode === OrderMode.CrossIn || Order.orderMode === OrderMode.CrossOut
@@ -145,10 +145,6 @@ export default function OrderTable() {
   }, [Order.orderType])
 
   const MIN_VAL = isBid ? SUDT_DECIMAL : PRICE_DECIMAL
-
-  const walletNotConnected = useMemo(() => {
-    return !Wallet.ckbWallet.address
-  }, [Wallet.ckbWallet.address])
 
   const ckbBalance = useMemo(() => {
     return Wallet.ckbWallet.balance.toString()
@@ -288,8 +284,8 @@ export default function OrderTable() {
   }, [])
 
   const submitStatus = useMemo(() => {
-    if (Wallet.connecting) {
-      return i18n.t('header.connecting')
+    if (Order.isCrossChainOnly) {
+      return i18n.t('trade.crossChain')
     }
 
     if (Order.isCrossChainOnly) {
@@ -297,7 +293,7 @@ export default function OrderTable() {
     }
 
     return i18n.t('trade.placeOrder')
-  }, [Wallet.connecting, Order.isCrossChainOnly])
+  }, [Order.isCrossChainOnly])
 
   useEffect(() => {
     Order.reset()
@@ -315,89 +311,83 @@ export default function OrderTable() {
   }, [currentERC20, web3, ethWallet.address, approveERC20])
 
   const onSubmit = useCallback(async () => {
-    if (walletNotConnected) {
-      Wallet.connectWallet()
-    } else {
-      try {
-        setCollectingCells(true)
-        switch (Order.orderMode) {
-          case OrderMode.Order: {
-            const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
-            const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
-            const builder = new PlaceOrderBuilder(
-              new Address(Wallet.ckbWallet.address, AddressType.ckb),
-              new Amount(Order.pay, OrderType.Ask === Order.orderType ? sudt?.info?.decimals : AmountUnit.ckb),
-              Order.orderType,
-              Order.price,
-              sudt!,
-              new DEXCollector() as any,
-            )
-            const tx = await builder.build()
-            Order.setTx(tx)
-            break
-          }
-          case OrderMode.CrossChain: {
-            const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
-            const sudt = SUDT_LIST.find(s => s.info?.symbol === `ck${sudtTokenName}`)
-            const erc20 = ERC20_LIST.find(e => e.tokenName === sudtTokenName)
-            const res = await placeCrossChainOrder(
-              pay,
-              price,
-              Order.receive,
-              Wallet.ckbWallet.address,
-              Wallet.ethWallet.address,
-              Wallet.web3!,
-              sudt!,
-              erc20?.address,
-            )
-            Order.setTx(res.data)
-            break
-          }
-          case OrderMode.CrossIn: {
-            const [erc20TokenName, sudtTokenName] = Order.pair
-            const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
-            const erc20 = ERC20_LIST.find(e => e.tokenName === erc20TokenName)
-            const res = await shadowAssetCrossIn(
-              pay,
-              Wallet.ckbWallet.address,
-              Wallet.ethWallet.address,
-              Wallet.web3!,
-              erc20?.address,
-              sudt?.info?.decimals,
-            )
-            Order.setTx(res.data)
-            break
-          }
-          case OrderMode.CrossOut: {
-            const [sudtTokenName, erc20TokenName] = Order.pair
-            const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
-            const erc20 = ERC20_LIST.find(e => e.tokenName === erc20TokenName)
-            const res = await shadowAssetCrossOut(
-              pay,
-              Wallet.ckbWallet.address,
-              Wallet.ethWallet.address,
-              erc20?.address,
-              sudt?.info?.decimals,
-            )
-            const tx = await rawTransactionToPWTransaction(res.data.raw_tx)
-            Order.setTx(tx)
-            break
-          }
-          default:
-            break
+    try {
+      setCollectingCells(true)
+      switch (Order.orderMode) {
+        case OrderMode.Order: {
+          const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
+          const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
+          const builder = new PlaceOrderBuilder(
+            new Address(Wallet.ckbWallet.address, AddressType.ckb),
+            new Amount(Order.pay, OrderType.Ask === Order.orderType ? sudt?.info?.decimals : AmountUnit.ckb),
+            Order.orderType,
+            Order.price,
+            sudt!,
+            new DEXCollector() as any,
+          )
+          const tx = await builder.build()
+          Order.setTx(tx)
+          break
         }
-        setStep(OrderStep.Confirm)
-      } catch (error) {
-        Modal.error({ title: 'Build transaction:\n', content: error.message })
-      } finally {
-        setCollectingCells(false)
+        case OrderMode.CrossChain: {
+          const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
+          const sudt = SUDT_LIST.find(s => s.info?.symbol === `ck${sudtTokenName}`)
+          const erc20 = ERC20_LIST.find(e => e.tokenName === sudtTokenName)
+          const res = await placeCrossChainOrder(
+            pay,
+            price,
+            Order.receive,
+            Wallet.ckbWallet.address,
+            Wallet.ethWallet.address,
+            Wallet.web3!,
+            sudt!,
+            erc20?.address,
+          )
+          Order.setTx(res.data)
+          break
+        }
+        case OrderMode.CrossIn: {
+          const [erc20TokenName, sudtTokenName] = Order.pair
+          const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
+          const erc20 = ERC20_LIST.find(e => e.tokenName === erc20TokenName)
+          const res = await shadowAssetCrossIn(
+            pay,
+            Wallet.ckbWallet.address,
+            Wallet.ethWallet.address,
+            Wallet.web3!,
+            erc20?.address,
+            sudt?.info?.decimals,
+          )
+          Order.setTx(res.data)
+          break
+        }
+        case OrderMode.CrossOut: {
+          const [sudtTokenName, erc20TokenName] = Order.pair
+          const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
+          const erc20 = ERC20_LIST.find(e => e.tokenName === erc20TokenName)
+          const res = await shadowAssetCrossOut(
+            pay,
+            Wallet.ckbWallet.address,
+            Wallet.ethWallet.address,
+            erc20?.address,
+            sudt?.info?.decimals,
+          )
+          const tx = await rawTransactionToPWTransaction(res.data.raw_tx)
+          Order.setTx(tx)
+          break
+        }
+        default:
+          break
       }
+      setStep(OrderStep.Confirm)
+    } catch (error) {
+      Modal.error({ title: 'Build transaction:\n', content: error.message })
+    } finally {
+      setCollectingCells(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     setStep,
-    walletNotConnected,
-    Wallet.connectWallet,
     Order.setTx,
     Order.price,
     Order.pay,
@@ -456,6 +446,24 @@ export default function OrderTable() {
     }
   }, [Order.pair, createBridgeCell])
 
+  const placeOrderOrConnectWallet = isWalletNotConnected ? (
+    <ConfirmButton
+      text={Wallet.connecting ? i18n.t('header.connecting') : i18n.t('header.wallet')}
+      bgColor={Order.confirmButtonColor}
+      loading={Wallet.connecting}
+      disabled={Wallet.connecting}
+      onClick={() => Wallet.connectWallet()}
+      htmlType="button"
+    />
+  ) : (
+    <ConfirmButton
+      text={submitStatus}
+      bgColor={Order.confirmButtonColor}
+      loading={collectingCells}
+      disabled={disabled || insufficientCKB || isRelaying}
+    />
+  )
+
   return (
     <OrderTableContainer id="order-box" isBid={isBid}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
@@ -494,7 +502,6 @@ export default function OrderTable() {
               type="number"
               required
               size="large"
-              disabled={insufficientCKB || isRelaying}
               step="any"
               value={pay}
               onChange={e => setPay(e.target.value)}
@@ -523,7 +530,6 @@ export default function OrderTable() {
                   placeholder="0"
                   suffix="CKB"
                   size="large"
-                  disabled={insufficientCKB || isRelaying}
                   required
                   width="211px"
                   type="number"
@@ -559,12 +565,7 @@ export default function OrderTable() {
               onClick={() => approve()}
             />
           ) : (
-            <ConfirmButton
-              text={submitStatus}
-              bgColor={Order.confirmButtonColor}
-              loading={collectingCells || Wallet.connecting}
-              disabled={disabled || insufficientCKB}
-            />
+            placeOrderOrConnectWallet
           )}
         </Form.Item>
       </Form>

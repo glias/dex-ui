@@ -22,7 +22,7 @@ import {
   MAX_TRANSACTION_FEE,
   COMMISSION_FEE,
 } from '../constants'
-import { calcBidReceive, calcAskReceive } from '../utils/fee'
+import { calcBidReceive, calcAskReceive, removeTrailingZero } from '../utils/fee'
 
 export class PlaceOrderBuilder extends Builder {
   address: Address
@@ -64,7 +64,11 @@ export class PlaceOrderBuilder extends Builder {
     const amount = new BigNumber(this.pay.toString())
     this.decimal = sudt?.info?.decimals ?? AmountUnit.ckb
     this.totalPay = new Amount(
-      amount.plus(amount.times(COMMISSION_FEE)).toFixed(orderType === OrderType.Ask ? this.decimal : AmountUnit.ckb, 1),
+      removeTrailingZero(
+        amount
+          .plus(amount.times(COMMISSION_FEE))
+          .toFixed(orderType === OrderType.Ask ? this.decimal : AmountUnit.ckb, 1),
+      ),
     )
     this.orderLock = new Script(
       ORDER_BOOK_LOCK_SCRIPT.codeHash,

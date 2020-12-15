@@ -65,11 +65,11 @@ export const parseOrderRecord = ({
 
   return {
     key,
-    pay: `${payAmount.toFixed(4, 1)}`,
+    pay: `${payAmount.toFixed(5, 1)}`,
     paidAmount: `${paidAmount}`,
     tradedAmount: `${tradedAmount}`,
     isBid,
-    receive: `${orderAmount.toFixed(4, 1)}`,
+    receive: `${orderAmount.toFixed(5, 1)}`,
     executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
     price: `${priceInNum}`,
     status: status === 'claimable' ? 'completed' : status,
