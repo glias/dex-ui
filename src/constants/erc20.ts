@@ -77,7 +77,7 @@ export const setForceBridgeServer = (settings: any) => {
 
 export const buildBridgeLockScript = (erc20Address: string = '0x0000000000000000000000000000000000000000') => {
   const lockArgs = `0x${FORCE_BRIDGE_SETTINGS.eth_token_locker_addr.slice(2)}${erc20Address.slice(2)}`
-  return new Script(`0x${FORCE_BRIDGE_SETTINGS.bridge_lockscript.code_hash}`, lockArgs, HashType.data)
+  return new Script(`0x${FORCE_BRIDGE_SETTINGS.bridge_lockscript.code_hash}`, lockArgs, HashType.type)
 }
 
 export const buildShadowAssetSUDT = (
