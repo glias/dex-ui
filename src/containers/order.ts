@@ -1,4 +1,4 @@
-import { Transaction } from '@lay2/pw-core'
+import PWCore, { Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import { approveERC20ToBridge, CrossChainOrder, getAllowanceForTarget } from 'APIs'
 import { useEffect, useState, useMemo, useCallback } from 'react'
@@ -64,7 +64,7 @@ export interface SubmittedOrder
 
 export function useOrder() {
   const Wallet = useContainer(WalletContainer)
-  const { ethWallet, sudtWallets, erc20Wallets, web3, connecting, isWalletNotConnected } = Wallet
+  const { ethWallet, sudtWallets, erc20Wallets, web3, isWalletNotConnected } = Wallet
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
@@ -210,29 +210,44 @@ export function useOrder() {
 
   const setAndCacheSubmittedOrders = useCallback(
     (updateFn: SubmittedOrdersUpdateFn) => {
-      if (connecting) {
+      if (isWalletNotConnected) {
         return
       }
       setSubmittedOrders(orders => {
         const newOrders = updateFn(orders)
+        const latestAddress = PWCore.provider?.address?.toCKBAddress?.()
+        // If address is not equal to the latest address
+        // it is likely that this function was called before the wallet switch.
+        if (latestAddress !== address) {
+          return orders
+        }
         submittedOrdersCache.set(address, newOrders)
         return newOrders
       })
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [address, setSubmittedOrders, connecting],
+    [address, setSubmittedOrders, isWalletNotConnected],
   )
 
   const setAndCacheCrossChainOrders = useCallback(
     (updateFn: crossChainOrdersUpdateFn) => {
+      if (isWalletNotConnected) {
+        return
+      }
       setCrossChainOrders(orders => {
+        const latestAddress = PWCore.provider?.address?.toCKBAddress?.()
+        // If address is not equal to the latest address
+        // it is likely that this function was called before the wallet switch.
+        if (latestAddress !== address) {
+          return orders
+        }
         const newOrders = updateFn(orders)
         crossChainOrdersCache.set(address, newOrders)
         return newOrders
       })
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [address, setCrossChainOrders],
+    [address, setCrossChainOrders, isWalletNotConnected],
   )
 
   // TODO: max pay
