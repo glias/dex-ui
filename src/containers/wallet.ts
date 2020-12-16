@@ -1,6 +1,6 @@
-import PWCore, { Address, AddressType, AmountUnit, Script, SUDT, Web3ModalProvider } from '@lay2/pw-core'
-import BigNumber from 'bignumber.js'
+import PWCore, { Address, AddressType, AmountUnit, Script, SUDT } from '@lay2/pw-core'
 import { Modal } from 'antd'
+import BigNumber from 'bignumber.js'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { createContainer } from 'unstated-next'
 import { replayResistOutpoints } from 'utils'
@@ -12,8 +12,8 @@ import {
   CKB_NODE_URL,
   ERC20,
   ERC20_LIST,
-  IssuerLockHash,
   IS_DEVNET,
+  IssuerLockHash,
   ORDER_BOOK_LOCK_SCRIPT,
   PW_DEV_CHAIN_CONFIG,
   SUDT_DEP,
@@ -21,6 +21,7 @@ import {
   SUDT_LIST,
 } from '../constants'
 import DEXCollector from '../pw/dexCollector'
+import { Web3ModalProviderFix } from './patch/Web3ModalProviderFix'
 
 export interface Wallet {
   balance: BigNumber
@@ -64,6 +65,7 @@ const defaultSUDTWallets = SUDT_LIST.map(sudt => {
   return {
     ...defaultSUDTWallet,
     lockHash: sudt.issuerLockHash,
+    tokenName: sudt.info?.name!,
   }
 })
 
@@ -212,9 +214,12 @@ export function useWallet() {
   }, [reloadSudtWallet])
 
   const reloadERC20Wallets = useCallback(
-    async (web3: Web3, ethAddress: string) => {
-      const wallets = await Promise.all(ERC20_LIST.map(erc20 => reloadERC20Wallet(erc20, web3, ethAddress)))
-      setERC20Wallets(wallets)
+    (web3: Web3, ethAddress: string) => {
+      Promise.all(ERC20_LIST.map(erc20 => reloadERC20Wallet(erc20, web3, ethAddress)))
+        .then(wallets => {
+          setERC20Wallets(wallets)
+        })
+        .catch(() => ({}))
     },
     [reloadERC20Wallet],
   )
@@ -229,14 +234,28 @@ export function useWallet() {
     [reloadCkbWallet, reloadSudtWallets, reloadEthWallet, reloadERC20Wallets],
   )
 
+  const disconnectWallet = useCallback(
+    async (cb?: Function) => {
+      await PWCore.provider.close()
+      await web3ModalRef.current?.clearCachedProvider()
+      setCkbAddress('')
+      setEthAddress('')
+      setConnectStatus('disconnected')
+      // eslint-disable-next-line no-unused-expressions
+      cb?.()
+    },
+    [setCkbAddress, setEthAddress, setConnectStatus],
+  )
+
   const connectWallet = useCallback(async () => {
     setConnectStatus('connecting')
     try {
       const provider = await web3ModalRef.current?.connect()
 
-      provider.on('accountsChanged', function reconnectWallet() {
+      provider.on('accountsChanged', function reconnectWallet(accounts: string[]) {
         provider.off('accountsChanged', reconnectWallet)
-        connectWallet()
+        if (accounts?.length > 0) connectWallet()
+        else disconnectWallet()
       })
 
       const newWeb3 = new Web3(provider)
@@ -252,7 +271,7 @@ export function useWallet() {
       }
 
       const newPw = await new PWCore(CKB_NODE_URL).init(
-        new Web3ModalProvider(newWeb3),
+        new Web3ModalProviderFix(newWeb3),
         new DEXCollector(),
         IS_DEVNET ? 2 : undefined,
         IS_DEVNET ? PW_DEV_CHAIN_CONFIG : undefined,
@@ -278,20 +297,7 @@ export function useWallet() {
     } catch (e) {
       setConnectStatus('disconnected')
     }
-  }, [reloadWallet, setCkbAddress, setEthBalance])
-
-  const disconnectWallet = useCallback(
-    async (cb?: Function) => {
-      await PWCore.provider.close()
-      await web3ModalRef.current?.clearCachedProvider()
-      setCkbAddress('')
-      setEthAddress('')
-      setConnectStatus('disconnected')
-      // eslint-disable-next-line no-unused-expressions
-      cb?.()
-    },
-    [setCkbAddress, setEthAddress, setConnectStatus],
-  )
+  }, [reloadWallet, setCkbAddress, setEthBalance, disconnectWallet])
 
   const resetWallet = useCallback(() => {
     setCkbWallet(defaultCkbWallet)
@@ -359,6 +365,10 @@ export function useWallet() {
     [lockHash, ckbWallet.address],
   )
 
+  const isWalletNotConnected = useMemo(() => {
+    return connectStatus !== 'connected'
+  }, [connectStatus])
+
   return {
     pw,
     web3,
@@ -389,6 +399,7 @@ export function useWallet() {
     getBridgeCell,
     lockHash,
     erc20Wallets,
+    isWalletNotConnected,
   }
 }
 

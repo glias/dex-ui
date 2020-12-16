@@ -35,6 +35,7 @@ const SendWrapper = styled.div`
     height: 34px;
     padding: 10px;
   }
+
   .ant-input-affix-wrapper {
     background: #f6f6f6;
     border-radius: 16px;
@@ -45,6 +46,7 @@ const SendWrapper = styled.div`
   }
 
   /* Chrome, Safari, Edge, Opera */
+
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -52,6 +54,7 @@ const SendWrapper = styled.div`
   }
 
   /* Firefox */
+
   input[type='number'] {
     -moz-appearance: textfield;
   }
@@ -96,7 +99,7 @@ export const Send: React.FC = () => {
   )
 
   const { data: transactionFee } = useQuery<string, unknown>(
-    ['getTransactionFee', tokenName, inputAllValidated, form.getFieldValue('amount')],
+    ['getTransactionFee', tokenName, inputAllValidated, form.getFieldValue('amount'), decimals],
     async () => {
       const { amount, to } = form.getFieldsValue(['amount', 'to'])
       if (!inputAllValidated) return ''
@@ -104,20 +107,17 @@ export const Send: React.FC = () => {
       const toAddress = new Address(to, toAddressType)
 
       if (tokenName === 'CKB') {
-        const builder = new ForceSimpleBuilder(toAddress, new Amount(amount))
+        const builder = new ForceSimpleBuilder(toAddress, new Amount(amount, decimals))
         await builder.build()
 
-        const fee = builder.getFee().toString()
-        return fee
+        return builder.getFee().toString()
       }
 
       asserts(sudt)
 
-      const builder = new SimpleSUDTBuilder(sudt, toAddress, new Amount(amount))
+      const builder = new SimpleSUDTBuilder(sudt, toAddress, new Amount(amount, decimals))
       await builder.build()
-      const fee = builder.getFee().toString()
-
-      return fee
+      return builder.getFee().toString()
     },
     { enabled: inputAllValidated },
   )
@@ -137,12 +137,12 @@ export const Send: React.FC = () => {
     asserts(input && !inputNumber.isNaN(), t(`Amount should be a valid number`))
 
     const balance = freeAmount
-    asserts(inputNumber.lte(balance), t('Amount should less than the MAX'))
-    asserts(inputNumber.gt(0), t('Amount should more than 0'))
+    asserts(inputNumber.lte(balance), t('Amount should be less than the MAX'))
+    asserts(inputNumber.gt(0), t('Amount should be more than 0'))
     if (!isCkb) return
 
     asserts(inputNumber.decimalPlaces() <= decimals, t(`The value up to ${decimals} precision`))
-    asserts(inputNumber.gte(61), t('Amount should large than 61'))
+    asserts(inputNumber.gte(61), t('Amount should be large than 61'))
     const remainLessThanBasicCellCapacity = balance.minus(inputNumber).lt(61)
     setShouldSendAllCkb(remainLessThanBasicCellCapacity)
   }

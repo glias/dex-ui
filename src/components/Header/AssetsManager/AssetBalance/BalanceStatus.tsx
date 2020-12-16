@@ -45,7 +45,7 @@ export const BalanceStatus = () => {
   if (!wallet) return null
 
   const { free, inUse, locked } = {
-    free: isCkbWallet(wallet) ? wallet.free : wallet.balance.minus(wallet.lockedOrder),
+    free: isCkbWallet(wallet) ? wallet.free : wallet.balance,
     inUse: isCkbWallet(wallet) ? wallet.inuse : 0,
     locked: wallet.lockedOrder,
   }
@@ -66,13 +66,13 @@ export const BalanceStatus = () => {
       </div>
       <div className="balance-desc space-bottom">
         <div className="balance-desc-item">
-          <Description label={t('Free')}>
+          <Description label={t('Available')}>
             <Balance value={free} />
           </Description>
         </div>
         {isCkbWallet(wallet) && (
           <div className="balance-desc-item">
-            <Description label={t('In Use')}>
+            <Description label={t('Occupied')}>
               <Balance value={inUse} />
             </Description>
           </div>

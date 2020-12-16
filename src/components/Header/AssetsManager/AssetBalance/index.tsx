@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import styled from 'styled-components'
-import { AssetManagerHeader, WalletConnectionStatusHeader } from '../AssetManagerHeader'
+import { WalletConnectionStatusHeader } from '../AssetManagerHeader'
 import { Button } from '../components/Button'
 import { AssetManagerContainer } from '../hooks'
 import { BalanceStatus } from './BalanceStatus'
@@ -14,7 +14,7 @@ const OperationsWrapper = styled.div`
   margin-bottom: 32px;
 `
 
-const Operations = () => {
+export const Operations = () => {
   const { t } = useTranslation()
   const { push } = useHistory()
   const { tokenName } = AssetManagerContainer.useContainer()
@@ -47,11 +47,9 @@ export const AssetBalance: React.FC = () => {
     setTokenName(paramTokenName || 'CKB')
   }, [paramTokenName, setTokenName])
 
-  const headerElement = paramTokenName ? <AssetManagerHeader showGoBack /> : <WalletConnectionStatusHeader />
-
   return (
     <>
-      {headerElement}
+      <WalletConnectionStatusHeader />
       <BalanceStatus />
       <Operations />
       <TokenTabs />

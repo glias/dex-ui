@@ -250,6 +250,10 @@ export const usePollOrderList = ({
                 setAndCacheSubmittedOrders(orders => {
                   return orders.filter(o => o.key.split(':')[0] !== order.eth_tx_hash)
                 })
+                dispatch({
+                  type: ActionType.UpdateOrderList,
+                  value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+                })
                 matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
                 // eslint-disable-next-line no-unused-expressions
                 matchedOrder.orderCells?.unshift({
@@ -273,7 +277,14 @@ export const usePollOrderList = ({
                 .then(resList => {
                   const unconfirmedHashes = hashes.filter((_, i) => !resList[i])
                   setAndCacheSubmittedOrders(orders =>
-                    orders.filter(order => unconfirmedHashes.includes(order.key.split(':')[0])),
+                    orders.filter(order => {
+                      const [hash] = order.key.split(':')
+                      const matched = unconfirmedHashes.includes(hash)
+                      if (!matched) {
+                        return !parsed.some(p => p.key === order.key)
+                      }
+                      return true
+                    }),
                   )
 
                   dispatch({

@@ -336,9 +336,12 @@ const History = () => {
   const searchFilter = useCallback(
     (order: OrderInList) => {
       if (searchValue) {
-        return order.tokenName.toLowerCase().includes(searchValue.toLowerCase())
+        if (searchValue.toLowerCase() === 'ckb') {
+          return true
+        }
+        return order.tokenName.toLowerCase() === searchValue.toLowerCase()
       }
-      return Boolean
+      return true
     },
     [searchValue],
   )
@@ -363,24 +366,17 @@ const History = () => {
     render: (_: unknown, order: OrderInList) => {
       const handleClick = () => {
         handleWithdraw(order.key).catch(error => {
-          const message =
-            error.code !== ErrorCode.CKBNotEnough ? (
-              error.message
-            ) : (
-              <span>
-                You don&apos;t have enough CKB to complete this transaction, please go to&nbsp;
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href="https://faucet.nervos.org/"
-                  className={styles.faucet}
-                >
-                  Nervos Aggron Faucet
-                </a>
-                &nbsp;and claim some CKB.
-              </span>
-            )
-          Modal.error({ title: 'Transaction Error', content: message })
+          const CKBNotEnough = (
+            <span>
+              You don&apos;t have enough CKB to complete this transaction, please go to&nbsp;
+              <a target="_blank" rel="noopener noreferrer" href="https://faucet.nervos.org/" className={styles.faucet}>
+                Nervos Aggron Faucet
+              </a>
+              &nbsp;and claim some CKB.
+            </span>
+          )
+          const message = error.code !== ErrorCode.CKBNotEnough ? error.message : CKBNotEnough
+          Modal.error({ title: 'Transaction Error', content: message || CKBNotEnough })
         })
       }
 

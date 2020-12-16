@@ -64,7 +64,7 @@ export interface SubmittedOrder
 
 export function useOrder() {
   const Wallet = useContainer(WalletContainer)
-  const { ethWallet, sudtWallets, erc20Wallets, web3 } = Wallet
+  const { ethWallet, sudtWallets, erc20Wallets, web3, connecting, isWalletNotConnected } = Wallet
   const [step, setStep] = useState<OrderStep>(OrderStep.Order)
   const [pay, setPay] = useState('')
   const [price, setPrice] = useState('')
@@ -210,6 +210,9 @@ export function useOrder() {
 
   const setAndCacheSubmittedOrders = useCallback(
     (updateFn: SubmittedOrdersUpdateFn) => {
+      if (connecting) {
+        return
+      }
       setSubmittedOrders(orders => {
         const newOrders = updateFn(orders)
         submittedOrdersCache.set(address, newOrders)
@@ -217,7 +220,7 @@ export function useOrder() {
       })
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [address, setSubmittedOrders],
+    [address, setSubmittedOrders, connecting],
   )
 
   const setAndCacheCrossChainOrders = useCallback(
@@ -265,7 +268,14 @@ export function useOrder() {
     }
   }, [ethWallet.balance, ckbMax, pair, sudtWallets, erc20Wallets, orderMode])
 
+  const isCrossChainOnly = useMemo(() => {
+    return orderMode === OrderMode.CrossIn || orderMode === OrderMode.CrossOut
+  }, [orderMode])
+
   const confirmButtonColor = useMemo(() => {
+    if (isCrossChainOnly || isWalletNotConnected) {
+      return undefined
+    }
     switch (orderType) {
       case OrderType.Bid:
         return BID_CONFIRM_COLOR
@@ -274,7 +284,7 @@ export function useOrder() {
       default:
         return BID_CONFIRM_COLOR
     }
-  }, [orderType])
+  }, [orderType, isCrossChainOnly, isWalletNotConnected])
 
   function reset() {
     setPay('')
@@ -336,7 +346,7 @@ export function useOrder() {
       case ApproveStatus.Signing:
         return `Approving In Wallet`
       case ApproveStatus.Confirming:
-        return `Approving In Chain`
+        return `Approving On Chain`
       default:
         return `Approve ${currentERC20?.tokenName}`
     }
@@ -405,6 +415,7 @@ export function useOrder() {
     currentSudtTokenName,
     setAndCacheCrossChainOrders,
     crossChainOrders,
+    isCrossChainOnly,
   }
 }
 

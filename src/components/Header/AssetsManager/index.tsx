@@ -3,6 +3,7 @@ import React, { useEffect } from 'react'
 import { MemoryRouter, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { AssetBalance } from './AssetBalance'
+import { AssetDetail } from './AssetsDetail'
 import { AssetManagerContainer } from './hooks'
 import { getPendingTransactions } from './pendingTxs'
 import { Receive } from './Receive'
@@ -19,7 +20,8 @@ const Control = () => {
   return (
     <>
       <Switch>
-        <Route exact path={['/assets', '/assets/:tokenName']} component={AssetBalance} />
+        <Route exact path="/assets" component={AssetBalance} />
+        <Route exact path="/assets/:tokenName" component={AssetDetail} />
         <Route exact path="/assets/:tokenName/receive" component={Receive} />
         <Route exact path="/assets/:tokenName/send/confirm" component={SendConfirm} />
         <Route exact path="/assets/:tokenName/send" component={Send} />
