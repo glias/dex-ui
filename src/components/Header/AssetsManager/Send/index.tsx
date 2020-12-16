@@ -18,7 +18,7 @@ import { asserts, debounce } from '../helper'
 import { AssetManagerContainer } from '../hooks'
 
 const SendWrapper = styled.div`
-  padding: 16px;
+  padding: 16px 24px;
 
   .ant-form,
   .ant-form-item-label > label {
@@ -63,11 +63,19 @@ const SendWrapper = styled.div`
 const AmountControlLabelWrapper = styled.div`
   padding-bottom: 8px;
 
+  .amount,
+  .balance-value,
+  .balance-decimals {
+    color: #5c61da;
+  }
+
   .amount {
     float: right;
-    text-decoration: underline;
-    color: #5c61da;
     cursor: pointer;
+    border-bottom: 1px solid #5c61da;
+    position: relative;
+    top: 4px;
+    line-height: 1;
   }
 `
 
@@ -169,7 +177,7 @@ export const Send: React.FC = () => {
         onClick={setAllBalanceToAmount}
         onKeyDown={setAllBalanceToAmount}
       >
-        {t('Max')}
+        {t('MAX')}
         :&nbsp;
         <Balance value={maxPayableAmount} />
       </span>
@@ -179,7 +187,7 @@ export const Send: React.FC = () => {
   const transactionFeeTip = (
     <div style={{ marginBottom: '16px' }}>
       <div>{t('Transaction fee')}</div>
-      <div>{transactionFee ? <Balance value={transactionFee} suffix="CKB" /> : '-'}</div>
+      <div>{transactionFee ? <Balance value={transactionFee} suffix="CKB" maxDecimalPlaces={8} /> : '-'}</div>
     </div>
   )
 
@@ -206,10 +214,10 @@ export const Send: React.FC = () => {
     <>
       <AssetManagerHeader title={t('Send')} showGoBack />
       <SendWrapper>
-        <header className="send-header">
-          <Token tokenName={tokenName} />
-        </header>
         <Form form={form} onValuesChange={validateInput} autoComplete="off" layout="vertical" onFinish={onFinish}>
+          <Form.Item label={t('Token')}>
+            <Token tokenName={tokenName} />
+          </Form.Item>
           <Form.Item
             label={t('To')}
             name="to"
