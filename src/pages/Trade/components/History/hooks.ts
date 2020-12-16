@@ -5,6 +5,7 @@ import Web3 from 'web3'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
 import { ErrorCode } from 'exceptions'
+import WalletContainer from 'containers/wallet'
 import { submittedOrders } from 'utils/cache'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
 import {
@@ -210,11 +211,10 @@ export const usePollOrderList = ({
   ethAddress: string
 }) => {
   const { setAndCacheSubmittedOrders } = useContainer(OrderContainer)
+  const { isWalletNotConnected } = useContainer(WalletContainer)
 
   useEffect(() => {
-    dispatch({ type: ActionType.UpdateOrderList, value: [] as Array<Order> })
-
-    if (lockArgs) {
+    if (lockArgs && !isWalletNotConnected) {
       const fetchData = () =>
         getAllHistoryOrders(lockArgs)
           .then(async res => {
@@ -276,6 +276,11 @@ export const usePollOrderList = ({
                     orders.filter(order => {
                       const [hash] = order.key.split(':')
                       const matched = unconfirmedHashes.includes(hash)
+                      // There is a possibility that the order was already matched before it was fetched,
+                      // so it is necessary to check whether the matched order is eligible for removal.
+                      if (parsed.some(p => p.orderCells?.some(c => c.tx_hash === hash))) {
+                        return false
+                      }
                       if (!matched) {
                         return !parsed.some(p => p.key === order.key)
                       }
@@ -317,7 +322,7 @@ export const usePollOrderList = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [lockArgs, dispatch, fetchListRef, ckbAddress, setAndCacheSubmittedOrders, ethAddress])
+  }, [lockArgs, dispatch, fetchListRef, ckbAddress, setAndCacheSubmittedOrders, ethAddress, isWalletNotConnected])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {
