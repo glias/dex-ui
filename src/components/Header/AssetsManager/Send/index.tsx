@@ -137,12 +137,12 @@ export const Send: React.FC = () => {
     asserts(input && !inputNumber.isNaN(), t(`Amount should be a valid number`))
 
     const balance = freeAmount
-    asserts(inputNumber.lte(balance), t('Amount should less than the MAX'))
-    asserts(inputNumber.gt(0), t('Amount should more than 0'))
+    asserts(inputNumber.lte(balance), t('Amount should be less than the MAX'))
+    asserts(inputNumber.gt(0), t('Amount should be more than 0'))
     if (!isCkb) return
 
     asserts(inputNumber.decimalPlaces() <= decimals, t(`The value up to ${decimals} precision`))
-    asserts(inputNumber.gte(61), t('Amount should large than 61'))
+    asserts(inputNumber.gte(61), t('Amount should be large than 61'))
     const remainLessThanBasicCellCapacity = balance.minus(inputNumber).lt(61)
     setShouldSendAllCkb(remainLessThanBasicCellCapacity)
   }
