@@ -1,5 +1,7 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useContainer } from 'unstated-next'
+import { Modal, Input, Button } from 'antd'
+import { README_URL } from 'constants/url'
 import SelectToken from 'components/SelectToken'
 import { SUDT_LIST } from 'constants/sudt'
 import { Wallet } from 'containers/wallet'
@@ -13,6 +15,8 @@ import TradePriceTable from './components/TradePriceTable'
 import { TradePage, TradeMain, TradeFrame, TradeContainer, OrderBookFrame } from './styled'
 import OrderContainer, { OrderStep } from '../../containers/order'
 import { getForceBridgeSettings } from '../../APIs'
+
+const TEMP_PASSWORD = `interoperability2.0`
 
 const Trade = () => {
   const Order = useContainer(OrderContainer)
@@ -177,12 +181,28 @@ const Trade = () => {
     }
   }
 
+  const [entryPassword, setEntryPassword] = useState('')
+  const [modalVisable, setModalVisable] = useState(localStorage.getItem(TEMP_PASSWORD) !== TEMP_PASSWORD)
+
   useDidMount(() => {
     getForceBridgeSettings().then(res => {
       // eslint-disable-next-line no-console
       setForceBridgeServer(res.data)
     })
   })
+
+  const modalFooter = (
+    <Button
+      type="primary"
+      disabled={entryPassword !== TEMP_PASSWORD}
+      onClick={() => {
+        setModalVisable(false)
+        localStorage.setItem(TEMP_PASSWORD, TEMP_PASSWORD)
+      }}
+    >
+      Unlock
+    </Button>
+  )
 
   return (
     <TradePage className="trade-page">
@@ -195,6 +215,20 @@ const Trade = () => {
         </TradeMain>
         <History />
       </TradeContainer>
+      <Modal visible={modalVisable} keyboard={false} closable={false} footer={modalFooter}>
+        <div>
+          <h3>Please enter the Internal Test Code:</h3>
+          <Input value={entryPassword} type="password" onChange={e => setEntryPassword(e.target.value)} />
+          <div style={{ marginTop: '8px' }}>
+            The product is currently under internal testing, so please be aware of the risks when trading your assets.
+            If you have any questions or suggestions when testing, please submit a issue at&nbsp;
+            <a style={{ color: 'blue' }} target="_blank" rel="noopener noreferrer" href={README_URL}>
+              GitHub
+            </a>
+            .
+          </div>
+        </div>
+      </Modal>
     </TradePage>
   )
 }
