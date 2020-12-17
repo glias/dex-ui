@@ -200,23 +200,23 @@ export const usePollingOrderStatus = ({
 export const usePollOrderList = ({
   lockArgs,
   dispatch,
-  fetchListRef,
   ckbAddress,
   ethAddress,
 }: {
   lockArgs: string
   dispatch: React.Dispatch<HistoryAction>
-  fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
   ckbAddress: string
   ethAddress: string
 }) => {
   const { setAndCacheSubmittedOrders } = useContainer(OrderContainer)
-  const { isWalletNotConnected } = useContainer(WalletContainer)
+  const { isWalletNotConnected, orderListAbortController: abortController } = useContainer(WalletContainer)
 
   useEffect(() => {
+    let intervalID: number
     if (lockArgs && !isWalletNotConnected) {
+      abortController.current = new AbortController()
       const fetchData = () =>
-        getAllHistoryOrders(lockArgs)
+        getAllHistoryOrders(lockArgs, abortController.current?.signal)
           .then(async res => {
             const parsed = res.map((item: RawOrder) => {
               const order = parseOrderRecord(item)
@@ -234,6 +234,9 @@ export const usePollOrderList = ({
                 parsed[i].createdAt = blockHeader.timestamp
               }
               const { eth_to_ckb, ckb_to_eth } = (await getForceBridgeHistory(ckbAddress, ethAddress)).data
+              if (abortController.current?.signal.aborted) {
+                return
+              }
               const orderHistory = eth_to_ckb.concat(ckb_to_eth)
               for (let i = 0; i < orderHistory.length; i++) {
                 const order = orderHistory[i]
@@ -271,6 +274,13 @@ export const usePollOrderList = ({
             } else {
               checkSubmittedTxs(hashes)
                 .then(resList => {
+                  if (abortController.current?.signal.aborted) {
+                    dispatch({
+                      type: ActionType.UpdateOrderList,
+                      value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+                    })
+                    return
+                  }
                   const unconfirmedHashes = hashes.filter((_, i) => !resList[i])
                   setAndCacheSubmittedOrders(orders =>
                     orders.filter(order => {
@@ -311,18 +321,20 @@ export const usePollOrderList = ({
       dispatch({ type: ActionType.UpdateLoading, value: true })
       const TIMER = 3000
       fetchData()
-      /* eslint-disable-next-line no-param-reassign */
-      fetchListRef.current = setInterval(fetchData, TIMER)
+      intervalID = setInterval(fetchData, TIMER)
     } else {
       dispatch({ type: ActionType.UpdateOrderList, value: [] })
     }
 
     return () => {
-      if (fetchListRef.current) {
-        clearInterval(fetchListRef.current)
+      if (intervalID) {
+        clearInterval(intervalID)
+      }
+      if (abortController.current) {
+        abortController.current.abort()
       }
     }
-  }, [lockArgs, dispatch, fetchListRef, ckbAddress, setAndCacheSubmittedOrders, ethAddress, isWalletNotConnected])
+  }, [lockArgs, dispatch, ckbAddress, setAndCacheSubmittedOrders, ethAddress, isWalletNotConnected, abortController])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {

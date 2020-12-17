@@ -85,7 +85,5 @@ export const buildShadowAssetSUDT = (
   erc20Address: string = '0x0000000000000000000000000000000000000000',
 ) => {
   const scriptHash = buildBridgeLockScript(erc20Address).toHash()
-  // eslint-disable-next-line no-console
-  console.log(scriptHash)
   return new SUDT(scriptHash, info)
 }

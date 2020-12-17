@@ -123,11 +123,11 @@ export async function getBestPrice(type: Script, orderType: OrderType) {
   }
 }
 
-export async function getAllHistoryOrders(lockArgs: string) {
-  const res = await Promise.all(SUDT_LIST.map(sudt => getHistoryOrders(lockArgs, sudt)))
+export async function getAllHistoryOrders(lockArgs: string, signal?: AbortSignal) {
+  const res = await Promise.all(SUDT_LIST.map(sudt => getHistoryOrders(lockArgs, sudt, signal)))
   return res
     .map((r, index) => {
-      return r.data.map((d: any) => {
+      return r.map((d: any) => {
         return {
           ...d,
           tokenName: SUDT_LIST[index]?.info?.symbol ?? '',
@@ -137,7 +137,7 @@ export async function getAllHistoryOrders(lockArgs: string) {
     .flat()
 }
 
-export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA) {
+export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA, signal?: AbortSignal) {
   const TypeScript = sudt.toTypeScript()
 
   const params = {
@@ -147,9 +147,9 @@ export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA) {
     type_args: TypeScript.args,
   }
 
-  return axios.get(`${SERVER_URL}/order-history`, {
-    params,
-  })
+  return fetch(`${SERVER_URL}/order-history?${new URLSearchParams(params)}`, {
+    signal,
+  }).then(res => res.json())
 }
 
 export type SudtTransaction = {
