@@ -15,14 +15,14 @@ export default function Trade() {
   }
 
   const { reset, setStep } = Order
-  const { connecting } = useContainer(WalletContainer)
+  const { connectStatus } = useContainer(WalletContainer)
 
   useEffect(() => {
-    if (connecting) {
+    if (connectStatus === 'disconnected') {
       reset()
       setStep(OrderStep.Order)
     }
-  }, [connecting, reset, setStep])
+  }, [connectStatus, reset, setStep])
 
   const isEthTransactions = useMemo(() => {
     return (Order.tx as any).gas

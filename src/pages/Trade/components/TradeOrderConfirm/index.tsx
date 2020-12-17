@@ -42,15 +42,15 @@ export default function TradePairConfirm() {
     reset,
   } = Order
   const [firstToken, secondToken] = pair
-  const { reloadWallet, ethWallet, web3, connecting } = Wallet
+  const { reloadWallet, ethWallet, web3, connectStatus } = Wallet
 
   useEffect(() => {
-    if (connecting) {
+    if (connectStatus === 'disconnected') {
       setDisabled(false)
       reset()
       setStep(OrderStep.Order)
     }
-  }, [connecting, reset, setStep])
+  }, [connectStatus, reset, setStep])
 
   // eslint-disable-next-line
   const placeCrossChain = useCallback<(tx: any, cb: (hash: string) => Promise<void>) => Promise<string>>(
