@@ -196,8 +196,6 @@ export async function getOrCreateBridgeCell(
   retry = 0,
 ): Promise<AxiosResponse<any>> {
   try {
-    // eslint-disable-next-line no-debugger
-    debugger
     const res = await axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_or_create_bridge_cell`, {
       recipient_address: ckbAddress,
       eth_token_address: ethAddress,
