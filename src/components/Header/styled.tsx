@@ -100,6 +100,10 @@ export const HeaderLogo = styled.h1`
   cursor: pointer;
   display: flex;
   align-items: center;
+  svg {
+    width: 32px;
+    height: 32px;
+  }
   .detail {
     font-size: 12px;
     margin-left: 4px;
