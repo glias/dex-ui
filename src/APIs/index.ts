@@ -196,6 +196,8 @@ export async function getOrCreateBridgeCell(
   retry = 0,
 ): Promise<AxiosResponse<any>> {
   try {
+    // eslint-disable-next-line no-debugger
+    debugger
     const res = await axios.post(`${FORCE_BRIDGER_SERVER_URL}/get_or_create_bridge_cell`, {
       recipient_address: ckbAddress,
       eth_token_address: ethAddress,
@@ -326,9 +328,8 @@ export async function placeCrossChainOrder(
     nonce: toHexString(nonce),
   })
   if (outpoints.length <= 1) {
-    getOrCreateBridgeCell(recipientAddress, ethAddress).then(r => {
-      replayResistOutpoints.add(key, r.data.outpoints)
-    })
+    const r = await getOrCreateBridgeCell(recipientAddress, tokenAddress)
+    replayResistOutpoints.add(key, r.data.outpoints)
   }
   replayResistOutpoints.remove(key, op)
   return res
