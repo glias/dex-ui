@@ -318,7 +318,6 @@ const History = () => {
     isLoading: false,
     currentOrder: null,
   })
-  const fetchListRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
   const location = useLocation()
   const [modalVisable, setModalVisable] = useState(false)
@@ -348,7 +347,7 @@ const History = () => {
 
   const lockHash = useMemo(() => (address ? PWCore.provider?.address?.toLockScript().toHash() : ''), [address])
 
-  usePollOrderList({ lockArgs: lockHash, fetchListRef, dispatch, ckbAddress: address, ethAddress: ethWallet.address })
+  usePollOrderList({ lockArgs: lockHash, dispatch, ckbAddress: address, ethAddress: ethWallet.address })
 
   const statusOnClick = useCallback((order: OrderInList) => {
     setModalVisable(true)

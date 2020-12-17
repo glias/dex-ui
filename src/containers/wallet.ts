@@ -93,6 +93,7 @@ export function useWallet() {
   const [connectStatus, setConnectStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const [ethWallet, setEthWallet] = useState<Wallet>(defaultEthWallet)
   const web3Ref = useRef<Web3 | null>(null)
+  const orderListAbortController = useRef<AbortController | null>(null)
 
   const [sudtWallets, setSudtWallets] = useState<SudtWallet[]>(defaultSUDTWallets)
   const [erc20Wallets, setERC20Wallets] = useState<Wallet[]>(defaultERC20Wallets)
@@ -236,6 +237,8 @@ export function useWallet() {
 
   const disconnectWallet = useCallback(
     async (cb?: Function) => {
+      // eslint-disable-next-line no-unused-expressions
+      orderListAbortController.current?.abort()
       await PWCore.provider.close()
       await web3ModalRef.current?.clearCachedProvider()
       setCkbAddress('')
@@ -400,6 +403,7 @@ export function useWallet() {
     lockHash,
     erc20Wallets,
     isWalletNotConnected,
+    orderListAbortController,
   }
 }
 
