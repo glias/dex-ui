@@ -30,7 +30,6 @@ export default function TradePairConfirm() {
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
   const [disabled, setDisabled] = useState(false)
-  const { address } = Wallet.ckbWallet
   const {
     setStep,
     setTxHash,
@@ -40,22 +39,22 @@ export default function TradePairConfirm() {
     orderType,
     setAndCacheCrossChainOrders,
     pair,
+    reset,
   } = Order
   const [firstToken, secondToken] = pair
-  const { reloadWallet, ethWallet, web3 } = Wallet
+  const { reloadWallet, ethWallet, web3, connecting } = Wallet
 
   useEffect(() => {
-    if (address === '') {
+    if (connecting) {
       setDisabled(false)
-      Order.reset()
-      Order.setStep(OrderStep.Order)
+      reset()
+      setStep(OrderStep.Order)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address])
+  }, [connecting, reset, setStep])
 
   // eslint-disable-next-line
-  const placeCrossChain = useCallback<(tx: any) => Promise<string>>(
-    (tx: any) => {
+  const placeCrossChain = useCallback<(tx: any, cb: (hash: string) => Promise<void>) => Promise<string>>(
+    (tx: any, callback) => {
       // eslint-disable-next-line no-param-reassign
       delete tx.gas_price
       // eslint-disable-next-line no-param-reassign
@@ -66,7 +65,8 @@ export default function TradePairConfirm() {
           ...tx,
           from: Wallet.ethWallet.address,
         })
-          .once('transactionHash', hash => {
+          .once('transactionHash', async hash => {
+            await callback(hash)
             if (OrderMode.CrossChain === Order.orderMode) {
               const submittedOrder: SubmittedOrder = {
                 key: `${hash}:0x0`,
@@ -170,10 +170,11 @@ export default function TradePairConfirm() {
       switch (Order.orderMode) {
         case OrderMode.CrossChain:
         case OrderMode.CrossIn: {
-          const txHash = await placeCrossChain(tx)
-          await relayEthToCKB(txHash)
-          setTxHash(txHash)
-          setStep(OrderStep.Result)
+          await placeCrossChain(tx, async (txHash: string) => {
+            await relayEthToCKB(txHash)
+            setTxHash(txHash)
+            setStep(OrderStep.Result)
+          })
           break
         }
         case OrderMode.CrossOut: {
