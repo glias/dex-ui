@@ -244,9 +244,15 @@ export default function OrderTable() {
   )
 
   const checkPrice = useCallback(
-    (_: any, value: string) => {
+    (_: unknown, value: string) => {
       const val = new BigNumber(value)
       const decimal = 8
+      const [integerValue] = val.toString().split('.')
+
+      if (integerValue.length > decimal) {
+        setIsPriceInvalid(true)
+        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
+      }
 
       if (Number.isNaN(parseFloat(value))) {
         setIsPriceInvalid(true)
