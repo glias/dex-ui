@@ -16,7 +16,7 @@ import { TradePage, TradeMain, TradeFrame, TradeContainer, OrderBookFrame } from
 import OrderContainer, { OrderStep } from '../../containers/order'
 import { getForceBridgeSettings } from '../../APIs'
 
-const TEMP_PASSWORD = `interoperability2.0`
+const TEMP_PASSWORD = `universalpassport`
 
 const Trade = () => {
   const Order = useContainer(OrderContainer)
