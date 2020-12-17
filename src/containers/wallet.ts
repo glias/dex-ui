@@ -241,6 +241,10 @@ export function useWallet() {
       setCkbAddress('')
       setEthAddress('')
       setConnectStatus('disconnected')
+      setEthWallet(defaultEthWallet)
+      setCkbWallet(defaultCkbWallet)
+      setSudtWallets(defaultSUDTWallets)
+      setERC20Wallets(defaultERC20Wallets)
       // eslint-disable-next-line no-unused-expressions
       cb?.()
     },

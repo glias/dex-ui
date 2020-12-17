@@ -69,7 +69,7 @@ const Header = () => {
     const INTERVAL_TIME = 10000
     const interval = setInterval(() => {
       const address = PWCore.provider?.address?.toCKBAddress?.() ?? ''
-      if (connecting === false && address) {
+      if (connectStatus === 'connected' && address) {
         reloadWallet(address, ethWallet.address, web3!)
       }
     }, INTERVAL_TIME)
@@ -77,7 +77,7 @@ const Header = () => {
     return () => {
       clearInterval(interval)
     }
-  }, [ethWallet.address, web3, connecting, reloadWallet])
+  }, [connectStatus, ethWallet.address, web3, connecting, reloadWallet])
 
   const gotoHome = () => {
     history.push('/')
