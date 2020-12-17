@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect } from 'react'
 import ConfirmButton from 'components/ConfirmButton'
 import { useContainer } from 'unstated-next'
+import WalletContainer from 'containers/wallet'
 import i18n from '../../../../utils/i18n'
 import { Container, Result } from './styled'
 import OrderContainer, { OrderStep } from '../../../../containers/order'
@@ -12,6 +13,16 @@ export default function Trade() {
   const handleClickSubmit = () => {
     Order.setStep(OrderStep.Order)
   }
+
+  const { reset, setStep } = Order
+  const { connecting } = useContainer(WalletContainer)
+
+  useEffect(() => {
+    if (connecting) {
+      reset()
+      setStep(OrderStep.Order)
+    }
+  }, [connecting, reset, setStep])
 
   const isEthTransactions = useMemo(() => {
     return (Order.tx as any).gas
