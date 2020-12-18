@@ -51,13 +51,13 @@ export const ERC20_DAI: ERC20 = {
 }
 
 export const ERC20_USDT: ERC20 = {
-  tokenName: 'USDC',
+  tokenName: 'USDT',
   decimals: 6,
   address: '0x1cf98d2a2f5b0BFc365EAb6Ae1913C275bE2618F',
 }
 
 export const ERC20_USDC: ERC20 = {
-  tokenName: 'USDT',
+  tokenName: 'USDC',
   decimals: 6,
   address: '0x1F0D2251f51b88FaFc90f06F7022FF8d82154B1a',
 }
