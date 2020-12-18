@@ -24,6 +24,7 @@ import DEXCollector from '../pw/dexCollector'
 import { Web3ModalProviderFix } from './patch/Web3ModalProviderFix'
 
 export interface Wallet {
+  total: BigNumber
   balance: BigNumber
   lockedOrder: BigNumber
   address: string
@@ -45,6 +46,7 @@ export interface SudtWallet extends Wallet {
 }
 
 const defaultCkbWallet: CkbWallet = {
+  total: new BigNumber(0),
   balance: new BigNumber(0),
   inuse: new BigNumber(0),
   free: new BigNumber(0),
@@ -54,6 +56,7 @@ const defaultCkbWallet: CkbWallet = {
 }
 
 const defaultSUDTWallet: SudtWallet = {
+  total: new BigNumber(0),
   balance: new BigNumber(0),
   lockedOrder: new BigNumber(0),
   address: '',
@@ -69,8 +72,9 @@ const defaultSUDTWallets = SUDT_LIST.map(sudt => {
   }
 })
 
-const defaultERC20Wallets = ERC20_LIST.map(erc20 => {
+const defaultERC20Wallets: Wallet[] = ERC20_LIST.map(erc20 => {
   return {
+    total: new BigNumber(0),
     balance: new BigNumber(0),
     lockedOrder: new BigNumber(0),
     address: erc20.address,
@@ -79,6 +83,7 @@ const defaultERC20Wallets = ERC20_LIST.map(erc20 => {
 })
 
 const defaultEthWallet: Wallet = {
+  total: new BigNumber(0),
   balance: new BigNumber(0),
   lockedOrder: new BigNumber(0),
   address: '',
@@ -151,6 +156,7 @@ export function useWallet() {
     const lockedOrder = new BigNumber(res.locked_order).div(CKB_DECIMAL)
 
     setCkbWallet({
+      total: free.plus(occupied).plus(lockedOrder),
       balance: free,
       inuse: occupied,
       free,
@@ -160,12 +166,13 @@ export function useWallet() {
     })
   }, [])
 
-  const reloadSudtWallet = useCallback(async (sudt: SUDT) => {
+  const reloadSudtWallet = useCallback(async (sudt: SUDT): Promise<SudtWallet> => {
     const res = (await getSudtBalance(sudt.toTypeScript(), PWCore.provider.address.toLockScript())).data
     const decimal = new BigNumber(10).pow(sudt?.info?.decimals ?? AmountUnit.shannon)
     const free = new BigNumber(res.free).div(decimal)
     const lockedOrder = new BigNumber(res.locked_order).div(decimal)
     return {
+      total: free.plus(lockedOrder),
       balance: free,
       lockedOrder,
       address: '',
@@ -201,6 +208,7 @@ export function useWallet() {
     const balance = await contract.methods.balanceOf(ethAddress).call()
 
     return {
+      total: new BigNumber(balance).div(10 ** erc20.decimals),
       balance: new BigNumber(balance).div(10 ** erc20.decimals),
       lockedOrder: new BigNumber(0),
       tokenName: erc20.tokenName,

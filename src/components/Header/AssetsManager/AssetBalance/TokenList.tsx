@@ -31,7 +31,7 @@ export const AssetList: React.FC = () => {
   const wallets = [ckbWallet, ...sudtWallets]
   const tokenList = wallets.map(wallet => ({
     tokenName: wallet.tokenName,
-    balance: wallet.balance,
+    balance: wallet.total,
   }))
 
   function onTokenClicked(tokenName: string) {
