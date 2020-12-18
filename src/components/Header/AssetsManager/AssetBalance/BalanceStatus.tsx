@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import Token from 'components/Token'
 import { isCkbWallet } from 'containers/wallet'
 import React from 'react'
@@ -44,7 +43,8 @@ export const BalanceStatus = () => {
 
   if (!wallet) return null
 
-  const { free, inUse, locked } = {
+  const { free, inUse, locked, total } = {
+    total: wallet.total,
     free: isCkbWallet(wallet) ? wallet.free : wallet.balance,
     inUse: isCkbWallet(wallet) ? wallet.inuse : 0,
     locked: wallet.lockedOrder,
@@ -53,7 +53,6 @@ export const BalanceStatus = () => {
   // only show suffix when /assets
   const suffix = url === '/assets' ? 'CKB' : undefined
 
-  const total = new BigNumber(free).plus(inUse).plus(locked)
   return (
     <BalanceStatusWrapper>
       {paramTokenName && (
