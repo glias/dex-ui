@@ -13,7 +13,7 @@ import { Wallet, WalletContainer } from '../../containers/wallet'
 export interface SelectTokenProps {
   filter?: (value: Wallet, index: number, array: Wallet[]) => boolean
   onSelect: (wallet: Wallet) => void
-  onBack: () => void
+  onBack?: () => void
   currentToken: string
 }
 
@@ -22,7 +22,7 @@ const Item = ({
   onClick,
 }: {
   wallet: Wallet
-  onClick: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 }) => {
   return (
     <TokenContainer key={wallet.tokenName} onClick={onClick}>
@@ -68,7 +68,7 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }
 
   return (
     <Container>
-      <HeaderWithGoback title={i18n.t('trade.selectToken')} onClick={onBack} />
+      {onBack && <HeaderWithGoback title={i18n.t('trade.selectToken')} onClick={onBack} />}
       <div className="current">
         <div className="label">{i18n.t('trade.current')}</div>
         <Item onClick={onBack} wallet={current} />

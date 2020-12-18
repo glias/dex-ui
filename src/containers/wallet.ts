@@ -44,6 +44,10 @@ export interface SudtWallet extends Wallet {
   lockHash: IssuerLockHash
 }
 
+export function isSudtWallet(wallet: Wallet): wallet is SudtWallet {
+  return SUDT_LIST.some(sudt => sudt.info?.name === wallet.tokenName)
+}
+
 const defaultCkbWallet: CkbWallet = {
   balance: new BigNumber(0),
   inuse: new BigNumber(0),
