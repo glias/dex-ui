@@ -1,5 +1,5 @@
 import { Col, List, Row, Spin, Tooltip, Typography } from 'antd'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'react-query'
 import { useHistory } from 'react-router-dom'
@@ -44,6 +44,7 @@ const TransactionListItemWrapper = styled.div`
   .amount {
     font-weight: bold;
   }
+
   .symbol {
     padding-right: 8px;
   }
@@ -112,20 +113,23 @@ export const TransactionList = () => {
     setTransferDirectionFilter(direction as 'all' | TransactionDirection)
   }
 
-  if (isLoading)
+  const transferList: React.ReactNode = useMemo(() => {
+    if (isLoading) {
+      return (
+        <SpinWrapper>
+          <Spin size="large" tip="loading..." />
+        </SpinWrapper>
+      )
+    }
+    if (txs && txs.length > 0) {
+      return txs.map((tx: TransactionSummary) => <TransactionListItem key={tx.txHash} transaction={tx} />)
+    }
     return (
-      <SpinWrapper>
-        <Spin size="large" tip="loading..." />
-      </SpinWrapper>
-    )
-  const transferList =
-    txs && txs.length ? (
-      txs.map((tx: TransactionSummary) => <TransactionListItem key={tx.txHash} transaction={tx} />)
-    ) : (
       <Title style={{ textAlign: 'center', padding: '16px' }} level={3} type="secondary">
         {t('No related transactions')}
       </Title>
     )
+  }, [txs, isLoading, t])
 
   return (
     <TransactionListWrapper>

@@ -1,5 +1,5 @@
 import ICON_BTC from '../assets/img/token/bitcoin.png'
-import ICON_CKB from '../assets/img/token/ckb.png'
+import ICON_CKB from '../assets/img/token/ckb.svg'
 import ICON_DAI from '../assets/img/token/dai.png'
 import ICON_ETH from '../assets/img/token/eth.png'
 import ICON_USDT from '../assets/img/token/usdt.png'

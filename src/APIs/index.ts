@@ -326,9 +326,8 @@ export async function placeCrossChainOrder(
     nonce: toHexString(nonce),
   })
   if (outpoints.length <= 1) {
-    getOrCreateBridgeCell(recipientAddress, ethAddress).then(r => {
-      replayResistOutpoints.add(key, r.data.outpoints)
-    })
+    const r = await getOrCreateBridgeCell(recipientAddress, tokenAddress)
+    replayResistOutpoints.add(key, r.data.outpoints)
   }
   replayResistOutpoints.remove(key, op)
   return res
