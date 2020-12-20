@@ -8,13 +8,7 @@ import { ErrorCode } from 'exceptions'
 import WalletContainer from 'containers/wallet'
 import { submittedOrders } from 'utils/cache'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
-import {
-  checkSubmittedTxs,
-  ckb,
-  getAllHistoryOrders,
-  getForceBridgeHistory,
-  getTransactionHeader,
-} from '../../../../APIs'
+import { ckb, getAllHistoryOrders, getForceBridgeHistory, getTransactionHeader } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import type { RawOrder } from '../../../../utils'
@@ -89,6 +83,8 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
 }
 
 type Order = ReturnType<typeof parseOrderRecord>
+
+const ORDER_LIST_TIMER = 5e3
 
 export const usePollingOrderStatus = ({
   web3,
@@ -183,10 +179,9 @@ export const usePollingOrderStatus = ({
         }
       }
       checkStatus()
-      const TIMER = 3000
 
       /* eslint-disable-next-line no-param-reassign */
-      fetchListRef.current = setInterval(checkStatus, TIMER)
+      fetchListRef.current = setInterval(checkStatus, ORDER_LIST_TIMER)
     }
 
     return () => {
@@ -195,6 +190,46 @@ export const usePollingOrderStatus = ({
       }
     }
   }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key, ethAddress])
+}
+
+const parseOrderHistory = async (lockArgs: string, ckbAddress: string, ethAddress: string, signal?: AbortSignal) => {
+  const normalOrders = await getAllHistoryOrders(lockArgs, signal)
+
+  const parsed = normalOrders.map((item: RawOrder) => {
+    const order = parseOrderRecord(item)
+    if (['aborted', 'claimed'].includes(order.status ?? '')) {
+      pendingOrders.remove(order.key)
+    }
+    // @ts-ignore
+    order.tokenName = item.tokenName
+    return order
+  })
+
+  const ordersStatues = await getTransactionHeader(normalOrders.map((item: RawOrder) => item.block_hash))
+  for (let i = 0; i < ordersStatues.length; i++) {
+    const blockHeader = ordersStatues[i]
+    parsed[i].createdAt = blockHeader.timestamp
+  }
+
+  const { eth_to_ckb, ckb_to_eth } = (await getForceBridgeHistory(ckbAddress, ethAddress)).data
+
+  return {
+    normalOrders,
+    crossChainOrders: eth_to_ckb.concat(ckb_to_eth),
+    parsed,
+  }
+}
+
+const getOrdersWithTimeout = async (
+  lockArgs: string,
+  ckbAddress: string,
+  ethAddress: string,
+  signal?: AbortSignal,
+): ReturnType<typeof parseOrderHistory> => {
+  return Promise.race([
+    parseOrderHistory(lockArgs, ckbAddress, ethAddress, signal),
+    new Promise<any>((_: unknown, reject) => setTimeout(() => reject(new Error('timeout')), ORDER_LIST_TIMER)),
+  ])
 }
 
 export const usePollOrderList = ({
@@ -216,31 +251,16 @@ export const usePollOrderList = ({
     if (lockArgs && !isWalletNotConnected) {
       abortController.current = new AbortController()
       const fetchData = () =>
-        getAllHistoryOrders(lockArgs, abortController.current?.signal)
+        getOrdersWithTimeout(lockArgs, ckbAddress, ethAddress, abortController.current?.signal)
           .then(async res => {
-            const parsed = res.map((item: RawOrder) => {
-              const order = parseOrderRecord(item)
-              if (['aborted', 'claimed'].includes(order.status ?? '')) {
-                pendingOrders.remove(order.key)
-              }
-              // @ts-ignore
-              order.tokenName = item.tokenName
-              return order
-            })
+            const { crossChainOrders, normalOrders, parsed } = res
             try {
-              const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
-              for (let i = 0; i < resList.length; i++) {
-                const blockHeader = resList[i]
-                parsed[i].createdAt = blockHeader.timestamp
-              }
-              const { eth_to_ckb, ckb_to_eth } = (await getForceBridgeHistory(ckbAddress, ethAddress)).data
               if (abortController.current?.signal.aborted) {
                 return
               }
-              const orderHistory = eth_to_ckb.concat(ckb_to_eth)
-              for (let i = 0; i < orderHistory.length; i++) {
-                const order = orderHistory[i]
-                const index = res.findIndex(r => r.order_cells?.[0]?.tx_hash === order.ckb_tx_hash)
+              for (let i = 0; i < crossChainOrders.length; i++) {
+                const order = crossChainOrders[i]
+                const index = normalOrders.findIndex(r => r.order_cells?.[0]?.tx_hash === order.ckb_tx_hash)
                 if (index < 0) {
                   // eslint-disable-next-line no-continue
                   continue
@@ -272,43 +292,22 @@ export const usePollOrderList = ({
                 value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
               })
             } else {
-              checkSubmittedTxs(hashes)
-                .then(resList => {
-                  if (abortController.current?.signal.aborted) {
-                    dispatch({
-                      type: ActionType.UpdateOrderList,
-                      value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-                    })
-                    return
+              setAndCacheSubmittedOrders(orders =>
+                orders.filter(order => {
+                  const [hash] = order.key.split(':')
+                  // There is a possibility that the order was already matched before it was fetched,
+                  // so it is necessary to check whether the matched order is eligible for removal.
+                  if (parsed.some(p => p.orderCells?.some(c => c.tx_hash === hash))) {
+                    return false
                   }
-                  const unconfirmedHashes = hashes.filter((_, i) => !resList[i])
-                  setAndCacheSubmittedOrders(orders =>
-                    orders.filter(order => {
-                      const [hash] = order.key.split(':')
-                      const matched = unconfirmedHashes.includes(hash)
-                      // There is a possibility that the order was already matched before it was fetched,
-                      // so it is necessary to check whether the matched order is eligible for removal.
-                      if (parsed.some(p => p.orderCells?.some(c => c.tx_hash === hash))) {
-                        return false
-                      }
-                      if (!matched) {
-                        return !parsed.some(p => p.key === order.key)
-                      }
-                      return true
-                    }),
-                  )
+                  return !parsed.some(p => p.key === order.key)
+                }),
+              )
 
-                  dispatch({
-                    type: ActionType.UpdateOrderList,
-                    value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-                  })
-                })
-                .catch(() => {
-                  dispatch({
-                    type: ActionType.UpdateOrderList,
-                    value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-                  })
-                })
+              dispatch({
+                type: ActionType.UpdateOrderList,
+                value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+              })
             }
           })
           .catch(err => {
@@ -319,9 +318,10 @@ export const usePollOrderList = ({
           })
 
       dispatch({ type: ActionType.UpdateLoading, value: true })
-      const TIMER = 3000
       fetchData()
-      intervalID = setInterval(fetchData, TIMER)
+      intervalID = setInterval(() => {
+        fetchData()
+      }, ORDER_LIST_TIMER)
     } else {
       dispatch({ type: ActionType.UpdateOrderList, value: [] })
     }
