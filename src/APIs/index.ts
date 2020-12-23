@@ -18,8 +18,6 @@ import BigNumber from 'bignumber.js'
 import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
 import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
 import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
-import DEXCollector from 'pw/dexCollector'
-import PlaceOrderBuilder from 'pw/placeOrderBuilder'
 import { calcAskReceive } from 'utils/fee'
 import Web3 from 'web3'
 import {
@@ -31,7 +29,7 @@ import {
   SUDT_LIST,
 } from '../constants'
 import { OrderType } from '../containers/order'
-import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
+import { buildAskData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
 export * from './checkSubmittedTxs'
 export * from './bridge'
@@ -292,20 +290,9 @@ export async function placeCrossChainOrder(
 ) {
   const decimal = sudt?.info?.decimals ?? ETH_DECIMAL_INT
 
-  // TODO: remove place order
-  const builder = new PlaceOrderBuilder(
-    new Address(ckbAddress, AddressType.ckb),
-    new Amount(pay, decimal),
-    OrderType.Ask,
-    price,
-    sudt,
-    new DEXCollector() as any,
-  )
-
-  const receive = calcAskReceive(builder.pay.toString(decimal), price)
-  const data = buildSellData(builder.totalPay.toString(decimal), receive, price, decimal).slice(2)
-  const amount = new BigNumber(builder.totalPay.toString(decimal)).times(new BigNumber(10).pow(decimal)).toString()
-  const sudtData = data.slice(32, data.length)
+  const amount = new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toFixed(0, 1)
+  const receive = calcAskReceive(pay, price)
+  const sudtData = buildAskData(receive, price, decimal)
 
   const orderLock = new Script(
     ORDER_BOOK_LOCK_SCRIPT.codeHash,

@@ -8,7 +8,7 @@ import { ERC20_LIST } from 'constants/erc20'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
 import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT, COMMISSION_FEE } from 'constants/number'
-import { calcTotalPay, displayPayOrReceive, displayPrice, removeTrailingZero } from 'utils/fee'
+import { displayPayOrReceive, displayPrice, removeTrailingZero } from 'utils/fee'
 import { AmountUnit, SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
 
@@ -269,7 +269,7 @@ const TradePriceTable = () => {
 
       const receive = new BigNumber(order.receive).div(base.pow(decimal))
       const ckbPay = receive.times(price)
-      const totalPay = calcTotalPay(ckbPay.toString())
+      const totalPay = ckbPay.toString()
       const pay = new BigNumber(totalPay).times(CKB_DECIMAL)
 
       if (pay.isGreaterThan(max)) {

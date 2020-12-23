@@ -16,7 +16,6 @@ import {
   calcAskReceive,
   calcBidReceive,
   calcCrossOutFee,
-  calcTotalPay,
   displayPayOrReceive,
   // removeTrailingZero,
 } from '../../../../utils/fee'
@@ -73,7 +72,7 @@ export default function TradePairConfirm() {
                 key: `${hash}:0x0`,
                 isBid: false,
                 status: 'pending',
-                pay: calcTotalPay(pay),
+                pay,
                 receive: calcAskReceive(pay, price),
                 price,
                 executed: '0%',
