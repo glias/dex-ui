@@ -157,8 +157,7 @@ export function useOrder() {
 
   const ckbMax = useMemo(() => {
     return new BigNumber(Wallet.ckbWallet.free.toString())
-      .minus(MAX_TRANSACTION_FEE)
-      .div(1 + COMMISSION_FEE)
+      .plus(MAX_TRANSACTION_FEE)
       .minus(ORDER_CELL_CAPACITY)
       .toFixed(8, 1)
   }, [Wallet.ckbWallet.free])
@@ -249,6 +248,10 @@ export function useOrder() {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [address, setCrossChainOrders, isWalletNotConnected],
   )
+
+  const actualPay = useMemo(() => {
+    return new BigNumber(pay).times(1 - COMMISSION_FEE).toFixed(8, 1)
+  }, [pay])
 
   // TODO: max pay
   useEffect(() => {
@@ -431,6 +434,7 @@ export function useOrder() {
     setAndCacheCrossChainOrders,
     crossChainOrders,
     isCrossChainOnly,
+    actualPay,
   }
 }
 

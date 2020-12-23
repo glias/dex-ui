@@ -24,12 +24,12 @@ export default function NormalOrder() {
   }, [Order.pay])
 
   const totalPay = useMemo(() => {
-    let amount = new BigNumber(Order.pay).plus(new BigNumber(tradeFee))
+    let amount = new BigNumber(Order.pay)
     if (buyer === 'CKB') {
       amount = amount.plus(new BigNumber(transactionFee))
     }
     return toFormatWithoutTrailingZero(amount.toString())
-  }, [Order.pay, buyer, tradeFee, transactionFee])
+  }, [Order.pay, buyer, transactionFee])
 
   const lockedCkbAmount = useMemo(() => {
     if (Order.tx) {
@@ -63,7 +63,7 @@ export default function NormalOrder() {
     const list: Item[] = [
       {
         desc: i18n.t('trade.result.trade'),
-        value: toFormatWithoutTrailingZero(Order.pay),
+        value: toFormatWithoutTrailingZero(Order.actualPay),
         unit: buyer,
       },
       {
@@ -78,7 +78,7 @@ export default function NormalOrder() {
       },
     ]
     return list
-  }, [tradeFee, buyer, transactionFee, Order.pay])
+  }, [tradeFee, buyer, transactionFee, Order.actualPay])
 
   const payDetail = useMemo(() => {
     const list: Item[] = [

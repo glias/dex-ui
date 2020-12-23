@@ -129,7 +129,7 @@ export default function TradePairConfirm() {
         key: `${txHash}:0x0`,
         isBid,
         status: 'pending',
-        pay: calcTotalPay(pay),
+        pay,
         receive: receiveCalc(pay, price, sudt?.info?.decimals ?? DEFAULT_PAY_DECIMAL),
         price,
         executed: '0%',

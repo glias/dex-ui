@@ -7,9 +7,9 @@ import { SUDTWithoutPw, SUDT_LIST } from 'constants/sudt'
 import { ERC20_LIST } from 'constants/erc20'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
-import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT } from 'constants/number'
+import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT, COMMISSION_FEE } from 'constants/number'
 import { calcTotalPay, displayPayOrReceive, displayPrice, removeTrailingZero } from 'utils/fee'
-import { SUDT } from '@lay2/pw-core'
+import { AmountUnit, SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
 
 interface ListProps {
@@ -129,16 +129,13 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
           return <List price={empty} pay={empty} receive={empty} key={key} isBid={isBid} />
         }
         const price = removeTrailingZero(
-          new BigNumber(order.price)
-            .div(PRICE_DECIMAL)
-            .times(new BigNumber(10).pow(decimal - CKB_DECIMAL_INT))
-            .toString(),
+          new BigNumber(order.price).times(new BigNumber(10).pow(decimal - AmountUnit.ckb)).toString(),
         )
 
         if (isBid) {
           const receive = new BigNumber(order.receive).div(base.pow(decimal))
           const ckbPay = receive.times(price)
-          const totalPay = calcTotalPay(ckbPay.toString())
+          const totalPay = ckbPay.div(1 - COMMISSION_FEE)
           const pay = new BigNumber(totalPay).toFixed(4)
           const progress = new BigNumber(totalPay).dividedBy(maxCKB).times(100).toFixed(0)
           return (
@@ -155,7 +152,7 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
         }
         const receive = new BigNumber(order.receive).div(CKB_DECIMAL)
         const pay = receive.div(price)
-        const totalPay = calcTotalPay(pay.toString())
+        const totalPay = pay.div(1 - COMMISSION_FEE).toString()
         const progress = receive.dividedBy(maxCKB).times(100).toFixed(0)
         return (
           <List

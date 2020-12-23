@@ -22,7 +22,14 @@ import DEXCollector from 'pw/dexCollector'
 import PlaceOrderBuilder from 'pw/placeOrderBuilder'
 import { calcAskReceive } from 'utils/fee'
 import Web3 from 'web3'
-import { CKB_NODE_URL, CROSS_CHAIN_FEE_RATE, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
+import {
+  CKB_NODE_URL,
+  CROSS_CHAIN_FEE_RATE,
+  ORDER_BOOK_LOCK_SCRIPT,
+  SUDT_DEP,
+  SUDT_GLIA,
+  SUDT_LIST,
+} from '../constants'
 import { OrderType } from '../containers/order'
 import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
 
@@ -524,4 +531,45 @@ export async function rawTransactionToPWTransaction(rawTx: RPC.RawTransaction) {
 
 export function getForceBridgeSettings() {
   return axios.get(`${FORCE_BRIDGER_SERVER_URL}/settings`)
+}
+
+export function fromJSONToPwCell(cell: Cell) {
+  const { data } = cell as any
+  return new Cell(
+    new Amount((cell.capacity as any).amount, AmountUnit.shannon),
+    new Script(cell.lock.codeHash, cell.lock.args, cell.lock.hashType),
+    cell.type ? new Script(cell.type.codeHash, cell.type.args, cell.type.hashType) : undefined,
+    cell.outPoint ? new OutPoint(cell.outPoint.txHash, cell.outPoint.index) : undefined,
+    data ?? '0x',
+  )
+}
+
+export async function placeNormalOrder(
+  pay: string,
+  price: string,
+  address: string,
+  isBid: boolean,
+  sudt: SUDT,
+): Promise<Transaction> {
+  const params = {
+    pay,
+    price,
+    udt_type_args: sudt.toTypeScript().args,
+    ckb_address: address,
+    is_bid: isBid,
+    udt_decimals: sudt.info?.decimals,
+    spent_cells: spentCells.get(),
+  }
+
+  const res = await axios.post(`${SERVER_URL}/place-order`, params)
+
+  const { inputCells, outputs } = res.data.raw
+
+  const tx = new Transaction(new RawTransaction(inputCells.map(fromJSONToPwCell), outputs.map(fromJSONToPwCell)), [
+    Builder.WITNESS_ARGS.Secp256k1,
+  ])
+
+  tx.raw.cellDeps.push(SUDT_DEP)
+
+  return tx.validate()
 }

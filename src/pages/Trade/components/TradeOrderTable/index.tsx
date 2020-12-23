@@ -4,11 +4,16 @@ import { Form, Tooltip, Modal, Input, Divider } from 'antd'
 import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import Token from 'components/Token'
-import { Address, Amount, AddressType, AmountUnit } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import { removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
-import { placeCrossChainOrder, rawTransactionToPWTransaction, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
+import {
+  placeCrossChainOrder,
+  placeNormalOrder,
+  rawTransactionToPWTransaction,
+  shadowAssetCrossIn,
+  shadowAssetCrossOut,
+} from 'APIs'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
@@ -32,8 +37,6 @@ import {
 } from './styled'
 import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
-import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
-import DEXCollector from '../../../../pw/dexCollector'
 import { ReactComponent as SelectTokenSVG } from '../../../../assets/svg/select-token.svg'
 import { ReactComponent as SwapTokenSVG } from '../../../../assets/svg/swap-token.svg'
 import { ReactComponent as ArrowTradeSvg } from '../../../../assets/svg/arrow-trade.svg'
@@ -322,16 +325,14 @@ export default function OrderTable() {
       switch (Order.orderMode) {
         case OrderMode.Order: {
           const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
-          const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
-          const builder = new PlaceOrderBuilder(
-            new Address(Wallet.ckbWallet.address, AddressType.ckb),
-            new Amount(Order.pay, OrderType.Ask === Order.orderType ? sudt?.info?.decimals : AmountUnit.ckb),
-            Order.orderType,
+          const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)!
+          const tx = await placeNormalOrder(
+            Order.pay,
             Order.price,
-            sudt!,
-            new DEXCollector() as any,
+            Wallet.ckbWallet.address,
+            OrderType.Bid === Order.orderType,
+            sudt,
           )
-          const tx = await builder.build()
           Order.setTx(tx)
           break
         }

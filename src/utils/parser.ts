@@ -1,12 +1,5 @@
 import BigNumber from 'bignumber.js'
-import {
-  PRICE_DECIMAL,
-  CKB_DECIMAL,
-  COMMISSION_FEE,
-  SUDT_LIST,
-  CKB_DECIMAL_INT,
-  DEFAULT_PAY_DECIMAL,
-} from '../constants'
+import { CKB_DECIMAL, COMMISSION_FEE, SUDT_LIST, CKB_DECIMAL_INT, DEFAULT_PAY_DECIMAL } from '../constants'
 
 export interface OrderCell {
   tx_hash: string
@@ -56,13 +49,10 @@ export const parseOrderRecord = ({
   const paidAmount = new BigNumber(paid_amount).dividedBy(isBid ? CKB_DECIMAL : sudtDecimal)
   const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? sudtDecimal : CKB_DECIMAL)
   const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? sudtDecimal : CKB_DECIMAL)
-  const priceInNum = new BigNumber(price)
-    .dividedBy(PRICE_DECIMAL)
-    .times(new BigNumber(10).pow(sudtDecimalInt - CKB_DECIMAL_INT))
-  const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)).multipliedBy(
-    1 + +COMMISSION_FEE,
+  const priceInNum = new BigNumber(price).times(new BigNumber(10).pow(sudtDecimalInt - CKB_DECIMAL_INT))
+  const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)).div(
+    1 - COMMISSION_FEE,
   )
-
   return {
     key,
     pay: `${payAmount.toFixed(5, 1)}`,
