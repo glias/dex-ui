@@ -1,7 +1,8 @@
-import { useEffect, MutableRefObject, useCallback } from 'react'
+import { useEffect, MutableRefObject, useCallback, useRef } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
+import { Modal } from 'antd'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
 import { ErrorCode } from 'exceptions'
@@ -84,7 +85,7 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
 
 type Order = ReturnType<typeof parseOrderRecord>
 
-const ORDER_LIST_TIMER = 5e3
+const ORDER_LIST_TIMER = 8e3
 
 export const usePollingOrderStatus = ({
   web3,
@@ -251,6 +252,7 @@ export const usePollOrderList = ({
   ethAddress: string
 }) => {
   const { setAndCacheSubmittedOrders } = useContainer(OrderContainer)
+  const modalRef = useRef<ReturnType<typeof Modal.warn> | null>(null)
   const { isWalletNotConnected, orderListAbortController: abortController } = useContainer(WalletContainer)
 
   useEffect(() => {
@@ -318,6 +320,15 @@ export const usePollOrderList = ({
             }
           })
           .catch(err => {
+            if (err?.message?.includes('timeout')) {
+              // eslint-disable-next-line no-unused-expressions
+              modalRef.current?.destroy?.()
+              modalRef.current = Modal.warn({
+                title: 'Network error',
+                content: 'The open orders request takes more than 8 seconds to respond.',
+                okText: 'Retry',
+              })
+            }
             console.warn(`[History Polling]: ${err.message}`)
           })
           .finally(() => {
