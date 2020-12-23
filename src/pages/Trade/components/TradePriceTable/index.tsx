@@ -143,8 +143,8 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
               setPrice={setPrice}
               progress={progress}
               price={displayPrice(price)}
-              pay={displayPayOrReceive(pay)}
-              receive={displayPayOrReceive(receive.toString())}
+              pay={displayPayOrReceive(pay, true)}
+              receive={displayPayOrReceive(receive.toString(), false)}
               key={key}
               isBid={isBid}
             />
@@ -159,8 +159,8 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
             setPrice={setPrice}
             progress={progress}
             price={displayPrice(price)}
-            pay={displayPayOrReceive(totalPay)}
-            receive={displayPayOrReceive(receive.toString())}
+            pay={displayPayOrReceive(totalPay, true)}
+            receive={displayPayOrReceive(receive.toString(), false)}
             key={key}
             isBid={isBid}
           />
@@ -218,7 +218,7 @@ const TradePriceTable = () => {
             .div(PRICE_DECIMAL)
             .times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT))
             .toString()
-          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPayOrReceive(price))
+          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPrice(price))
         })
         .catch(() => {
           setCurrentPrice(i18n.t('trade.priceTable.empty'))

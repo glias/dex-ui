@@ -104,7 +104,7 @@ const columns = [
       const unit = `${!order.isBid ? order.tokenName : 'CKB'}`
       return (
         <Tooltip title={amount}>
-          {displayPayOrReceive(amount)}
+          {displayPayOrReceive(amount, true)}
           <div className={styles.unit}>{unit}</div>
         </Tooltip>
       )
@@ -121,7 +121,7 @@ const columns = [
       const unit = `${order.isBid ? order.tokenName : 'CKB'}`
       return (
         <Tooltip title={amount}>
-          {displayPayOrReceive(amount)}
+          {displayPayOrReceive(amount, false)}
           <div className={styles.unit}>{unit}</div>
         </Tooltip>
       )

@@ -9,7 +9,7 @@ export function calcBuyReceive(pay: string, price: string) {
 }
 
 export function calcCrossOutFee(pay: string) {
-  return new BigNumber(pay).times(1 + CROSS_CHAIN_FEE_RATE).toFixed(8, 1)
+  return new BigNumber(pay).times(1 - CROSS_CHAIN_FEE_RATE).toFixed(8, 1)
 }
 
 export function calcSellReceive(pay: string, price: string) {
@@ -76,16 +76,18 @@ export function displayPrice(str: string) {
   return amount.toFixed(4)
 }
 
-export function displayPayOrReceive(str: string) {
+export function displayPayOrReceive(str: string, isPay: boolean) {
   const amount = new BigNumber(str)
   const decimal = amount.decimalPlaces()
+  const roundingMode = isPay ? BigNumber.ROUND_HALF_UP : BigNumber.ROUND_DOWN
+
   if (decimal <= 4) {
-    return amount.toFormat(4)
+    return amount.toFormat(4, roundingMode)
   }
   if (decimal >= 8) {
-    return amount.toFormat(8)
+    return amount.toFormat(8, roundingMode)
   }
-  return amount.toFormat(4)
+  return amount.toFormat(4, roundingMode)
 }
 
 export default {

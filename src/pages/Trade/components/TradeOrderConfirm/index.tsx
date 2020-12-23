@@ -17,7 +17,8 @@ import {
   calcBidReceive,
   calcCrossOutFee,
   calcTotalPay,
-  removeTrailingZero,
+  displayPayOrReceive,
+  // removeTrailingZero,
 } from '../../../../utils/fee'
 import { spentCells } from '../../../../utils'
 import { Pairs } from './pairs'
@@ -88,7 +89,7 @@ export default function TradePairConfirm() {
             if (OrderMode.CrossIn === Order.orderMode) {
               const crossChainOrder: CrossChainOrder = {
                 tokenName: firstToken,
-                amount: pay,
+                amount: displayPayOrReceive(pay, true),
                 timestamp: `${Date.now()}`,
                 ckbTxHash: '',
                 ethTxHash: hash,
@@ -149,7 +150,7 @@ export default function TradePairConfirm() {
       const txHash = await Wallet.pw!.sendTransaction(tx)
       const crossChainOrder: CrossChainOrder = {
         tokenName: firstToken.slice(2),
-        amount: removeTrailingZero(calcCrossOutFee(pay)),
+        amount: displayPayOrReceive(calcCrossOutFee(pay), true),
         timestamp: `${Date.now()}`,
         ckbTxHash: txHash,
         ethTxHash: '',

@@ -169,23 +169,38 @@ export function useOrder() {
     setPay('')
   }, [firstToken, secondToken])
 
+  const actualPay = useMemo(() => {
+    return new BigNumber(pay).times(1 - COMMISSION_FEE).toFixed(8, 1)
+  }, [pay])
+
   const receive = useMemo(() => {
     const [buyToken, seller] = pair
-    if (!pay || !price) {
-      return '0'
-    }
+
     switch (orderMode) {
       case OrderMode.Order:
+        if (!pay || !price) {
+          return '0'
+        }
         if (buyToken === 'CKB') {
           const sudt = SUDT_LIST.find(s => s.info?.symbol === seller)
           return calcBidReceive(pay, price, sudt?.info?.decimals ?? DEFAULT_PAY_DECIMAL)
         }
         return calcAskReceive(pay, price)
       case OrderMode.CrossChain:
+        if (!pay || !price) {
+          return '0'
+        }
         return calcAskReceive(pay, price)
       case OrderMode.CrossIn:
-      case OrderMode.CrossOut:
+        if (!pay) {
+          return '0'
+        }
         return pay
+      case OrderMode.CrossOut:
+        if (!pay) {
+          return '0'
+        }
+        return new BigNumber(pay).times(1 - CROSS_CHAIN_FEE_RATE).toString()
       default:
         return '0.00'
     }
@@ -249,10 +264,6 @@ export function useOrder() {
     [address, setCrossChainOrders, isWalletNotConnected],
   )
 
-  const actualPay = useMemo(() => {
-    return new BigNumber(pay).times(1 - COMMISSION_FEE).toFixed(8, 1)
-  }, [pay])
-
   // TODO: max pay
   useEffect(() => {
     const [buyer, seller] = pair
@@ -264,18 +275,18 @@ export function useOrder() {
         setMaxPay(ckbMax)
         break
       case 'ETH':
-        setMaxPay(removeTrailingZero(ethWallet.balance.minus(0.1).toString()))
+        setMaxPay(removeTrailingZero(ethWallet.balance.minus(MAX_TRANSACTION_FEE).toString()))
         break
       default:
         if (sudtWallet) {
-          setMaxPay(new BigNumber(sudtWallet.balance.toString()).div(1 + COMMISSION_FEE).toString())
+          setMaxPay(new BigNumber(sudtWallet.balance.toString()).toString())
         } else if (shadowWallet) {
           if (seller === 'CKB') {
-            setMaxPay(new BigNumber(shadowWallet.balance.toString()).div(1 + COMMISSION_FEE).toString())
+            setMaxPay(new BigNumber(shadowWallet.balance.toString()).toString())
           } else {
             const max =
               orderMode === OrderMode.CrossOut
-                ? shadowWallet.balance.div(1 + CROSS_CHAIN_FEE_RATE)
+                ? shadowWallet.balance.times(1 - CROSS_CHAIN_FEE_RATE)
                 : shadowWallet.balance
             setMaxPay(max.toString())
           }

@@ -131,11 +131,8 @@ export default function OrderTable() {
   }, [isPayInvalid, isPriceInvalid, isCrossInOrOut])
 
   const formatedReceive = useMemo(() => {
-    if (isCrossInOrOut) {
-      return toFormatWithoutTrailingZero(Order.pay)
-    }
     return originalReceive === '0' ? '' : toFormatWithoutTrailingZero(originalReceive)
-  }, [originalReceive, isCrossInOrOut, Order.pay])
+  }, [originalReceive])
 
   const changePair = useCallback(() => {
     Order.togglePair()
