@@ -22,6 +22,7 @@ import { calcAskReceive } from 'utils/fee'
 import Web3 from 'web3'
 import {
   CKB_NODE_URL,
+  COMMISSION_FEE,
   CROSS_CHAIN_FEE_RATE,
   ORDER_BOOK_LOCK_SCRIPT,
   SUDT_DEP,
@@ -290,7 +291,10 @@ export async function placeCrossChainOrder(
 ) {
   const decimal = sudt?.info?.decimals ?? ETH_DECIMAL_INT
 
-  const amount = new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toFixed(0, 1)
+  const amount = new BigNumber(pay)
+    .times(1 - COMMISSION_FEE)
+    .times(new BigNumber(10).pow(decimal))
+    .toFixed(0, 1)
   const receive = calcAskReceive(pay, price)
   const sudtData = buildAskData(receive, price, decimal)
 

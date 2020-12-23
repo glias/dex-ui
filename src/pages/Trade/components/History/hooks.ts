@@ -38,7 +38,7 @@ export type HistoryAction =
   | { type: ActionType.RemovePendingId; value: string }
   | { type: ActionType.UpdateLoading; value: boolean }
   | { type: ActionType.UpdateCurrentOrderStatus; value: OrderCell[] }
-  | { type: ActionType.updateCurrentOrder; value: OrderInList }
+  | { type: ActionType.updateCurrentOrder; value: OrderInList | null }
   | { type: ActionType.EndCurrentOrderPending }
 
 export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, action) => {
@@ -97,6 +97,7 @@ export const usePollingOrderStatus = ({
   ethAddress,
   pending,
   key,
+  modalVisable,
 }: {
   web3: Web3 | null
   status: OrderInList['status']
@@ -108,9 +109,15 @@ export const usePollingOrderStatus = ({
   pending: boolean
   ethAddress: string
   key: string
+  modalVisable: boolean
 }) => {
   useEffect(() => {
-    if ((status === 'pending' || pending) && web3) {
+    if (!modalVisable) {
+      if (fetchListRef.current) {
+        clearInterval(fetchListRef.current)
+      }
+    }
+    if ((status === 'pending' || pending) && web3 && modalVisable) {
       const checkEthStatus = () => {
         const hash = cells?.[0]?.tx_hash
         web3.eth
@@ -189,7 +196,7 @@ export const usePollingOrderStatus = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key, ethAddress])
+  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key, ethAddress, modalVisable])
 }
 
 const parseOrderHistory = async (lockArgs: string, ckbAddress: string, ethAddress: string, signal?: AbortSignal) => {

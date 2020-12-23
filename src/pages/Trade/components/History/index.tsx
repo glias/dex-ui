@@ -242,6 +242,7 @@ const OrderModal = ({
     pending,
     key: currentOrder.key,
     ethAddress: ethWallet.address,
+    modalVisable,
   })
 
   const realStatus = useMemo(() => {
