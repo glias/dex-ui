@@ -216,7 +216,7 @@ export default function OrderTable() {
     (_: any, value: string): Promise<void> => {
       const val = new BigNumber(value)
 
-      if (val.isLessThan(0)) {
+      if (val.isLessThanOrEqualTo(0)) {
         setIsPayInvalid(true)
         return Promise.reject(i18n.t(`trade.greaterThanZero`))
       }
@@ -259,7 +259,7 @@ export default function OrderTable() {
         return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
       }
 
-      if (val.isLessThan(0)) {
+      if (val.isLessThanOrEqualTo(0)) {
         setIsPriceInvalid(true)
         return Promise.reject(i18n.t(`trade.greaterThanZero`))
       }
