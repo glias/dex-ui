@@ -20,6 +20,7 @@ import {
   SUDT_GLIA,
   SUDT_LIST,
 } from '../constants'
+import { useConstant } from '../hooks'
 import DEXCollector from '../pw/dexCollector'
 import { Web3ModalProviderFix } from './patch/Web3ModalProviderFix'
 
@@ -103,6 +104,7 @@ export function useWallet() {
   const [ethWallet, setEthWallet] = useState<Wallet>(defaultEthWallet)
   const web3Ref = useRef<Web3 | null>(null)
   const orderListAbortController = useRef<AbortController | null>(null)
+  const dexCollector = useConstant(() => new DEXCollector())
 
   const [sudtWallets, setSudtWallets] = useState<SudtWallet[]>(defaultSUDTWallets)
   const [erc20Wallets, setERC20Wallets] = useState<Wallet[]>(defaultERC20Wallets)
@@ -291,7 +293,7 @@ export function useWallet() {
 
       const newPw = await new PWCore(CKB_NODE_URL).init(
         new Web3ModalProviderFix(newWeb3),
-        new DEXCollector(),
+        dexCollector,
         IS_DEVNET ? 2 : undefined,
         IS_DEVNET ? PW_DEV_CHAIN_CONFIG : undefined,
       )
@@ -316,7 +318,7 @@ export function useWallet() {
     } catch (e) {
       setConnectStatus('disconnected')
     }
-  }, [reloadWallet, setCkbAddress, setEthBalance, disconnectWallet])
+  }, [reloadWallet, setCkbAddress, setEthBalance, disconnectWallet, dexCollector])
 
   const resetWallet = useCallback(() => {
     setCkbWallet(defaultCkbWallet)
@@ -420,6 +422,7 @@ export function useWallet() {
     erc20Wallets,
     isWalletNotConnected,
     orderListAbortController,
+    dexCollector,
   }
 }
 

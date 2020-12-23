@@ -1,7 +1,7 @@
 import PWCore from '@lay2/pw-core'
 import { Divider } from 'antd'
 import Token from 'components/Token'
-import { isCkbWallet, WalletContainer } from 'containers/wallet'
+import { isCkbWallet, isSudtWallet, WalletContainer } from 'containers/wallet'
 import { parse } from 'query-string'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import { AssetManagerHeader } from '../AssetManagerHeader'
 import { Balance } from '../Balance'
 import { Button } from '../components/Button'
+import { asserts } from '../helper'
 import { AssetManagerContainer } from '../hooks'
 
 const ConfirmWrapper = styled.div`
@@ -35,6 +36,7 @@ interface ConfirmParamsPayload {
   amount: string
   fee: string
   to: string
+  force: '0' | '1'
 }
 
 export const SendConfirm = () => {
@@ -43,20 +45,25 @@ export const SendConfirm = () => {
   const payload: ConfirmParamsPayload = (parse(search) as unknown) as ConfirmParamsPayload
   const { t } = useTranslation()
   const { pw } = WalletContainer.useContainer()
-  const { useWallet, useSudt, sendCkb, sendSudt, decimal } = AssetManagerContainer.useContainer()
-  const wallet = useWallet()
+  const { wallet, decimal, sudt, sendHelper } = AssetManagerContainer.useContainer()
   const { replace } = useHistory()
-  const sudt = useSudt()
   const [confirming, setIsConfirming] = useState(false)
 
-  const { amount, fee, to } = payload
+  const { amount, fee, to, force } = payload
   const from = PWCore.provider.address.toCKBAddress()
 
   async function onConfirm() {
     if (!wallet || !pw) return
     setIsConfirming(true)
     try {
-      const txHash = isCkbWallet(wallet) ? await sendCkb(to, amount) : await sendSudt(to, amount, sudt)
+      let txHash: string | undefined
+      if (isCkbWallet(wallet)) {
+        txHash = await sendHelper.sendCkb(to, amount)
+      } else if (isSudtWallet(wallet)) {
+        asserts(sudt)
+        txHash = await sendHelper.sendSudt(to, amount, sudt, force === '1')
+      }
+
       if (txHash) replace(`/assets/${tokenName}#transactions`)
     } finally {
       setIsConfirming(false)

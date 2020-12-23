@@ -148,8 +148,7 @@ const TransactionDescription = (props: { transaction: TransactionDetailModel; tx
 
 export const TransactionDetail: React.FC = () => {
   const { tokenName, txHash } = useParams<{ tokenName: string; txHash: string }>()
-  const { useSudt } = AssetManagerContainer.useContainer()
-  const sudt = useSudt()
+  const { sudt } = AssetManagerContainer.useContainer()
 
   const { data: tx, isLoading } = useQuery<TransactionDetailModel>(['transactions', tokenName, txHash], () => {
     const lock = PWCore.provider.address.toLockScript()
