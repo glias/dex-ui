@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useCallback, useMemo, useState } from 'react'
-import BigNumber from 'bignumber.js'
-import { useContainer } from 'unstated-next'
-import { Divider, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
-import i18n from 'utils/i18n'
+import { Divider, Input, Tabs } from 'antd'
+import BigNumber from 'bignumber.js'
 import HeaderWithGoback from 'components/HeaderWithGoback'
 import Token from 'components/Token'
-import { Container, TokenContainer, Main } from './styled'
-import { Wallet, WalletContainer } from '../../containers/wallet'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useContainer } from 'unstated-next'
+import i18n from 'utils/i18n'
+import { isEthereumWallet, isNervosWallet, Wallet, WalletContainer } from '../../containers/wallet'
+import { Container, Main, TokenContainer } from './styled'
 
 export interface SelectTokenProps {
   filter?: (value: Wallet, index: number, array: Wallet[]) => boolean
   onSelect: (wallet: Wallet) => void
   onBack?: () => void
   currentToken: string
+  groupedByChain?: boolean
 }
 
 const Item = ({
@@ -36,7 +37,7 @@ const Item = ({
   )
 }
 
-const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }: SelectTokenProps) => {
+const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack, groupedByChain }: SelectTokenProps) => {
   const WalletCtx = useContainer(WalletContainer)
   const [searchValue, setSearchValue] = useState('')
   const { wallets } = WalletCtx
@@ -45,10 +46,18 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }
       .filter(w => w.tokenName !== currentToken)
       .filter(filter)
       .sort((w1, w2) => {
-        if (w1.tokenName === 'CKB' || w2.tokenName === 'CKB') {
-          return 1
-        }
-        return parseFloat(w2.balance.minus(w1.balance).toString())
+        // 1. CKB
+        // 2. ETH
+        // 3. compare balance
+        // 4. compare token name
+
+        if (w1.tokenName === 'CKB' || w2.tokenName === 'CKB') return 1
+        if (w1.tokenName === 'ETH' || w2.tokenName === 'ETH') return 1
+
+        const diff = w2.balance.minus(w1.balance)
+        if (diff.eq(0)) return w1.tokenName.localeCompare(w2.tokenName)
+
+        return diff.toNumber()
       })
   }, [wallets, filter, currentToken])
 
@@ -66,6 +75,26 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }
     return wallets.find(w => w.tokenName === currentToken)!
   }, [currentToken, wallets])
 
+  const tokenListElem = useMemo(() => {
+    const filtered = filteredWallets.filter(searchFilter)
+    const mapToTokenItem = (wallet: Wallet) => (
+      <Item wallet={wallet} onClick={() => onSelect(wallet)} key={wallet.tokenName} />
+    )
+
+    if (!groupedByChain) return filtered.map(mapToTokenItem)
+
+    return (
+      <Tabs>
+        <Tabs.TabPane tab="Nervos" key="Nervos">
+          {filtered.filter(isNervosWallet).map(mapToTokenItem)}
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Ethereum" key="Ethereum">
+          {filtered.filter(isEthereumWallet).map(mapToTokenItem)}
+        </Tabs.TabPane>
+      </Tabs>
+    )
+  }, [groupedByChain, filteredWallets, searchFilter, onSelect])
+
   return (
     <Container>
       {onBack && <HeaderWithGoback title={i18n.t('trade.selectToken')} onClick={onBack} />}
@@ -80,11 +109,7 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack }
         onChange={e => setSearchValue(e.target.value)}
         value={searchValue}
       />
-      <Main>
-        {filteredWallets.filter(searchFilter).map(wallet => {
-          return <Item wallet={wallet} onClick={() => onSelect(wallet)} key={wallet.tokenName} />
-        })}
-      </Main>
+      <Main>{tokenListElem}</Main>
     </Container>
   )
 }
