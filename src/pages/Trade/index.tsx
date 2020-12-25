@@ -174,6 +174,7 @@ const Trade = () => {
             onSelect={onTokenSelect}
             currentToken={Order.currentPairToken}
             filter={selectTokenFilter}
+            groupedByChain
           />
         )
       default:
