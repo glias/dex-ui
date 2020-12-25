@@ -4,11 +4,13 @@ import { Divider, Form, Input } from 'antd'
 import { FormItemProps } from 'antd/lib/form'
 import { BigNumber } from 'bignumber.js'
 import Token from 'components/Token'
-import { isCkbWallet, isSudtWallet, Wallet } from 'containers/wallet'
-import React, { useCallback, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import WalletContainer, { isCkbWallet, isSudtWallet, Wallet } from 'containers/wallet'
+import i18n from 'i18next'
+import React, { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useHistory, useRouteMatch } from 'react-router-dom'
+import { useEventCallback } from 'rxjs-hooks'
+import { debounceTime, switchMap, tap } from 'rxjs/operators'
 import styled from 'styled-components'
 import { CKB_MIN_CHANGE_CKB } from '../../../../constants'
 import SelectToken from '../../../SelectToken'
@@ -16,7 +18,7 @@ import { AssetManagerHeader } from '../AssetManagerHeader'
 import { Balance } from '../Balance'
 import { ForceSimpleBuilder } from '../builders/SimpleBuilder'
 import { Button } from '../components/Button'
-import { asserts, debounce } from '../helper'
+import { asserts, wrapAddress } from '../helper'
 import { AssetManagerContainer } from '../hooks'
 
 const SendWrapper = styled.div`
@@ -101,13 +103,14 @@ const AmountControlLabelWrapper = styled.div`
 `
 
 export const Send: React.FC = () => {
-  const { t } = useTranslation()
   const [viewMode, setViewMode] = useState<'send' | 'select'>('send')
   const [form] = Form.useForm<{ amount: string; to: string }>()
   const { push, replace } = useHistory()
   const match = useRouteMatch()
-  const { sudt, wallet, tokenName, decimal, setTokenName } = AssetManagerContainer.useContainer()
+  const { ckbWallet } = WalletContainer.useContainer()
+  const { sudt, wallet, tokenName, decimal, setTokenName, sendHelper } = AssetManagerContainer.useContainer()
   const [shouldSendAllCkb, setShouldSendAllCkb] = useState(false)
+  const [shouldSendSudtWithCkb, setShouldSendSudtWithCkb] = useState(false)
 
   const freeAmount: BigNumber = useMemo(() => {
     if (!wallet) return new BigNumber(0)
@@ -118,15 +121,18 @@ export const Send: React.FC = () => {
   const maxPayableAmount: BigNumber = freeAmount
 
   const [inputAllValidated, setInputAllValidated] = useState(false)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedValidateInput = useCallback(
-    debounce(async () => {
-      await form.validateFields(['amount', 'to'])
-
-      setInputAllValidated(true)
-    }, 200),
-    [form, setInputAllValidated],
-  )
+  const [debouncedValidateInput] = useEventCallback<undefined>(events$ => {
+    return events$.pipe(
+      tap(() => setInputAllValidated(false)),
+      debounceTime(500),
+      switchMap(() =>
+        form.validateFields(['amount', 'to']).then(
+          () => setInputAllValidated(true),
+          () => setInputAllValidated(false),
+        ),
+      ),
+    )
+  })
 
   const { data: transactionFee } = useQuery<string, unknown>(
     ['getTransactionFee', tokenName, inputAllValidated, form.getFieldValue('amount'), decimal],
@@ -153,7 +159,6 @@ export const Send: React.FC = () => {
   )
 
   async function validateInput() {
-    setInputAllValidated(false)
     debouncedValidateInput()
   }
 
@@ -162,24 +167,34 @@ export const Send: React.FC = () => {
     const isCkb = tokenName === 'CKB'
     asserts(wallet)
     const inputNumber = new BigNumber(input)
-    asserts(input && !inputNumber.isNaN(), t(`Amount should be a valid number`))
+    asserts(input && !inputNumber.isNaN(), i18n.t(`Amount should be a valid number`))
 
     const balance = freeAmount
-    asserts(inputNumber.lte(balance), t('Amount should be less than the MAX'))
-    asserts(inputNumber.gt(0), t('Amount should be more than 0'))
+    asserts(inputNumber.lte(balance), i18n.t('Amount should be less than the MAX'))
+    asserts(inputNumber.gt(0), i18n.t('Amount should be more than 0'))
     if (!isCkb) return
 
-    asserts(inputNumber.decimalPlaces() <= decimal, t(`The value up to ${decimal} precision`))
-    asserts(inputNumber.gte(61), t('Amount should be large than 61'))
+    asserts(inputNumber.decimalPlaces() <= decimal, i18n.t(`The value up to ${decimal} precision`))
+    asserts(inputNumber.gte(61), i18n.t('Amount should be large than 61'))
     const remainLessThanBasicCellCapacity = balance.minus(inputNumber).lt(61)
     setShouldSendAllCkb(remainLessThanBasicCellCapacity)
   }
 
   async function validateAddress(_: any, input: string): Promise<void> {
-    asserts(
-      input && new Address(input, input.startsWith('ck') ? AddressType.ckb : AddressType.eth).valid(),
-      t('Please input a valid address'),
-    )
+    asserts(wallet)
+    asserts(input, i18n.t('Please input a valid address'))
+
+    const address = wrapAddress(input)
+    asserts(address.valid(), i18n.t('Please input a valid address'))
+
+    asserts(ckbWallet.address !== address.toCKBAddress(), 'This address is the current user')
+
+    setShouldSendSudtWithCkb(false)
+    if (isSudtWallet(wallet)) {
+      asserts(sudt)
+      const acpAddress = await sendHelper.searchOrCheckIsAcpAddress(sudt, input)
+      if (!acpAddress) setShouldSendSudtWithCkb(true)
+    }
   }
 
   function setAllBalanceToAmount() {
@@ -189,7 +204,7 @@ export const Send: React.FC = () => {
 
   const amountLabel = (
     <AmountControlLabelWrapper>
-      <span>{t('Amount')}</span>
+      <span>{i18n.t('Amount')}</span>
       <span
         tabIndex={0}
         role="button"
@@ -197,7 +212,7 @@ export const Send: React.FC = () => {
         onClick={setAllBalanceToAmount}
         onKeyDown={setAllBalanceToAmount}
       >
-        {t('MAX')}
+        {i18n.t('MAX')}
         :&nbsp;
         <Balance value={maxPayableAmount} />
       </span>
@@ -206,7 +221,7 @@ export const Send: React.FC = () => {
 
   const transactionFeeTip = (
     <div style={{ marginBottom: '16px' }}>
-      <div>{t('Transaction fee')}</div>
+      <div>{i18n.t('Transaction fee')}</div>
       <div>{transactionFee ? <Balance value={transactionFee} suffix="CKB" maxDecimalPlaces={8} /> : '-'}</div>
     </div>
   )
@@ -216,19 +231,31 @@ export const Send: React.FC = () => {
     const decimals = sudt ? sudt.info?.decimals ?? 0 : AmountUnit.ckb
 
     const amount = new Amount(inputAmount, decimals).toString(0)
-    const confirmUrl = `${match.url}/confirm?to=${to}&amount=${amount}&fee=${transactionFee}`
+    const forceSendSudtWithCkb = shouldSendSudtWithCkb ? 1 : 0
+    const confirmUrl = `${match.url}/confirm?to=${to}&amount=${amount}&fee=${transactionFee}&force=${forceSendSudtWithCkb}`
     push(confirmUrl)
   }
 
-  const amountFormItemProps: FormItemProps = shouldSendAllCkb
-    ? {
-        validateStatus: 'warning',
-        help: t(
-          `The remaining balance is too small(less than 61 CKB). So the transaction won't succeed. You can send less than {{lessRemain}} CKB out. \n Or do you want to send ALL your CKB out?`,
-          { lessRemain: freeAmount.minus(CKB_MIN_CHANGE_CKB) },
-        ),
-      }
-    : {}
+  const amountFormItemProps: FormItemProps = useMemo(() => {
+    if (!shouldSendAllCkb) return {}
+    return {
+      validateStatus: 'warning',
+      help: i18n.t(
+        `The remaining balance is too small(less than 61 CKB). So the transaction won't succeed. You can send less than {{lessRemain}} CKB out. \n Or do you want to send ALL your CKB out?`,
+        { lessRemain: freeAmount.minus(CKB_MIN_CHANGE_CKB) },
+      ),
+    }
+  }, [shouldSendAllCkb, freeAmount])
+
+  const addressFormItemProps: FormItemProps = useMemo(() => {
+    if (!shouldSendSudtWithCkb) return {}
+    return {
+      validateStatus: 'warning',
+      help: i18n.t(
+        `This address can not accept this asset without the asset account. \n Or do you want to send this asset associated with 142 CKB to create a asset account for this address ?`,
+      ),
+    }
+  }, [shouldSendSudtWithCkb])
 
   function onTokenSelect(tokenName: string) {
     setTokenName(tokenName)
@@ -238,7 +265,13 @@ export const Send: React.FC = () => {
 
   const tokenFilter = (wallet: Wallet) => isCkbWallet(wallet) || isSudtWallet(wallet)
 
-  const view = useMemo(() => {
+  const sendButtonText = useMemo(() => {
+    if (shouldSendAllCkb) return i18n.t('Send All My CKB')
+    if (shouldSendSudtWithCkb) return i18n.t('Send Asset with 142 CKB')
+    return i18n.t('Send')
+  }, [shouldSendSudtWithCkb, shouldSendAllCkb])
+
+  const getView = () => {
     if (!wallet) return null
     if (viewMode === 'select') {
       return (
@@ -251,7 +284,7 @@ export const Send: React.FC = () => {
     }
     return (
       <Form form={form} onValuesChange={validateInput} autoComplete="off" layout="vertical" onFinish={onFinish}>
-        <Form.Item label={t('Token')}>
+        <Form.Item label={i18n.t('Token')}>
           <div
             className="select-token"
             role="button"
@@ -264,11 +297,12 @@ export const Send: React.FC = () => {
           </div>
         </Form.Item>
         <Form.Item
-          label={t('To')}
+          {...addressFormItemProps}
+          label={i18n.t('To')}
           name="to"
           rules={[{ validator: validateAddress, validateTrigger: ['onChange', 'onBlur'] }]}
         >
-          <Input.TextArea rows={4} placeholder={t('To')} />
+          <Input.TextArea rows={4} placeholder={i18n.t('To')} />
         </Form.Item>
         {amountLabel}
         <Form.Item
@@ -276,25 +310,24 @@ export const Send: React.FC = () => {
           rules={[{ validator: validateAmount, validateTrigger: ['onChange', 'onBlur'] }]}
           name="amount"
         >
-          <Input suffix={tokenName} placeholder={t('Amount')} type="number" size="large" />
+          <Input suffix={tokenName} placeholder={i18n.t('Amount')} type="number" size="large" />
         </Form.Item>
         <Divider />
         {transactionFeeTip}
 
         <Form.Item>
           <Button htmlType="submit" size="large" block disabled={!inputAllValidated || !transactionFee}>
-            {shouldSendAllCkb ? t('Send All My CKB') : t('Send')}
+            {sendButtonText}
           </Button>
         </Form.Item>
       </Form>
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode, wallet, tokenName, maxPayableAmount])
+  }
 
   return (
     <>
-      <AssetManagerHeader title={t('Send')} showGoBack />
-      <SendWrapper>{view}</SendWrapper>
+      <AssetManagerHeader title={i18n.t('Send')} showGoBack />
+      <SendWrapper>{getView()}</SendWrapper>
     </>
   )
 }
