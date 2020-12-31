@@ -109,6 +109,7 @@ export const TableContainer = styled.div`
       background-color: ${(props: { isBid: boolean }) => (props.isBid ? '#fefefe' : '#f6f6f6')};
     }
   }
+  overflow: hidden;
 `
 
 export const THead = styled(Tr)`
