@@ -33,7 +33,7 @@
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-i18next": "11.7.3",
-    "react-query": "^2.26.3",
+    "react-query": "3.5.11",
     "react-router-dom": "5.2.0",
     "react-scripts": "3.4.3",
     "react-test-renderer": "16.13.1",

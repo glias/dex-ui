@@ -129,8 +129,8 @@ export async function getBestPrice(type: Script, orderType: OrderType) {
   }
 }
 
-export async function getAllHistoryOrders(lockArgs: string, signal?: AbortSignal) {
-  const res = await Promise.all(SUDT_LIST.map(sudt => getHistoryOrders(lockArgs, sudt, signal)))
+export async function getAllHistoryOrders(lockArgs: string) {
+  const res = await Promise.all(SUDT_LIST.map(sudt => getHistoryOrders(lockArgs, sudt)))
   return res
     .map((r, index) => {
       return r.map((d: any) => {
@@ -143,7 +143,7 @@ export async function getAllHistoryOrders(lockArgs: string, signal?: AbortSignal
     .flat()
 }
 
-export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA, signal?: AbortSignal) {
+export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA) {
   const TypeScript = sudt.toTypeScript()
 
   const params = {
@@ -153,9 +153,17 @@ export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA, signa
     type_args: TypeScript.args,
   }
 
-  return fetch(`${SERVER_URL}/order-history?${new URLSearchParams(params)}`, {
+  const controller = new AbortController()
+  const { signal } = controller
+
+  const promise = fetch(`${SERVER_URL}/order-history?${new URLSearchParams(params)}`, {
     signal,
-  }).then(res => res.json())
+  })
+
+  // @ts-ignore
+  promise.cancel = () => controller.abort()
+
+  return promise.then(res => res.json())
 }
 
 export type SudtTransaction = {
@@ -190,6 +198,9 @@ export function getCkbTransactions(lock: Script): Promise<AxiosResponse<SudtTran
 }
 
 export function getTransactionHeader(blockHashes: string[]) {
+  if (blockHashes.length === 0) {
+    return []
+  }
   const requests: Array<['getHeader', any]> = blockHashes.map(hash => ['getHeader', hash])
   return ckb.rpc.createBatchRequest(requests).exec()
 }

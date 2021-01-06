@@ -2,6 +2,8 @@ import 'ant-design-icons/dist/anticons.min.css'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import styled from 'styled-components'
+import { QueryClientProvider, QueryClient } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
 import { TransactionListenerContainer } from './containers/listener'
 import { OrderContainer } from './containers/order'
 import { WalletContainer } from './containers/wallet'
@@ -14,15 +16,20 @@ const AppDiv = styled.div`
   height: 100%;
 `
 
+const queryClient = new QueryClient()
+
 ReactDOM.render(
-  <WalletContainer.Provider>
-    <TransactionListenerContainer.Provider>
-      <OrderContainer.Provider>
-        <AppDiv>
-          <Routers />
-        </AppDiv>
-      </OrderContainer.Provider>
-    </TransactionListenerContainer.Provider>
-  </WalletContainer.Provider>,
+  <QueryClientProvider client={queryClient}>
+    <WalletContainer.Provider>
+      <TransactionListenerContainer.Provider>
+        <OrderContainer.Provider>
+          <AppDiv>
+            <Routers />
+          </AppDiv>
+        </OrderContainer.Provider>
+      </TransactionListenerContainer.Provider>
+    </WalletContainer.Provider>
+    <ReactQueryDevtools initialIsOpen={false} />
+  </QueryClientProvider>,
   document.getElementById('root'),
 )
