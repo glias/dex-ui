@@ -29,7 +29,7 @@ ReactDOM.render(
         </OrderContainer.Provider>
       </TransactionListenerContainer.Provider>
     </WalletContainer.Provider>
-    <ReactQueryDevtools initialIsOpen={false} />
+    {process.env.NODE_ENV !== 'production' && <ReactQueryDevtools initialIsOpen={false} />}
   </QueryClientProvider>,
   document.getElementById('root'),
 )

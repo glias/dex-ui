@@ -342,6 +342,15 @@ export const usePollOrderList = ({
       dispatch({ type: ActionType.UpdateLoading, value: false })
     }
   }, [status, dispatch])
+
+  useEffect(() => {
+    if (lockArgs === '') {
+      dispatch({
+        type: ActionType.UpdateOrderList,
+        value: [],
+      })
+    }
+  }, [lockArgs, dispatch])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {
