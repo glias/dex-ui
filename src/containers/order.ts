@@ -1,7 +1,8 @@
 import PWCore, { Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
+import { FormInstance } from 'antd/lib/form'
 import { approveERC20ToBridge, CrossChainOrder, getAllowanceForTarget } from 'APIs'
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useMemo, useCallback, createRef } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import Web3 from 'web3'
 import {
@@ -73,6 +74,7 @@ export function useOrder() {
   const { address } = Wallet.ckbWallet
   const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
   const [crossChainOrders, setCrossChainOrders] = useState<Array<CrossChainOrder>>(crossChainOrdersCache.get(address))
+  const formRef = createRef<FormInstance>()
   const ckbBalance = Wallet.ckbWallet.free.toString()
   const [maxPay, setMaxPay] = useState(ckbBalance)
   const [bestPrice] = useState('0.00')
@@ -315,10 +317,15 @@ export function useOrder() {
     }
   }, [orderType, isCrossChainOnly, isWalletNotConnected])
 
-  function reset() {
+  const reset = useCallback(() => {
     setPay('')
     setPrice('')
-  }
+  }, [])
+
+  useEffect(() => {
+    reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Wallet.reconnectCount])
 
   const currentSudtTokenName = useMemo(() => {
     return pair.find(t => t !== 'CKB')
@@ -446,6 +453,7 @@ export function useOrder() {
     crossChainOrders,
     isCrossChainOnly,
     actualPay,
+    formRef,
   }
 }
 

@@ -104,9 +104,12 @@ const defaultEthWallet: Wallet = {
   tokenName: 'ETH',
 }
 
+let reconnectCountNum = 0
+
 export function useWallet() {
   const [pw, setPw] = useState<null | PWCore>(null)
   const [web3, setWeb3] = useState<null | Web3>(null)
+  const [reconnectCount, setReconnectCount] = useState(0)
   const web3ModalRef = useRef<Web3Modal | null>(null)
   const [ckbWallet, setCkbWallet] = useState<CkbWallet>(defaultCkbWallet)
   const [connectStatus, setConnectStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected')
@@ -282,6 +285,8 @@ export function useWallet() {
       const provider = await web3ModalRef.current?.connect()
 
       provider.on('accountsChanged', function reconnectWallet(accounts: string[]) {
+        reconnectCountNum++
+        setReconnectCount(reconnectCountNum)
         provider.off('accountsChanged', reconnectWallet)
         if (accounts?.length > 0) connectWallet()
         else disconnectWallet()
@@ -431,6 +436,7 @@ export function useWallet() {
     isWalletNotConnected,
     orderHistoryQueryKey,
     queryClient,
+    reconnectCount,
   }
 }
 

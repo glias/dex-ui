@@ -1,7 +1,6 @@
 /* eslint-disable operator-linebreak */
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Form, Tooltip, Modal, Input, Divider } from 'antd'
-import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import Token from 'components/Token'
 import { useContainer } from 'unstated-next'
@@ -111,8 +110,7 @@ export default function OrderTable() {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
-  const { price, pay, setPrice, setPay, receive: originalReceive, setStep } = Order
-  const formRef = React.createRef<FormInstance>()
+  const { price, pay, setPrice, setPay, receive: originalReceive, setStep, formRef } = Order
   const [buyer, seller] = Order.pair
   const [collectingCells, setCollectingCells] = useState(false)
   const [isPayInvalid, setIsPayInvalid] = useState(true)
@@ -176,6 +174,15 @@ export default function OrderTable() {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formatedReceive, insufficientCKB])
+
+  useEffect(() => {
+    if (pay === '') {
+      // eslint-disable-next-line no-unused-expressions
+      formRef.current?.setFieldsValue({
+        pay: '',
+      })
+    }
+  }, [pay, formRef])
 
   useEffect(() => {
     if (insufficientCKB) {
