@@ -21,6 +21,13 @@ export const Main = styled.main`
   overflow: auto;
   flex: 1;
   max-height: 400px;
+
+  .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #5c61da;
+  }
+  .ant-tabs-ink-bar {
+    background: #5c61da;
+  }
 `
 
 export const TokenContainer = styled.div`

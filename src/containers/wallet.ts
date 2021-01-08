@@ -12,6 +12,7 @@ import {
   CKB_DECIMAL,
   CKB_NODE_URL,
   ERC20,
+  ERC20_ETH,
   ERC20_LIST,
   IS_DEVNET,
   IssuerLockHash,
@@ -48,6 +49,14 @@ export interface SudtWallet extends Wallet {
 
 export function isSudtWallet(wallet: Wallet): wallet is SudtWallet {
   return SUDT_LIST.some(sudt => sudt.info?.name === wallet.tokenName)
+}
+
+export function isNervosWallet(wallet: Wallet): boolean {
+  return isCkbWallet(wallet) || isSudtWallet(wallet)
+}
+
+export function isEthereumWallet(wallet: Wallet): boolean {
+  return [...ERC20_LIST, ERC20_ETH].some(ethAsset => wallet.tokenName === ethAsset.tokenName)
 }
 
 const defaultCkbWallet: CkbWallet = {
