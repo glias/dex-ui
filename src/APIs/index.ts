@@ -30,6 +30,7 @@ import {
 } from '../constants'
 import { OrderType } from '../containers/order'
 import { buildAskData, replayResistOutpoints, spentCells, toHexString } from '../utils'
+import { INFO_ABI } from './ABI'
 
 export * from './checkSubmittedTxs'
 export * from './bridge'
@@ -570,4 +571,51 @@ export async function placeNormalOrder(
   tx.raw.cellDeps.push(SUDT_DEP)
 
   return tx.validate()
+}
+
+export async function getCkbTokenCellInfo(typeHash: string) {
+  const params = {
+    type_code_hash: typeHash,
+  }
+
+  try {
+    await axios.get(`${SERVER_URL}/token/cell-info`, {
+      params,
+    })
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+export interface SUDTInfo {
+  name: string
+  symbol: string
+  decimal: number
+  address: string
+  chainName: 'ckb'
+  typeHash: string
+}
+
+export function searchSUDT(query: string): Promise<AxiosResponse<any[]>> {
+  const params = {
+    type_code_hash: query,
+  }
+
+  return axios.get(`${SERVER_URL}/tokens/search`, {
+    params,
+  })
+}
+
+export async function searchERC20(address: string, web3: Web3) {
+  try {
+    const contract = new web3.eth.Contract(INFO_ABI, address)
+    const tokenName = await contract.methods.name().call()
+    return {
+      tokenName,
+      address,
+    }
+  } catch (error) {
+    return undefined
+  }
 }
