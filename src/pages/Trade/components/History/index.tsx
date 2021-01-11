@@ -409,11 +409,15 @@ const History = () => {
       )
 
       switch (order.status) {
+        // Aggregator would claim automatic now, However, if there is only a small amount of order_amount left
+        // and the price is divisible, then the aggregator thinks that the order is still possible to be aggregated
+        // and does not claim it automatically, and this status is marked as `completed`.
+        // This requires the user to manually terminate the order
         case 'completed': {
           return (
             <div className={styles.center}>
               <Button onClick={handleClick} className={styles.action}>
-                Claim
+                Cancel
               </Button>
               {status}
             </div>

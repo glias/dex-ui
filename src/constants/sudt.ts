@@ -1,4 +1,4 @@
-import { CellDep, DepType, OutPoint, Script, HashType, SUDT } from '@lay2/pw-core'
+import { CellDep, DepType, HashType, OutPoint, Script, SUDT } from '@lay2/pw-core'
 import { buildShadowAssetSUDT, ERC20_LIST } from './erc20'
 
 export const SUDT_DEP = new CellDep(DepType.code, new OutPoint(process.env.REACT_APP_SUDT_DEP_OUT_POINT!, '0x0'))

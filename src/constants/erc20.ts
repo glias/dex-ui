@@ -1,4 +1,4 @@
-import { HashType, Script, SUDT, SudtInfo } from '@lay2/pw-core'
+import { Blake2bHasher, HashType, Script, SUDT, SudtInfo } from '@lay2/pw-core'
 import { forceBridgeSettings } from 'utils'
 
 // eslint-disable-next-line import/no-mutable-exports
@@ -81,16 +81,15 @@ export const setForceBridgeServer = (settings: any) => {
   FORCE_BRIDGE_SETTINGS = settings
 }
 
-const lightClientTypeScript = new Script(
-  '0x3130dc7bbf8b9e00ca9f7e9040bb59d242ee48375a322621be36e1f502a227ed',
-  '0xce121a960ca47b8cea3a9b3ddc75cb03e07c894c10d5557f865b50ddc6d68c8d01000000',
-  HashType.type,
-)
-
 export const buildBridgeLockScript = (erc20Address: string = '0x0000000000000000000000000000000000000000') => {
-  const lockArgs = `0x${FORCE_BRIDGE_SETTINGS.eth_token_locker_addr.slice(2)}${erc20Address.slice(
-    2,
-  )}${lightClientTypeScript.toHash().slice(2)}`
+  const lockerAddress = FORCE_BRIDGE_SETTINGS.eth_token_locker_addr.slice(2)
+  const assetAddress = erc20Address.slice(2)
+  const lightClientScriptHash = new Blake2bHasher()
+    .hash(`0x${FORCE_BRIDGE_SETTINGS.light_client_cell_script.cell_script}`)
+    .serializeJson()
+    .slice(2)
+
+  const lockArgs = `0x${lockerAddress}${assetAddress}${lightClientScriptHash}`
   return new Script(`0x${FORCE_BRIDGE_SETTINGS.bridge_lockscript.code_hash}`, lockArgs, HashType.type)
 }
 

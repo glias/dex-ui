@@ -247,8 +247,8 @@ const TradePriceTable = () => {
 
   const maxCKB = useMemo(() => {
     let max = new BigNumber(0)
-    const base = new BigNumber(10)
-    const decimal = sudt?.info?.decimals ?? CKB_DECIMAL_INT
+    // const base = new BigNumber(10)
+    // const decimal = sudt?.info?.decimals ?? CKB_DECIMAL_INT
     for (let i = 0; i < orders.askOrders.length; i++) {
       const order = orders.askOrders[i]
       const ckbAmount = new BigNumber(order.receive)
@@ -259,25 +259,14 @@ const TradePriceTable = () => {
 
     for (let i = 0; i < orders.bidOrders.length; i++) {
       const order = orders.bidOrders[i]
-      const price = removeTrailingZero(
-        new BigNumber(order.price)
-          .div(PRICE_DECIMAL)
-          .times(new BigNumber(10).pow(decimal - CKB_DECIMAL_INT))
-          .toString(),
-      )
-
-      const receive = new BigNumber(order.receive).div(base.pow(decimal))
-      const ckbPay = receive.times(price)
-      const totalPay = ckbPay.toString()
-      const pay = new BigNumber(totalPay).times(CKB_DECIMAL)
-
+      const pay = new BigNumber(order.receive).times(new BigNumber(order.price))
       if (pay.isGreaterThan(max)) {
         max = pay
       }
     }
 
     return max.div(CKB_DECIMAL).toString()
-  }, [orders.askOrders, orders.bidOrders, sudt])
+  }, [orders.askOrders, orders.bidOrders])
 
   return (
     <Container>
