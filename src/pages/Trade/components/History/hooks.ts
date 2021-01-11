@@ -9,8 +9,9 @@ import OrderContainer from 'containers/order'
 import { ErrorCode } from 'exceptions'
 import WalletContainer from 'containers/wallet'
 import { submittedOrders } from 'utils/cache'
+import { SUDT_MAP } from 'constants/sudt'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
-import { ckb, getAllHistoryOrders, getForceBridgeHistory, getTransactionHeader } from '../../../../APIs'
+import { ckb, getBatchHistoryOrders, getForceBridgeHistory } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import type { RawOrder } from '../../../../utils'
@@ -202,29 +203,29 @@ export const usePollingOrderStatus = ({
 }
 
 const parseOrderHistory = async (lockArgs: string, ckbAddress: string, ethAddress: string) => {
-  const normalOrders = await getAllHistoryOrders(lockArgs)
+  const { normal_orders, cross_chain_orders } = (await getBatchHistoryOrders(lockArgs, ckbAddress, ethAddress)).data
 
-  const parsed = normalOrders.map((item: RawOrder) => {
-    const order = parseOrderRecord(item)
+  const parsed = normal_orders.map((item: RawOrder) => {
+    // @ts-ignore
+    const typeArgs = item.type_args
+    const tokenName = SUDT_MAP.get(typeArgs)?.info?.name!
+    const order = parseOrderRecord({
+      ...item,
+      tokenName,
+    })
     if (['aborted', 'claimed'].includes(order.status ?? '')) {
       pendingOrders.remove(order.key)
     }
     // @ts-ignore
-    order.tokenName = item.tokenName
+    order.createdAt = item.timestamp
     return order
   })
 
-  const ordersStatues = await getTransactionHeader(normalOrders.map((item: RawOrder) => item.block_hash))
-  for (let i = 0; i < ordersStatues.length; i++) {
-    const blockHeader = ordersStatues[i]
-    parsed[i].createdAt = blockHeader.timestamp
-  }
-
-  const { eth_to_ckb, ckb_to_eth } = (await getForceBridgeHistory(ckbAddress, ethAddress)).data
+  const { eth_to_ckb, ckb_to_eth } = cross_chain_orders
 
   return {
-    normalOrders,
-    crossChainOrders: eth_to_ckb.concat(ckb_to_eth),
+    normalOrders: normal_orders,
+    crossChainOrders: eth_to_ckb.concat(ckb_to_eth).filter(o => o.status === 'success'),
     parsed,
   }
 }
@@ -255,7 +256,6 @@ export const usePollOrderList = ({
     {
       enabled: !!lockArgs,
       refetchInterval: ORDER_LIST_TIMER,
-      refetchIntervalInBackground: true,
       retry: (failureCount: number) => {
         if (failureCount % 3 === 0 && failureCount !== 0) {
           // eslint-disable-next-line no-unused-expressions

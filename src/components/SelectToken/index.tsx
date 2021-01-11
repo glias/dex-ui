@@ -111,7 +111,7 @@ const SelectToken = ({ filter = Boolean as any, onSelect, currentToken, onBack, 
         const [sudt] = (await searchSUDT(val)).data
         if (sudt) {
           const tokenName = sudt.name
-          const wallet = wallets.find(w => w.tokenName === tokenName)
+          const wallet = wallets.find(w => tokenName.toLowerCase().includes(w.tokenName.toLowerCase()))
           if (wallet) {
             setSearchResult(wallet)
             setSearchStatus(SearchStatus.None)

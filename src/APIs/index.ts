@@ -29,7 +29,7 @@ import {
   SUDT_LIST,
 } from '../constants'
 import { OrderType } from '../containers/order'
-import { buildAskData, replayResistOutpoints, spentCells, toHexString } from '../utils'
+import { buildAskData, RawOrder, replayResistOutpoints, spentCells, toHexString } from '../utils'
 import { INFO_ABI } from './ABI'
 
 export * from './checkSubmittedTxs'
@@ -164,6 +164,38 @@ export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA) {
   promise.cancel = () => controller.abort()
 
   return promise.then(res => res.json())
+}
+
+export function getBatchHistoryOrders(
+  lockArgs: string,
+  ckbAddress: string,
+  ethAddress: string,
+): Promise<AxiosResponse<{ normal_orders: RawOrder[]; cross_chain_orders: ForceBridgeHistory }>> {
+  const TypeScript = SUDT_GLIA.toTypeScript()
+  const source = axios.CancelToken.source()
+
+  const params = {
+    order_lock_args: lockArgs,
+    type_code_hash: TypeScript.codeHash,
+    type_hash_type: TypeScript.hashType,
+    ckb_address: ckbAddress,
+    eth_address: ethAddress,
+    types: SUDT_LIST.map(s => {
+      const type = s.toTypeScript()
+      return {
+        type_args: type.args,
+      }
+    }),
+  }
+
+  const promise = axios.post(`${SERVER_URL}/order-history-batch`, params, {
+    cancelToken: source.token,
+  })
+
+  // @ts-ignore
+  promise.cancel = () => controller.abort()
+
+  return promise
 }
 
 export type SudtTransaction = {
@@ -599,7 +631,7 @@ export interface SUDTInfo {
 
 export function searchSUDT(query: string): Promise<AxiosResponse<any[]>> {
   const params = {
-    type_code_hash: query,
+    typeHashOrAddress: query,
   }
 
   return axios.get(`${SERVER_URL}/tokens/search`, {
