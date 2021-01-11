@@ -1,6 +1,7 @@
 import { useEffect, MutableRefObject, useCallback, useRef } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
+import { useQuery } from 'react-query'
 import Web3 from 'web3'
 import { Modal } from 'antd'
 import { useContainer } from 'unstated-next'
@@ -8,8 +9,9 @@ import OrderContainer from 'containers/order'
 import { ErrorCode } from 'exceptions'
 import WalletContainer from 'containers/wallet'
 import { submittedOrders } from 'utils/cache'
+import { SUDT_MAP } from 'constants/sudt'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
-import { ckb, getAllHistoryOrders, getForceBridgeHistory, getTransactionHeader } from '../../../../APIs'
+import { ckb, getBatchHistoryOrders, getForceBridgeHistory } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import type { RawOrder } from '../../../../utils'
@@ -85,7 +87,7 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
 
 type Order = ReturnType<typeof parseOrderRecord>
 
-const ORDER_LIST_TIMER = 8e3
+const ORDER_LIST_TIMER = 5e3
 
 export const usePollingOrderStatus = ({
   web3,
@@ -200,44 +202,32 @@ export const usePollingOrderStatus = ({
   }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key, ethAddress, modalVisable])
 }
 
-const parseOrderHistory = async (lockArgs: string, ckbAddress: string, ethAddress: string, signal?: AbortSignal) => {
-  const normalOrders = await getAllHistoryOrders(lockArgs, signal)
+const parseOrderHistory = async (lockArgs: string, ckbAddress: string, ethAddress: string) => {
+  const { normal_orders, cross_chain_orders } = (await getBatchHistoryOrders(lockArgs, ckbAddress, ethAddress)).data
 
-  const parsed = normalOrders.map((item: RawOrder) => {
-    const order = parseOrderRecord(item)
+  const parsed = normal_orders.map((item: RawOrder) => {
+    // @ts-ignore
+    const typeArgs = item.type_args
+    const tokenName = SUDT_MAP.get(typeArgs)?.info?.name!
+    const order = parseOrderRecord({
+      ...item,
+      tokenName,
+    })
     if (['aborted', 'claimed'].includes(order.status ?? '')) {
       pendingOrders.remove(order.key)
     }
     // @ts-ignore
-    order.tokenName = item.tokenName
+    order.createdAt = item.timestamp
     return order
   })
 
-  const ordersStatues = await getTransactionHeader(normalOrders.map((item: RawOrder) => item.block_hash))
-  for (let i = 0; i < ordersStatues.length; i++) {
-    const blockHeader = ordersStatues[i]
-    parsed[i].createdAt = blockHeader.timestamp
-  }
-
-  const { eth_to_ckb, ckb_to_eth } = (await getForceBridgeHistory(ckbAddress, ethAddress)).data
+  const { eth_to_ckb, ckb_to_eth } = cross_chain_orders
 
   return {
-    normalOrders,
-    crossChainOrders: eth_to_ckb.concat(ckb_to_eth),
+    normalOrders: normal_orders,
+    crossChainOrders: eth_to_ckb.concat(ckb_to_eth).filter(o => o.status === 'success'),
     parsed,
   }
-}
-
-const getOrdersWithTimeout = async (
-  lockArgs: string,
-  ckbAddress: string,
-  ethAddress: string,
-  signal?: AbortSignal,
-): ReturnType<typeof parseOrderHistory> => {
-  return Promise.race([
-    parseOrderHistory(lockArgs, ckbAddress, ethAddress, signal),
-    new Promise<any>((_: unknown, reject) => setTimeout(() => reject(new Error('timeout')), ORDER_LIST_TIMER)),
-  ])
 }
 
 export const usePollOrderList = ({
@@ -253,106 +243,114 @@ export const usePollOrderList = ({
 }) => {
   const { setAndCacheSubmittedOrders } = useContainer(OrderContainer)
   const modalRef = useRef<ReturnType<typeof Modal.warn> | null>(null)
-  const { isWalletNotConnected, orderListAbortController: abortController } = useContainer(WalletContainer)
+  const { isWalletNotConnected, orderHistoryQueryKey, queryClient } = useContainer(WalletContainer)
+
+  const { status } = useQuery(
+    [orderHistoryQueryKey, lockArgs, ckbAddress, ethAddress, isWalletNotConnected],
+    () => {
+      if (!lockArgs && !isWalletNotConnected) {
+        return null
+      }
+      return parseOrderHistory(lockArgs, ckbAddress, ethAddress)
+    },
+    {
+      enabled: !!lockArgs,
+      refetchInterval: ORDER_LIST_TIMER,
+      retry: (failureCount: number) => {
+        if (failureCount % 3 === 0 && failureCount !== 0) {
+          // eslint-disable-next-line no-unused-expressions
+          modalRef.current?.destroy?.()
+          modalRef.current = Modal.warn({
+            title: 'Network error',
+            content: 'The open orders request takes too long to respond.',
+            okText: 'Retry',
+          })
+        }
+        queryClient.cancelQueries(orderHistoryQueryKey)
+        return true
+      },
+      onSuccess: async res => {
+        if (!res) {
+          return
+        }
+        const { crossChainOrders, normalOrders, parsed } = res
+        try {
+          for (let i = 0; i < crossChainOrders.length; i++) {
+            const order = crossChainOrders[i]
+            const index = normalOrders.findIndex(r => r.order_cells?.[0]?.tx_hash === order.ckb_tx_hash)
+            if (index < 0) {
+              // eslint-disable-next-line no-continue
+              continue
+            }
+            const matchedOrder = parsed[index]
+            if (!matchedOrder) {
+              // eslint-disable-next-line no-continue
+              continue
+            }
+            setAndCacheSubmittedOrders(orders => {
+              return orders.filter(o => o.key.split(':')[0] !== order.eth_tx_hash)
+            })
+            matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
+            // eslint-disable-next-line no-unused-expressions
+            matchedOrder.orderCells?.unshift({
+              tx_hash: order.eth_tx_hash,
+              index: '',
+            })
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error)
+        }
+
+        const hashes: string[] = submittedOrders.get(ckbAddress).map((o: any) => o.key.split(':')[0])
+        if (!hashes.length) {
+          dispatch({
+            type: ActionType.UpdateOrderList,
+            value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+          })
+        } else {
+          setAndCacheSubmittedOrders(orders =>
+            orders.filter(order => {
+              const [hash] = order.key.split(':')
+              // There is a possibility that the order was already matched before it was fetched,
+              // so it is necessary to check whether the matched order is eligible for removal.
+              if (parsed.some(p => p.orderCells?.some(c => c.tx_hash === hash))) {
+                return false
+              }
+              return !parsed.some(p => p.key === order.key)
+            }),
+          )
+
+          dispatch({
+            type: ActionType.UpdateOrderList,
+            value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+          })
+        }
+      },
+      onError: (err: any) => {
+        if (err) {
+          console.warn(`[History Polling]: ${err.message}`)
+        }
+      },
+    },
+  )
 
   useEffect(() => {
-    let intervalID: number
-    if (lockArgs && !isWalletNotConnected) {
-      abortController.current = new AbortController()
-      const fetchData = () =>
-        getOrdersWithTimeout(lockArgs, ckbAddress, ethAddress, abortController.current?.signal)
-          .then(async res => {
-            const { crossChainOrders, normalOrders, parsed } = res
-            try {
-              if (abortController.current?.signal.aborted) {
-                return
-              }
-              for (let i = 0; i < crossChainOrders.length; i++) {
-                const order = crossChainOrders[i]
-                const index = normalOrders.findIndex(r => r.order_cells?.[0]?.tx_hash === order.ckb_tx_hash)
-                if (index < 0) {
-                  // eslint-disable-next-line no-continue
-                  continue
-                }
-                const matchedOrder = parsed[index]
-                if (!matchedOrder) {
-                  // eslint-disable-next-line no-continue
-                  continue
-                }
-                setAndCacheSubmittedOrders(orders => {
-                  return orders.filter(o => o.key.split(':')[0] !== order.eth_tx_hash)
-                })
-                matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
-                // eslint-disable-next-line no-unused-expressions
-                matchedOrder.orderCells?.unshift({
-                  tx_hash: order.eth_tx_hash,
-                  index: '',
-                })
-              }
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.log(error)
-            }
-
-            const hashes: string[] = submittedOrders.get(ckbAddress).map((o: any) => o.key.split(':')[0])
-            if (!hashes.length) {
-              dispatch({
-                type: ActionType.UpdateOrderList,
-                value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-              })
-            } else {
-              setAndCacheSubmittedOrders(orders =>
-                orders.filter(order => {
-                  const [hash] = order.key.split(':')
-                  // There is a possibility that the order was already matched before it was fetched,
-                  // so it is necessary to check whether the matched order is eligible for removal.
-                  if (parsed.some(p => p.orderCells?.some(c => c.tx_hash === hash))) {
-                    return false
-                  }
-                  return !parsed.some(p => p.key === order.key)
-                }),
-              )
-
-              dispatch({
-                type: ActionType.UpdateOrderList,
-                value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-              })
-            }
-          })
-          .catch(err => {
-            if (err?.message?.includes('timeout')) {
-              // eslint-disable-next-line no-unused-expressions
-              modalRef.current?.destroy?.()
-              modalRef.current = Modal.warn({
-                title: 'Network error',
-                content: 'The open orders request takes more than 8 seconds to respond.',
-                okText: 'Retry',
-              })
-            }
-            console.warn(`[History Polling]: ${err.message}`)
-          })
-          .finally(() => {
-            dispatch({ type: ActionType.UpdateLoading, value: false })
-          })
-
+    if (status === 'loading') {
       dispatch({ type: ActionType.UpdateLoading, value: true })
-      fetchData()
-      intervalID = setInterval(() => {
-        fetchData()
-      }, ORDER_LIST_TIMER)
-    } else {
-      dispatch({ type: ActionType.UpdateOrderList, value: [] })
+    } else if (status === 'success') {
+      dispatch({ type: ActionType.UpdateLoading, value: false })
     }
+  }, [status, dispatch])
 
-    return () => {
-      if (intervalID) {
-        clearInterval(intervalID)
-      }
-      if (abortController.current) {
-        abortController.current.abort()
-      }
+  useEffect(() => {
+    if (lockArgs === '') {
+      dispatch({
+        type: ActionType.UpdateOrderList,
+        value: [],
+      })
     }
-  }, [lockArgs, dispatch, ckbAddress, setAndCacheSubmittedOrders, ethAddress, isWalletNotConnected, abortController])
+  }, [lockArgs, dispatch])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {

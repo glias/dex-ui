@@ -325,7 +325,7 @@ const CrossChainTable = ({ searchValue }: { searchValue: string }) => {
       <Table
         className={styles.orders}
         dataSource={orderList}
-        rowKey="timestamp"
+        rowKey={o => o.ckbTxHash || o.ethTxHash}
         columns={[...columns, actionColumn]}
         loading={isLoading}
         rowClassName={(_, index) => (index % 2 === 0 ? `${styles.even} ${styles.td}` : `${styles.td}`)}

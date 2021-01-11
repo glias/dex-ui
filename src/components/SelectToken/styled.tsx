@@ -30,11 +30,15 @@ export const Main = styled.main`
   }
 `
 
+export interface TokenContainerProps {
+  clickable: boolean
+}
+
 export const TokenContainer = styled.div`
   display: flex;
   flex-direction: row;
   padding: 14px;
-  cursor: pointer;
+  cursor: ${(props: TokenContainerProps) => (props.clickable ? 'pointer' : 'default')};
   .left {
     align-items: flex-start;
   }

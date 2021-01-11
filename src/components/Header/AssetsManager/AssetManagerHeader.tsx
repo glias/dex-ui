@@ -1,11 +1,13 @@
 import { LeftOutlined } from '@ant-design/icons'
 import PWCore from '@lay2/pw-core'
 import { Button, Col, Row, Typography } from 'antd'
+import OrderContainer from 'containers/order'
 import WalletContainer from 'containers/wallet'
 import React, { HTMLAttributes } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
+import { useContainer } from 'unstated-next'
 import { ellipsisCenter } from 'utils/common'
 
 const { Text } = Typography
@@ -70,13 +72,14 @@ export const WalletConnectionStatusHeader = () => {
   const { t } = useTranslation()
   const address = PWCore.provider.address.toCKBAddress()
   const { disconnectWallet, web3ModalRef, connectWallet } = WalletContainer.useContainer()
+  const { reset } = useContainer(OrderContainer)
 
   const web3Modal = web3ModalRef.current
 
   if (!web3Modal) return null
 
   async function close() {
-    await disconnectWallet()
+    await disconnectWallet(reset)
     await connectWallet()
   }
 

@@ -215,7 +215,6 @@ const TradePriceTable = () => {
         .then(res => {
           const { data } = res
           const price = new BigNumber(data)
-            .div(PRICE_DECIMAL)
             .times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT))
             .toString()
           setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPrice(price))
@@ -267,7 +266,7 @@ const TradePriceTable = () => {
     }
 
     return max.div(CKB_DECIMAL).toString()
-  }, [orders.askOrders, orders.bidOrders, sudt])
+  }, [orders.askOrders, orders.bidOrders])
 
   return (
     <Container>

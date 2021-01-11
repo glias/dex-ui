@@ -1,3 +1,4 @@
+import { QuestionCircleOutlined } from '@ant-design/icons'
 import { TOKEN_LOGOS } from 'constants/tokens'
 import React, { useMemo } from 'react'
 import { TokenContainer } from './styled'
@@ -27,7 +28,7 @@ const Token = ({ tokenName, className }: TokenProps) => {
   return (
     <TokenContainer color={color} className={className ?? ''}>
       <span className="icon">
-        <img alt={tokenName} src={logo} />
+        {logo ? <img alt={tokenName} src={logo} /> : <QuestionCircleOutlined translate="unknown" />}
       </span>
       <div className="text">{tokenName}</div>
     </TokenContainer>

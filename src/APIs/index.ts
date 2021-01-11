@@ -22,7 +22,6 @@ import { calcAskReceive } from 'utils/fee'
 import Web3 from 'web3'
 import {
   CKB_NODE_URL,
-  COMMISSION_FEE,
   CROSS_CHAIN_FEE_RATE,
   ORDER_BOOK_LOCK_SCRIPT,
   SUDT_DEP,
@@ -30,7 +29,8 @@ import {
   SUDT_LIST,
 } from '../constants'
 import { OrderType } from '../containers/order'
-import { buildAskData, replayResistOutpoints, spentCells, toHexString } from '../utils'
+import { buildAskData, RawOrder, replayResistOutpoints, spentCells, toHexString } from '../utils'
+import { INFO_ABI } from './ABI'
 
 export * from './checkSubmittedTxs'
 export * from './bridge'
@@ -129,8 +129,8 @@ export async function getBestPrice(type: Script, orderType: OrderType) {
   }
 }
 
-export async function getAllHistoryOrders(lockArgs: string, signal?: AbortSignal) {
-  const res = await Promise.all(SUDT_LIST.map(sudt => getHistoryOrders(lockArgs, sudt, signal)))
+export async function getAllHistoryOrders(lockArgs: string) {
+  const res = await Promise.all(SUDT_LIST.map(sudt => getHistoryOrders(lockArgs, sudt)))
   return res
     .map((r, index) => {
       return r.map((d: any) => {
@@ -143,7 +143,7 @@ export async function getAllHistoryOrders(lockArgs: string, signal?: AbortSignal
     .flat()
 }
 
-export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA, signal?: AbortSignal) {
+export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA) {
   const TypeScript = sudt.toTypeScript()
 
   const params = {
@@ -153,9 +153,49 @@ export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA, signa
     type_args: TypeScript.args,
   }
 
-  return fetch(`${SERVER_URL}/order-history?${new URLSearchParams(params)}`, {
+  const controller = new AbortController()
+  const { signal } = controller
+
+  const promise = fetch(`${SERVER_URL}/order-history?${new URLSearchParams(params)}`, {
     signal,
-  }).then(res => res.json())
+  })
+
+  // @ts-ignore
+  promise.cancel = () => controller.abort()
+
+  return promise.then(res => res.json())
+}
+
+export function getBatchHistoryOrders(
+  lockArgs: string,
+  ckbAddress: string,
+  ethAddress: string,
+): Promise<AxiosResponse<{ normal_orders: RawOrder[]; cross_chain_orders: ForceBridgeHistory }>> {
+  const TypeScript = SUDT_GLIA.toTypeScript()
+  const source = axios.CancelToken.source()
+
+  const params = {
+    order_lock_args: lockArgs,
+    type_code_hash: TypeScript.codeHash,
+    type_hash_type: TypeScript.hashType,
+    ckb_address: ckbAddress,
+    eth_address: ethAddress,
+    types: SUDT_LIST.map(s => {
+      const type = s.toTypeScript()
+      return {
+        type_args: type.args,
+      }
+    }),
+  }
+
+  const promise = axios.post(`${SERVER_URL}/order-history-batch`, params, {
+    cancelToken: source.token,
+  })
+
+  // @ts-ignore
+  promise.cancel = () => controller.abort()
+
+  return promise
 }
 
 export type SudtTransaction = {
@@ -190,6 +230,9 @@ export function getCkbTransactions(lock: Script): Promise<AxiosResponse<SudtTran
 }
 
 export function getTransactionHeader(blockHashes: string[]) {
+  if (blockHashes.length === 0) {
+    return []
+  }
   const requests: Array<['getHeader', any]> = blockHashes.map(hash => ['getHeader', hash])
   return ckb.rpc.createBatchRequest(requests).exec()
 }
@@ -291,10 +334,7 @@ export async function placeCrossChainOrder(
 ) {
   const decimal = sudt?.info?.decimals ?? ETH_DECIMAL_INT
 
-  const amount = new BigNumber(pay)
-    .times(1 - COMMISSION_FEE)
-    .times(new BigNumber(10).pow(decimal))
-    .toFixed(0, 1)
+  const amount = new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toFixed(0, 1)
   const receive = calcAskReceive(pay, price)
   const sudtData = buildAskData(receive, price, decimal)
 
@@ -563,4 +603,51 @@ export async function placeNormalOrder(
   tx.raw.cellDeps.push(SUDT_DEP)
 
   return tx.validate()
+}
+
+export async function getCkbTokenCellInfo(typeHash: string) {
+  const params = {
+    type_code_hash: typeHash,
+  }
+
+  try {
+    await axios.get(`${SERVER_URL}/token/cell-info`, {
+      params,
+    })
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+export interface SUDTInfo {
+  name: string
+  symbol: string
+  decimal: number
+  address: string
+  chainName: 'ckb'
+  typeHash: string
+}
+
+export function searchSUDT(query: string): Promise<AxiosResponse<any[]>> {
+  const params = {
+    typeHashOrAddress: query,
+  }
+
+  return axios.get(`${SERVER_URL}/tokens/search`, {
+    params,
+  })
+}
+
+export async function searchERC20(address: string, web3: Web3) {
+  try {
+    const contract = new web3.eth.Contract(INFO_ABI, address)
+    const tokenName = await contract.methods.name().call()
+    return {
+      tokenName,
+      address,
+    }
+  } catch (error) {
+    return undefined
+  }
 }
