@@ -196,7 +196,7 @@ const getOrderCellType = (index: number, isLast: boolean, isCrossChain: boolean,
       case 'aborted':
         return 'Cancel Order'
       case 'claimed':
-        return 'Claim Order'
+        return 'Complete Order'
       default:
         return 'Match Order'
     }
@@ -252,6 +252,9 @@ const OrderModal = ({
         return 'opening'
       }
       return 'pending'
+    }
+    if (status === 'claimed') {
+      return 'completed'
     }
     return status
   }, [status, orderCells])

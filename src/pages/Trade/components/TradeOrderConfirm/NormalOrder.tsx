@@ -112,7 +112,7 @@ export default function NormalOrder() {
     <OrderResult>
       <List list={totalPayDetail} />
       <List list={tradeDetails} isDeatil />
-      <Meta amount={lockedCkbAmount} />
+      <Meta lockedCkbAmount={lockedCkbAmount} transactionFee={transactionFee} />
       <List list={payDetail} />
       <Divider style={{ margin: '20px 0' }} />
       <List list={receiveDetail} />
