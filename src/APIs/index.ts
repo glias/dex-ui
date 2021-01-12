@@ -274,14 +274,22 @@ export async function shadowAssetCrossOut(
   const amount = `0x${totalPay.toString(16)}`
   const unlockFee = `0x${payWithDecimal.times(CROSS_CHAIN_FEE_RATE).toString(16)}`
 
-  return axios.post(`${FORCE_BRIDGER_SERVER_URL}/burn`, {
-    from_lockscript_addr: ckbAddress,
-    unlock_fee: unlockFee,
-    amount,
-    token_address: tokenAddress,
-    recipient_address: ethAddress,
-    sender: ethAddress,
-  })
+  return axios
+    .post(`${FORCE_BRIDGER_SERVER_URL}/burn`, {
+      from_lockscript_addr: ckbAddress,
+      unlock_fee: unlockFee,
+      amount,
+      token_address: tokenAddress,
+      recipient_address: ethAddress,
+      sender: ethAddress,
+    })
+    .catch(() => {
+      return Promise.reject(
+        new Error(
+          `You don't have enough live cells to complete this transaction, please wait for other transactions to be completed.`,
+        ),
+      )
+    })
 }
 
 export async function shadowAssetCrossIn(
@@ -592,7 +600,9 @@ export async function placeNormalOrder(
     spent_cells: spentCells.get(),
   }
 
-  const res = await axios.post(`${SERVER_URL}/place-order`, params)
+  const res = await axios.post(`${SERVER_URL}/place-order`, params).catch(err => {
+    return Promise.reject(err.response.data)
+  })
 
   const { inputCells, outputs } = res.data.raw
 
