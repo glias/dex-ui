@@ -287,8 +287,19 @@ export async function shadowAssetCrossOut(
       recipient_address: ethAddress,
       sender: ethAddress,
     })
-    .catch(() => {
-      return Promise.reject(new Error(`You don't have enough CKB to complete this transaction.`))
+    .catch(err => {
+      const msg: string = err.response.data
+      const capacity = msg.split('need capacity:')?.[1]?.split(',')?.[0]?.trim()
+      return Promise.reject(
+        new Error(
+          capacity
+            ? `It will take at least ${new Amount(
+                capacity,
+                AmountUnit.shannon,
+              ).toString()} CKB to complete this transaction.`
+            : `You don't have enough CKB to complete this transaction.`,
+        ),
+      )
     })
 }
 
