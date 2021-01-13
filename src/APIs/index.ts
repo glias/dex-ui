@@ -288,11 +288,7 @@ export async function shadowAssetCrossOut(
       sender: ethAddress,
     })
     .catch(() => {
-      return Promise.reject(
-        new Error(
-          `You don't have enough live cells to complete this transaction, please wait for other transactions to be completed.`,
-        ),
-      )
+      return Promise.reject(new Error(`You don't have enough CKB to complete this transaction.`))
     })
 }
 
