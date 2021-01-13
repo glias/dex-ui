@@ -37,11 +37,20 @@ export function calcBuyAmount(pay: string) {
   return new BigNumber(pay).plus(new BigNumber(ORDER_CELL_CAPACITY)).toString()
 }
 
+;(window as any).BigNumber = BigNumber
+
 export function toFormatWithoutTrailingZero(n: string, decimal = 8) {
   if (!n) {
     return '0.00'
   }
-  return new BigNumber(n).toFormat(decimal, 1).replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1')
+  return new BigNumber(
+    n
+      .split('')
+      .filter(word => word !== ',')
+      .join(''),
+  )
+    .toFormat(decimal, 1)
+    .replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1')
 }
 
 export function removeTrailingZero(str: string) {

@@ -38,7 +38,7 @@ const CrossIn = () => {
     const list: Item[] = [
       {
         desc: i18n.t('trade.result.crossChain'),
-        value: toFormatWithoutTrailingZero(pay),
+        value: pay,
         unit: buyer,
       },
       {

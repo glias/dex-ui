@@ -13,6 +13,7 @@ import {
   Transaction,
 } from '@lay2/pw-core'
 import CKB from '@nervosnetwork/ckb-sdk-core'
+import { Modal } from 'antd'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
@@ -241,6 +242,7 @@ export function getTransactionHeader(blockHashes: string[]) {
 export async function getOrCreateBridgeCell(
   ckbAddress: string,
   ethAddress = '0x0000000000000000000000000000000000000000',
+  forceCreate = false,
   bridgeFee = '0x0',
   retry = 0,
 ): Promise<AxiosResponse<any>> {
@@ -249,6 +251,8 @@ export async function getOrCreateBridgeCell(
       recipient_address: ckbAddress,
       eth_token_address: ethAddress,
       bridge_fee: bridgeFee,
+      force_create: forceCreate,
+      cell_num: 30,
     })
 
     return res
@@ -258,7 +262,7 @@ export async function getOrCreateBridgeCell(
     }
     // eslint-disable-next-line no-param-reassign
     retry += 1
-    return getOrCreateBridgeCell(ckbAddress, ethAddress, bridgeFee, retry)
+    return getOrCreateBridgeCell(ckbAddress, ethAddress, forceCreate, bridgeFee, retry)
   }
 }
 
@@ -318,8 +322,8 @@ export async function shadowAssetCrossIn(
     nonce: toHexString(nonce),
     sender: ethAddress,
   })
-  if (outpoints.length <= 1) {
-    getOrCreateBridgeCell(ckbAddress, ethAddress).then(r => {
+  if (outpoints.length <= 4) {
+    getOrCreateBridgeCell(ckbAddress, ethAddress, true).then(r => {
       replayResistOutpoints.add(key, r.data.outpoints)
     })
   }
@@ -371,8 +375,12 @@ export async function placeCrossChainOrder(
     gas_price: toHexString(gasPrice),
     nonce: toHexString(nonce),
   })
-  if (outpoints.length <= 1) {
-    const r = await getOrCreateBridgeCell(recipientAddress, tokenAddress)
+  if (outpoints.length <= 4) {
+    Modal.warn({
+      content: 'Your bridge cells has run out and it will take about a minute to recreate bridge cells.',
+      okText: 'OK',
+    })
+    const r = await getOrCreateBridgeCell(recipientAddress, tokenAddress, true)
     replayResistOutpoints.add(key, r.data.outpoints)
   }
   replayResistOutpoints.remove(key, op)

@@ -159,7 +159,7 @@ export function useOrder() {
 
   const ckbMax = useMemo(() => {
     return new BigNumber(Wallet.ckbWallet.free.toString())
-      .plus(MAX_TRANSACTION_FEE)
+      .minus(MAX_TRANSACTION_FEE)
       .minus(ORDER_CELL_CAPACITY)
       .toFixed(8, 1)
   }, [Wallet.ckbWallet.free])
