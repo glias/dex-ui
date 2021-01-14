@@ -339,7 +339,7 @@ export default function OrderTable() {
               .toFixed(CKB_DECIMAL_INT, 0)
 
             const actualPay = removeTrailingZero(p)
-            const tx = await placeNormalOrder(actualPay, Order.price, Wallet.ckbWallet.address, false, sudt)
+            const tx = await placeNormalOrder(actualPay, Order.price, Wallet.ckbWallet.address, true, sudt)
             Order.setTx(tx)
             Order.setPay(actualPay)
           } else {
