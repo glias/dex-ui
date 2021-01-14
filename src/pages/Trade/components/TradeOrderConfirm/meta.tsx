@@ -29,6 +29,10 @@ export const Meta = ({ lockedCkbAmount, transactionFee }: { lockedCkbAmount: str
       return `Your ${ORDER_CELL_CAPACITY} CKB will be temporarily locked and will be automatically unlocked once swapping successfully.`
     }
 
+    if (ckbWallet.balance.isGreaterThan(ORDER_CELL_CAPACITY + 61 + MAX_TRANSACTION_FEE)) {
+      return `Your ${ORDER_CELL_CAPACITY} CKB will be temporarily locked and will be automatically unlocked once swapping successfully.`
+    }
+
     return `Your ${new BigNumber(lockedCkbAmount)
       .minus(pay)
       .toString()} CKB will be temporarily locked and will be automatically unlocked once swapping successfully.`

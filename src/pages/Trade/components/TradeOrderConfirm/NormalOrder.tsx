@@ -65,6 +65,7 @@ export default function NormalOrder() {
         desc: i18n.t('trade.result.trade'),
         value: toFormatWithoutTrailingZero(Order.actualPay),
         unit: buyer,
+        tooltip: Order.orderType === OrderType.Bid ? 'The maximum amount you would pay in trade.' : undefined,
       },
       {
         desc: i18n.t('trade.result.tradeFee'),
@@ -78,7 +79,7 @@ export default function NormalOrder() {
       },
     ]
     return list
-  }, [tradeFee, buyer, transactionFee, Order.actualPay])
+  }, [tradeFee, buyer, transactionFee, Order.actualPay, Order.orderType])
 
   const payDetail = useMemo(() => {
     const list: Item[] = [

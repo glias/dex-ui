@@ -22,6 +22,8 @@ import {
   ERC20_LIST,
   SUDT_LIST,
   DEFAULT_PAY_DECIMAL,
+  COMMISSION_FEE,
+  CKB_DECIMAL_INT,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
 import {
@@ -330,14 +332,20 @@ export default function OrderTable() {
         case OrderMode.Order: {
           const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
           const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)!
-          const tx = await placeNormalOrder(
-            Order.pay,
-            Order.price,
-            Wallet.ckbWallet.address,
-            OrderType.Bid === Order.orderType,
-            sudt,
-          )
-          Order.setTx(tx)
+          if (Order.orderType === OrderType.Bid) {
+            const p = new BigNumber(Order.receive)
+              .times(Order.price)
+              .div(1 - COMMISSION_FEE)
+              .toFixed(CKB_DECIMAL_INT, 0)
+
+            const actualPay = removeTrailingZero(p)
+            const tx = await placeNormalOrder(actualPay, Order.price, Wallet.ckbWallet.address, false, sudt)
+            Order.setTx(tx)
+            Order.setPay(actualPay)
+          } else {
+            const tx = await placeNormalOrder(Order.pay, Order.price, Wallet.ckbWallet.address, false, sudt)
+            Order.setTx(tx)
+          }
           break
         }
         case OrderMode.CrossChain: {
