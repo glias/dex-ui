@@ -286,10 +286,7 @@ export function useOrder() {
           if (seller === 'CKB') {
             setMaxPay(new BigNumber(shadowWallet.balance.toString()).toString())
           } else {
-            const max =
-              orderMode === OrderMode.CrossOut
-                ? shadowWallet.balance.times(1 - CROSS_CHAIN_FEE_RATE)
-                : shadowWallet.balance
+            const max = shadowWallet.balance
             setMaxPay(max.toString())
           }
         } else if (erc20Wallet) {

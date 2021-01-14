@@ -481,10 +481,10 @@ export default function OrderTable() {
         <Header>
           <h3>{i18n.t('trade.trade')}</h3>
         </Header>
-        {isRelaying && lockHash && disabled ? (
+        {isRelaying && lockHash ? (
           <span className="alert">{i18n.t('trade.relaying', { t1: firstToken, t2: secondToken })}</span>
         ) : null}
-        {insufficientCKB && Wallet.ckbWallet.address && disabled ? (
+        {insufficientCKB && Wallet.ckbWallet.address ? (
           <span className="alert">{i18n.t('trade.insufficientAmount')}</span>
         ) : null}
         <Pairs onSelect={onPairSelect} pairs={Order.pair} onSwap={changePair} />
