@@ -274,8 +274,7 @@ export async function shadowAssetCrossOut(
   decimal = ETH_DECIMAL_INT,
 ) {
   const payWithDecimal = new BigNumber(pay).times(new BigNumber(10).pow(decimal))
-  const totalPay = payWithDecimal.times(1 - CROSS_CHAIN_FEE_RATE)
-  const amount = `0x${totalPay.toString(16)}`
+  const amount = `0x${payWithDecimal.toString(16)}`
   const unlockFee = `0x${payWithDecimal.times(CROSS_CHAIN_FEE_RATE).toString(16)}`
 
   return axios
