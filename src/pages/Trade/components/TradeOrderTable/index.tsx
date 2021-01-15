@@ -108,6 +108,22 @@ const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
   )
 }
 
+function findRightReceive(receive: string, price: string, decimal: number) {
+  let rr = new BigNumber(new BigNumber(receive).toFixed(decimal, 1)).times(10 ** decimal)
+  const realPrice = new BigNumber(price).times(10 ** (8 - decimal))
+  while (rr.isGreaterThan(0)) {
+    const target = rr.times(realPrice)
+    if (target.isInteger()) {
+      return rr
+    }
+    rr = rr.minus(1)
+  }
+
+  throw new Error('The minimum tradable value cannot be found.')
+}
+
+;(window as any).BigNumber = BigNumber
+
 export default function OrderTable() {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
@@ -332,8 +348,10 @@ export default function OrderTable() {
         case OrderMode.Order: {
           const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
           const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)!
+          const sudtDecimal = sudt?.info?.decimals!
           if (Order.orderType === OrderType.Bid) {
-            const p = new BigNumber(Order.receive)
+            const receive = findRightReceive(Order.receive, Order.price, sudtDecimal)
+            const p = new BigNumber(receive.div(10 ** sudtDecimal))
               .times(Order.price)
               .div(1 - COMMISSION_FEE)
               .toFixed(CKB_DECIMAL_INT, 0)
