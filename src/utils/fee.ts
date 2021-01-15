@@ -89,8 +89,11 @@ export function displayPayOrReceive(str: string, isPay: boolean) {
   if (decimal <= 4) {
     return amount.toFormat(4, roundingMode)
   }
-  if (decimal >= 8 && intVal.length === 0) {
+  if (decimal >= 8 && intVal === '0') {
     return amount.toFormat(8, roundingMode)
+  }
+  if (decimal > 4 && decimal < 8 && intVal === '0') {
+    return amount.toFixed(decimal, roundingMode)
   }
   return amount.toFormat(4, roundingMode)
 }
