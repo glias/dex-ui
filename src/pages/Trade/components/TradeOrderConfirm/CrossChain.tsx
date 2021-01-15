@@ -72,12 +72,12 @@ const CrossChain = () => {
       {
         desc: i18n.t(`trade.price`),
         value: price,
-        unit: `CKB per ETH`,
+        unit: `CKB per ${buyer}`,
       },
     ]
 
     return list
-  }, [price])
+  }, [price, buyer])
 
   const receiveDetail = useMemo(() => {
     const list: Item[] = [
