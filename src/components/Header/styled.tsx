@@ -56,6 +56,7 @@ export const HeaderPanel = styled.div`
   margin: 0 auto;
   background-color: #6b70e0;
   position: relative;
+  height: 50px;
   .ant-menu {
     background-color: #6b70e0;
     border-bottom: 1px solid transparent;
