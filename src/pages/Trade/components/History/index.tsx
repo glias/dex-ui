@@ -155,8 +155,8 @@ const columns = [
       let result = '-'
       if (paidAmount && paidAmount !== '0' && tradedAmount && tradedAmount !== '0') {
         const price = order.isBid
-          ? new BigNumber(paidAmount).div(1 + COMMISSION_FEE).div(tradedAmount)
-          : new BigNumber(tradedAmount).div(new BigNumber(paidAmount).div(1 + COMMISSION_FEE))
+          ? new BigNumber(paidAmount).times(1 - COMMISSION_FEE).div(tradedAmount)
+          : new BigNumber(tradedAmount).div(new BigNumber(paidAmount).times(1 - COMMISSION_FEE))
         result = displayPrice(price.toString())
       }
       return (
