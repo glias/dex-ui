@@ -1,4 +1,5 @@
 import { CrossChainOrder } from 'APIs'
+import BigNumber from 'bignumber.js'
 import type { SubmittedOrder } from '../containers/order'
 
 const PENDING_ORDERS_LABEL = 'ckb_dex_pending_orders'
@@ -105,7 +106,14 @@ const isSameSpentCell = (c1: SpentCell, c2: SpentCell) => {
 export const spentCells = {
   get: (): SpentCell[] => {
     try {
-      return JSON.parse(localStorage.getItem(SPENDT_CELLS_LABEL)!) || []
+      const cells: SpentCell[] = JSON.parse(localStorage.getItem(SPENDT_CELLS_LABEL)!) || []
+      return cells.filter(cell => {
+        if (cell.timestamp) {
+          const cellTime = new BigNumber(cell.timestamp)
+          return cellTime.plus(30 * 60 * 1000).isLessThan(Date.now())
+        }
+        return false
+      })
     } catch (err) {
       return []
     }
@@ -114,6 +122,7 @@ export const spentCells = {
     const allSpentCells = spentCells.get()
     for (let i = 0; i < cells.length; i++) {
       const cell = cells[i]
+      cell.timestamp = Date.now().toString()
       if (!allSpentCells.some(c => isSameSpentCell(c, cell))) {
         allSpentCells.push(cell)
       }

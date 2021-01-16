@@ -1,14 +1,14 @@
 export function findRightReceive(receive: string, price: string) {
   const RADITO = 10 ** 10
   const ZERO = BigInt(0)
-  let rr = BigInt(receive)
+  let realReceive = BigInt(receive)
   const realPrice = BigInt(price)
-  while (rr > 0) {
-    const target = (rr * realPrice) % BigInt(RADITO)
+  while (realReceive > 0) {
+    const target = (realReceive * realPrice) % BigInt(RADITO)
     if (target === ZERO) {
-      return rr
+      return realReceive
     }
-    rr -= BigInt(1)
+    realReceive -= BigInt(1)
   }
 
   throw new Error('The minimum tradable value cannot be found.')

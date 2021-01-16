@@ -113,8 +113,6 @@ const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
   )
 }
 
-;(window as any).BigNumber = BigNumber
-
 export default function OrderTable() {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
@@ -340,36 +338,42 @@ export default function OrderTable() {
           const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
           const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)!
           const sudtDecimal = sudt?.info?.decimals!
-          if (Order.orderType === OrderType.Bid && sudtDecimal < 10) {
-            const realReceive = new BigNumber(new BigNumber(Order.receive).toFixed(sudtDecimal, 1))
-              .times(10 ** sudtDecimal)
-              .toString()
-            const realPrice = new BigNumber(Order.price)
-              .times(10 ** (8 - sudtDecimal))
-              .times(10 ** 10)
-              .toString()
-            const receive = await receivePool
-              .exec(findRightReceive, [realReceive, realPrice, sudtDecimal])
-              .catch((err: any) => {
-                throw err
-              })
-            const p = new BigNumber(new BigNumber(receive).div(10 ** sudtDecimal))
-              .times(Order.price)
-              .div(1 - COMMISSION_FEE)
-              .toFixed(CKB_DECIMAL_INT, 0)
+          if (Order.orderType === OrderType.Bid) {
+            if (sudtDecimal > 10) {
+              const p = new BigNumber(Order.receive)
+                .times(Order.price)
+                .div(1 - COMMISSION_FEE)
+                .toFixed(CKB_DECIMAL_INT, 1)
 
-            const actualPay = removeTrailingZero(p)
-            const tx = await placeNormalOrder(actualPay, Order.price, Wallet.ckbWallet.address, true, sudt)
-            Order.setTx(tx)
-            Order.setPay(actualPay)
+              const actualPay = removeTrailingZero(p)
+              const tx = await placeNormalOrder(actualPay, Order.price, Wallet.ckbWallet.address, true, sudt)
+              Order.setTx(tx)
+              Order.setPay(actualPay)
+            } else {
+              const realReceive = new BigNumber(new BigNumber(Order.receive).toFixed(sudtDecimal, 1))
+                .times(10 ** sudtDecimal)
+                .toString()
+              const realPrice = new BigNumber(Order.price)
+                .times(10 ** (8 - sudtDecimal))
+                .times(10 ** 10)
+                .toString()
+              const receive = await receivePool
+                .exec(findRightReceive, [realReceive, realPrice, sudtDecimal])
+                .catch((err: any) => {
+                  throw err
+                })
+              const p = new BigNumber(new BigNumber(receive).div(10 ** sudtDecimal))
+                .times(Order.price)
+                .div(1 - COMMISSION_FEE)
+                .toFixed(CKB_DECIMAL_INT, 0)
+
+              const actualPay = removeTrailingZero(p)
+              const tx = await placeNormalOrder(actualPay, Order.price, Wallet.ckbWallet.address, true, sudt)
+              Order.setTx(tx)
+              Order.setPay(actualPay)
+            }
           } else {
-            const tx = await placeNormalOrder(
-              Order.pay,
-              Order.price,
-              Wallet.ckbWallet.address,
-              Order.orderType === OrderType.Bid,
-              sudt,
-            )
+            const tx = await placeNormalOrder(Order.pay, Order.price, Wallet.ckbWallet.address, false, sudt)
             Order.setTx(tx)
           }
           break
