@@ -259,6 +259,7 @@ export const usePollOrderList = ({
     {
       enabled: !!lockArgs,
       refetchInterval: ORDER_LIST_TIMER,
+      refetchIntervalInBackground: true,
       retry: (failureCount: number) => {
         if (failureCount % 3 === 0 && failureCount !== 0) {
           // eslint-disable-next-line no-unused-expressions
