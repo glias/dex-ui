@@ -11,7 +11,7 @@ import WalletContainer from 'containers/wallet'
 import { submittedOrders } from 'utils/cache'
 import { SUDT_MAP } from 'constants/sudt'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
-import { ckb, getBatchHistoryOrders } from '../../../../APIs'
+import { ckb, getBatchHistoryOrders, getForceBridgeHistory } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import type { RawOrder } from '../../../../utils'
@@ -141,23 +141,26 @@ export const usePollingOrderStatus = ({
           })
       }
 
-      // const checkCkbStatus = (index: number) => {
-      //   getForceBridgeHistory(ckbAddress, ethAddress).then(res => {
-      //     const { ckb_to_eth, eth_to_ckb } = res.data
-      //     const orders = ckb_to_eth.concat(eth_to_ckb)
-      //     const forceBridgeItem = orders.find(p => p.eth_tx_hash === cells?.[index]?.tx_hash)
-      //     if (forceBridgeItem && forceBridgeItem.ckb_tx_hash) {
-      //       // eslint-disable-next-line no-param-reassign
-      //       cells[index].tx_hash = forceBridgeItem.ckb_tx_hash!
-      //       dispatch({
-      //         type: ActionType.UpdateCurrentOrderStatus,
-      //         value: cells,
-      //       })
+      const checkCkbStatus = (index: number) => {
+        getForceBridgeHistory(ckbAddress, ethAddress).then(res => {
+          const { ckb_to_eth, eth_to_ckb } = res.data
+          const orders = ckb_to_eth.concat(eth_to_ckb)
+          const forceBridgeItem = orders.find(p => p.eth_tx_hash === cells?.[index]?.tx_hash)
+          if (forceBridgeItem && forceBridgeItem.ckb_tx_hash) {
+            // eslint-disable-next-line no-param-reassign
+            cells[index].tx_hash = forceBridgeItem.eth_tx_hash!
+            // eslint-disable-next-line no-param-reassign
+            cells[index + 1].tx_hash = forceBridgeItem.ckb_tx_hash!
+            // eslint-disable-next-line no-debugger
+            dispatch({
+              type: ActionType.UpdateCurrentOrderStatus,
+              value: cells,
+            })
 
-      //       checkCkbTransaction(forceBridgeItem.ckb_tx_hash!, index)
-      //     }
-      //   })
-      // }
+            checkCkbTransaction(forceBridgeItem.ckb_tx_hash!, index + 1)
+          }
+        })
+      }
 
       const checkCkbTransaction = (txHash: string, index: number) => {
         if (!txHash) {
@@ -182,6 +185,7 @@ export const usePollingOrderStatus = ({
       const checkStatus = () => {
         if (isCrossChain) {
           checkEthStatus()
+          checkCkbStatus(0)
         } else {
           const index = pending ? cells.length - 1 : 0
           checkCkbTransaction(cells?.[index]?.tx_hash, index)
