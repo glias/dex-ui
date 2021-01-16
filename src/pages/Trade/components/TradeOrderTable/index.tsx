@@ -41,6 +41,11 @@ import WalletContainer from '../../../../containers/wallet'
 import { ReactComponent as SelectTokenSVG } from '../../../../assets/svg/select-token.svg'
 import { ReactComponent as SwapTokenSVG } from '../../../../assets/svg/swap-token.svg'
 import { ReactComponent as ArrowTradeSvg } from '../../../../assets/svg/arrow-trade.svg'
+import { findRightReceive } from './p'
+
+const workerpool = require('workerpool')
+
+const receivePool = workerpool.pool()
 
 // eslint-disable-next-line
 type ElementOnClick = (event: React.MouseEvent<any, MouseEvent>) => void
@@ -106,20 +111,6 @@ const Pairs = ({ onSwap, pairs, onSelect }: PairsProps) => {
       </Swap>
     </PairsContainer>
   )
-}
-
-function findRightReceive(receive: string, price: string, decimal: number) {
-  let rr = new BigNumber(new BigNumber(receive).toFixed(decimal, 1)).times(10 ** decimal)
-  const realPrice = new BigNumber(price).times(10 ** (8 - decimal))
-  while (rr.isGreaterThan(0)) {
-    const target = rr.times(realPrice)
-    if (target.isInteger()) {
-      return rr
-    }
-    rr = rr.minus(1)
-  }
-
-  throw new Error('The minimum tradable value cannot be found.')
 }
 
 ;(window as any).BigNumber = BigNumber
@@ -349,9 +340,20 @@ export default function OrderTable() {
           const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
           const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)!
           const sudtDecimal = sudt?.info?.decimals!
-          if (Order.orderType === OrderType.Bid) {
-            const receive = findRightReceive(Order.receive, Order.price, sudtDecimal)
-            const p = new BigNumber(receive.div(10 ** sudtDecimal))
+          if (Order.orderType === OrderType.Bid && sudtDecimal < 10) {
+            const realReceive = new BigNumber(new BigNumber(Order.receive).toFixed(sudtDecimal, 1))
+              .times(10 ** sudtDecimal)
+              .toString()
+            const realPrice = new BigNumber(Order.price)
+              .times(10 ** (8 - sudtDecimal))
+              .times(10 ** 10)
+              .toString()
+            const receive = await receivePool
+              .exec(findRightReceive, [realReceive, realPrice, sudtDecimal])
+              .catch((err: any) => {
+                throw err
+              })
+            const p = new BigNumber(new BigNumber(receive).div(10 ** sudtDecimal))
               .times(Order.price)
               .div(1 - COMMISSION_FEE)
               .toFixed(CKB_DECIMAL_INT, 0)
@@ -361,7 +363,13 @@ export default function OrderTable() {
             Order.setTx(tx)
             Order.setPay(actualPay)
           } else {
-            const tx = await placeNormalOrder(Order.pay, Order.price, Wallet.ckbWallet.address, false, sudt)
+            const tx = await placeNormalOrder(
+              Order.pay,
+              Order.price,
+              Wallet.ckbWallet.address,
+              Order.orderType === OrderType.Bid,
+              sudt,
+            )
             Order.setTx(tx)
           }
           break
