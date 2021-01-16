@@ -1,6 +1,13 @@
 import BigNumber from 'bignumber.js'
 import { COMMISSION_FEE, ORDER_CELL_CAPACITY, CROSS_CHAIN_FEE_RATE } from '../constants'
 
+export function findBestReceive(receive: string, price: string) {
+  const r = new BigNumber(receive)
+  const p = new BigNumber(price)
+  const [, k] = p.toFraction()
+  return r.minus(r.mod(k))
+}
+
 export function calcBuyReceive(pay: string, price: string) {
   return new BigNumber(pay)
     .div(new BigNumber(1).plus(new BigNumber(COMMISSION_FEE)))
