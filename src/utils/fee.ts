@@ -64,24 +64,25 @@ export function removeTrailingZero(str: string) {
   return str.replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1')
 }
 
-export function displayPrice(str: string) {
+export function displayPrice(str: string, isBid = false) {
   const amount = new BigNumber(str)
   const intVal = amount.integerValue().toString()
+  const roundingMode = isBid ? BigNumber.ROUND_DOWN : BigNumber.ROUND_UP
   if (intVal.length > 2) {
-    return amount.toFormat(2)
+    return amount.toFormat(2, roundingMode)
   }
 
   if (intVal.length === 0) {
     const decimal = amount.decimalPlaces()
     if (decimal <= 4) {
-      return amount.toFixed(4)
+      return amount.toFixed(4, roundingMode)
     }
 
     if (decimal >= 8) {
-      return amount.toFixed(8)
+      return amount.toFixed(8, roundingMode)
     }
 
-    return amount.toFixed(decimal)
+    return amount.toFixed(decimal, roundingMode)
   }
 
   return amount.toFixed(4)

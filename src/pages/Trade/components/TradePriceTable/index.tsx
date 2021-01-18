@@ -1,6 +1,7 @@
 import OrderContainer from 'containers/order'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import i18n from 'utils/i18n'
+import { Tooltip } from 'antd'
 import { getOrders, Orders, getCurrentPrice } from 'APIs'
 import { useContainer } from 'unstated-next'
 import { SUDTWithoutPw, SUDT_LIST } from 'constants/sudt'
@@ -71,8 +72,8 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
 
   const onClick = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
-    setPrice?.(parseFormatedPrice(price))
-  }, [setPrice, price])
+    setPrice?.(parseFormatedPrice(displayPrice(price, isBid)))
+  }, [setPrice, price, isBid])
 
   let priceClassName = isBid ? 'bid' : 'ask'
 
@@ -86,7 +87,9 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
         {!isBid ? payElement : receiveElement}
         {isBid ? payElement : receiveElement}
         <Td position="flex-end" fontWeight="bold">
-          <span className={priceClassName}>{price}</span>
+          <Tooltip title={price}>
+            <span className={priceClassName}>{displayPrice(price, isBid)}</span>
+          </Tooltip>
         </Td>
       </Progress>
     </Tr>
@@ -142,7 +145,7 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
             <List
               setPrice={setPrice}
               progress={progress}
-              price={displayPrice(price)}
+              price={price}
               pay={displayPayOrReceive(pay, true)}
               receive={displayPayOrReceive(receive.toString(), false)}
               key={key}
@@ -158,7 +161,7 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
           <List
             setPrice={setPrice}
             progress={progress}
-            price={displayPrice(price)}
+            price={price}
             pay={displayPayOrReceive(totalPay, true)}
             receive={displayPayOrReceive(receive.toString(), false)}
             key={key}

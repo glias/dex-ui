@@ -132,10 +132,7 @@ const columns = [
     dataIndex: 'executed',
     key: 'price',
     render: (executed: string) => {
-      let percent = parseInt(executed, 10)
-      if (percent === 99) {
-        percent = 100
-      }
+      const percent = parseInt(executed, 10)
       return (
         <Progress
           trailColor="#C4C4C4"
@@ -431,11 +428,10 @@ const History = () => {
           )
         }
         case 'opening': {
-          const percent = parseInt(order.executed, 10)
           return (
             <div className={styles.center}>
               <Button onClick={handleClick} className={styles.action}>
-                {percent === 99 ? 'Claim' : 'Cancel'}
+                Cancel
               </Button>
               {status}
             </div>
