@@ -85,7 +85,7 @@ export function displayPrice(str: string, isBid = false) {
     return amount.toFixed(decimal, roundingMode)
   }
 
-  return amount.toFixed(4)
+  return amount.toFixed(4, roundingMode)
 }
 
 export function displayPayOrReceive(str: string, isPay: boolean) {
