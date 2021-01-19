@@ -120,8 +120,8 @@ const OrderModal = ({
   const { isLock } = order
   const firstTx = isLock ? ethTx : ckbTx
   const secondTx = isLock ? ckbTx : ethTx
-  const firstDescription = `Confirm on ${isLock ? 'Ethereum' : 'CKB'}`
-  const secondDescription = `Confirm on ${!isLock ? 'Ethereum' : 'CKB'}`
+  const firstDescription = `Confirm on ${isLock ? 'Ethereum' : 'Nervos'}`
+  const secondDescription = `Confirm on ${!isLock ? 'Ethereum' : 'Nervos'}`
   const { status } = order
   const isFirstTxLoading = useMemo(() => {
     if (status === CrossChainOrderStatus.Completed) {
