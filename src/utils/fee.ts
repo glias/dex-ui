@@ -90,18 +90,10 @@ export function displayPrice(str: string, isBid = false) {
 
 export function displayPayOrReceive(str: string, isPay: boolean) {
   const amount = new BigNumber(str)
-  const decimal = amount.decimalPlaces()
   const roundingMode = isPay ? BigNumber.ROUND_HALF_UP : BigNumber.ROUND_DOWN
-  const intVal = amount.integerValue().toString()
 
-  if (decimal <= 4) {
-    return amount.toFormat(4, roundingMode)
-  }
-  if (decimal >= 8 && intVal === '0') {
-    return amount.toFormat(8, roundingMode)
-  }
-  if (decimal > 4 && decimal < 8 && intVal === '0') {
-    return amount.toFixed(decimal, roundingMode)
+  if (amount.isLessThan(0.0001)) {
+    return '< 0.0001'
   }
   return amount.toFormat(4, roundingMode)
 }
