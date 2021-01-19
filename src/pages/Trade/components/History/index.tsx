@@ -11,7 +11,7 @@ import PWCore from '@lay2/pw-core'
 import styled from 'styled-components'
 import { ErrorCode } from 'exceptions'
 import WalletContainer from '../../../../containers/wallet'
-import OrderContainer from '../../../../containers/order'
+import OrderContainer, { ShowStatus } from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
 import { getTimeString, pendingOrders } from '../../../../utils'
 import { COMMISSION_FEE, ERC20_LIST, ETHER_SCAN_URL, EXPLORER_URL, HISTORY_QUERY_KEY } from '../../../../constants'
@@ -310,12 +310,6 @@ const OrderModal = ({
   )
 }
 
-export enum ShowStatus {
-  Open,
-  History,
-  CrossChain,
-}
-
 const History = () => {
   const [state, dispatch] = useReducer(reducer, {
     orderList: [],
@@ -329,8 +323,7 @@ const History = () => {
   const query = new URLSearchParams(location.search)
   const type = query.get(HISTORY_QUERY_KEY.type) || 'all'
   const wallet = useContainer(WalletContainer)
-  const { submittedOrders: submittedOrderList } = useContainer(OrderContainer)
-
+  const { submittedOrders: submittedOrderList, showStatus, setShowStatus } = useContainer(OrderContainer)
   const { address } = wallet.ckbWallet
   const { ethWallet } = wallet
   const handleWithdraw = useHandleWithdrawOrder(address, dispatch)
@@ -458,8 +451,6 @@ const History = () => {
     ...submittedOrderList.map(o => ({ ...o, key: `${o.key}:${o.createdAt}` })),
     ...state.orderList.filter(order => !submittedOrderList.some(submitted => submitted.key === order.key)),
   ].filter(order => orderFilter(type, order))
-
-  const [showStatus, setShowStatus] = useState(ShowStatus.Open)
 
   const orders = useMemo(() => {
     if (showStatus === ShowStatus.Open) {

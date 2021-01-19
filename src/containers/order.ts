@@ -28,6 +28,13 @@ export enum OrderStep {
 }
 
 // eslint-disable-next-line no-shadow
+export enum ShowStatus {
+  Open,
+  History,
+  CrossChain,
+}
+
+// eslint-disable-next-line no-shadow
 export enum OrderType {
   Bid = 'Bid',
   Ask = 'Ask',
@@ -83,6 +90,7 @@ export function useOrder() {
   const [secondToken, setSellerToken] = useState(() => Wallet.ckbWallet.tokenName)
   const [selectingToken, setSelectingToken] = useState<'first' | 'second'>('first')
   const [currentPairToken, setCurrentPairToken] = useState(Wallet.ethWallet.tokenName)
+  const [showStatus, setShowStatus] = useState(ShowStatus.Open)
 
   useEffect(() => {
     if (!address) {
@@ -407,6 +415,18 @@ export function useOrder() {
     [setERC20ApproveStatus],
   )
 
+  useEffect(() => {
+    switch (orderMode) {
+      case OrderMode.CrossIn:
+      case OrderMode.CrossOut:
+        setShowStatus(ShowStatus.CrossChain)
+        break
+      default:
+        setShowStatus(ShowStatus.Open)
+        break
+    }
+  }, [orderMode])
+
   return {
     currentApproveStatus,
     shouldApprove,
@@ -451,6 +471,8 @@ export function useOrder() {
     isCrossChainOnly,
     actualPay,
     formRef,
+    showStatus,
+    setShowStatus,
   }
 }
 
