@@ -7,7 +7,7 @@ import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
 import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from 'constants/number'
 import { List, Item } from './list'
-import { OrderResult } from './styled'
+import { MetaContainer, OrderResult } from './styled'
 import { CrossMeta } from './CrossMeta'
 
 const CrossChain = () => {
@@ -104,6 +104,10 @@ const CrossChain = () => {
       <Divider style={{ margin: '20px 0' }} />
       <List list={receiveDetail} />
       <CrossMeta />
+      <MetaContainer>
+        Placing this order may take 5-15 minutes. Need to wait for the confirmation of 15 blocks on the Ethereum to
+        ensure the security.
+      </MetaContainer>
     </OrderResult>
   )
 }
