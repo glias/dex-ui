@@ -234,9 +234,11 @@ export default function OrderTable() {
         return Promise.reject(i18n.t(`trade.greaterThanZero`))
       }
 
-      if (orderType === OrderType.Bid && val.isLessThan(1)) {
-        setIsPayInvalid(true)
-        return Promise.reject(new Error('The minimum pay amount we support is 1 CKB'))
+      if (!isCrossInOrOut) {
+        if (orderType === OrderType.Bid && val.isLessThan(1)) {
+          setIsPayInvalid(true)
+          return Promise.reject(new Error('The minimum pay amount we support is 1 CKB'))
+        }
       }
 
       if (!isCrossInOrOut) {
