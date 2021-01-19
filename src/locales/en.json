@@ -1,7 +1,7 @@
 {
   "translation": {
     "header": {
-      "Trade": "Swap",
+      "Trade": "Trade",
       "Pool": "Pool",
       "Match": "Match",
       "wallet": "Connect Wallet",
@@ -17,7 +17,7 @@
       "ckbAddressTooltip": "A Transit Address. When you receive CKB from exchanges or CKB wallets with no full address support, please use this address."
     },
     "trade": {
-      "trade": "Swap",
+      "trade": "Trade",
       "pair": "Pair",
       "pay": "Your Pay",
       "max": "MAX",

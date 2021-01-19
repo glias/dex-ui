@@ -533,7 +533,7 @@ export default function OrderTable() {
     <OrderTableContainer id="order-box" isBid={isBid}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Header>
-          <h3>{i18n.t('trade.trade')}</h3>
+          <h3>{isCrossInOrOut ? 'Cross Chain' : i18n.t('trade.trade')}</h3>
         </Header>
         {isRelaying && lockHash ? (
           <span className="alert">{i18n.t('trade.relaying', { t1: firstToken, t2: secondToken })}</span>

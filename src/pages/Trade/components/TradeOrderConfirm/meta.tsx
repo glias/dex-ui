@@ -24,18 +24,18 @@ export const Meta = ({ lockedCkbAmount, transactionFee }: { lockedCkbAmount: str
       ) {
         return `Your ${ckbWallet.balance.minus(transactionFee)} CKB and ${sudtWallet.balance
           .minus(pay)
-          .toString()} ${tokenName} will be temporarily locked and will be automatically unlocked once swapping successfully.`
+          .toString()} ${tokenName} will be temporarily locked and will be automatically unlocked once trading successfully.`
       }
-      return `Your ${ORDER_CELL_CAPACITY} CKB will be temporarily locked and will be automatically unlocked once swapping successfully.`
+      return `Your ${ORDER_CELL_CAPACITY} CKB will be temporarily locked and will be automatically unlocked once trading successfully.`
     }
 
     if (ckbWallet.balance.isGreaterThan(ORDER_CELL_CAPACITY + 61 + MAX_TRANSACTION_FEE)) {
-      return `Your ${ORDER_CELL_CAPACITY} CKB will be temporarily locked and will be automatically unlocked once swapping successfully.`
+      return `Your ${ORDER_CELL_CAPACITY} CKB will be temporarily locked and will be automatically unlocked once trading successfully.`
     }
 
     return `Your ${new BigNumber(lockedCkbAmount)
       .minus(pay)
-      .toString()} CKB will be temporarily locked and will be automatically unlocked once swapping successfully.`
+      .toString()} CKB will be temporarily locked and will be automatically unlocked once trading successfully.`
   }, [pair, orderType, sudtWallets, ckbWallet.balance, pay, lockedCkbAmount, transactionFee])
   return (
     <MetaContainer>
