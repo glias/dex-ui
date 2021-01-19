@@ -239,17 +239,19 @@ export default function OrderTable() {
         return Promise.reject(new Error('The minimum pay amount we support is 1 CKB'))
       }
 
-      if (orderType === OrderType.Ask) {
-        if (isETH) {
-          if (val.isLessThan(0.0001)) {
-            setIsPayInvalid(true)
-            return Promise.reject(new Error('The minimum pay amount we support is 0.0001 ETH'))
-          }
-        } else {
-          // eslint-disable-next-line no-lonely-if
-          if (val.isLessThan(0.001)) {
-            setIsPayInvalid(true)
-            return Promise.reject(new Error(`The minimum pay amount we support is 0.0001 ${Order.pair[0]}`))
+      if (!isCrossInOrOut) {
+        if (orderType === OrderType.Ask) {
+          if (isETH) {
+            if (val.isLessThan(0.0001)) {
+              setIsPayInvalid(true)
+              return Promise.reject(new Error('The minimum pay amount we support is 0.0001 ETH'))
+            }
+          } else {
+            // eslint-disable-next-line no-lonely-if
+            if (val.isLessThan(0.001)) {
+              setIsPayInvalid(true)
+              return Promise.reject(new Error(`The minimum pay amount we support is 0.001 ${Order.pair[0]}`))
+            }
           }
         }
       }
@@ -273,7 +275,7 @@ export default function OrderTable() {
 
       return Promise.resolve()
     },
-    [maxPay, payDecimal, Order.pair, isETH, orderType],
+    [maxPay, payDecimal, Order.pair, isETH, orderType, isCrossInOrOut],
   )
 
   const checkPrice = useCallback(
