@@ -1,3 +1,4 @@
+/* eslint-disable no-lonely-if */
 /* eslint-disable operator-linebreak */
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Form, Tooltip, Modal, Input, Divider } from 'antd'
@@ -5,7 +6,7 @@ import BigNumber from 'bignumber.js'
 import Token from 'components/Token'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
-import { findBestReceive, removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
+import { removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
 import {
   placeCrossChainOrder,
   placeNormalOrder,
@@ -22,8 +23,6 @@ import {
   ERC20_LIST,
   SUDT_LIST,
   DEFAULT_PAY_DECIMAL,
-  COMMISSION_FEE,
-  CKB_DECIMAL_INT,
 } from '../../../../constants'
 import i18n from '../../../../utils/i18n'
 import {
@@ -112,11 +111,12 @@ export default function OrderTable() {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
-  const { price, pay, setPrice, setPay, receive: originalReceive, setStep, formRef } = Order
+  const { price, pay, setPrice, setPay, receive: originalReceive, setStep, formRef, orderType } = Order
   const [buyer, seller] = Order.pair
   const [collectingCells, setCollectingCells] = useState(false)
   const [isPayInvalid, setIsPayInvalid] = useState(true)
   const [isPriceInvalid, setIsPriceInvalid] = useState(true)
+  const [receiveErrorMsg, setReceiveErrorMsg] = useState('')
   const { web3, ethWallet, isWalletNotConnected } = Wallet
 
   const isCrossInOrOut = useMemo(() => {
@@ -127,8 +127,8 @@ export default function OrderTable() {
     if (isCrossInOrOut) {
       return isPayInvalid
     }
-    return isPayInvalid || isPriceInvalid
-  }, [isPayInvalid, isPriceInvalid, isCrossInOrOut])
+    return isPayInvalid || isPriceInvalid || !!receiveErrorMsg
+  }, [isPayInvalid, isPriceInvalid, isCrossInOrOut, receiveErrorMsg])
 
   const formatedReceive = useMemo(() => {
     return originalReceive === '0' ? '' : toFormatWithoutTrailingZero(originalReceive)
@@ -221,6 +221,10 @@ export default function OrderTable() {
     return sudt?.info?.decimals ?? erc20?.decimals ?? DEFAULT_PAY_DECIMAL
   }, [firstToken])
 
+  const isETH = useMemo(() => {
+    return Order.pair.find(t => t.includes('ETH'))
+  }, [Order.pair])
+
   const checkPay = useCallback(
     (_: any, value: string): Promise<void> => {
       const val = new BigNumber(value)
@@ -228,6 +232,26 @@ export default function OrderTable() {
       if (val.isLessThanOrEqualTo(0)) {
         setIsPayInvalid(true)
         return Promise.reject(i18n.t(`trade.greaterThanZero`))
+      }
+
+      if (orderType === OrderType.Bid && val.isLessThan(1)) {
+        setIsPayInvalid(true)
+        return Promise.reject(new Error('The minimum pay amount we support is 1 CKB'))
+      }
+
+      if (orderType === OrderType.Ask) {
+        if (isETH) {
+          if (val.isLessThan(0.0001)) {
+            setIsPayInvalid(true)
+            return Promise.reject(new Error('The minimum pay amount we support is 0.0001 ETH'))
+          }
+        } else {
+          // eslint-disable-next-line no-lonely-if
+          if (val.isLessThan(0.001)) {
+            setIsPayInvalid(true)
+            return Promise.reject(new Error(`The minimum pay amount we support is 0.0001 ${Order.pair[0]}`))
+          }
+        }
       }
 
       if (Number.isNaN(parseFloat(value))) {
@@ -249,23 +273,31 @@ export default function OrderTable() {
 
       return Promise.resolve()
     },
-    [maxPay, payDecimal],
+    [maxPay, payDecimal, Order.pair, isETH, orderType],
   )
 
   const checkPrice = useCallback(
     (_: unknown, value: string) => {
       const val = new BigNumber(value)
-      const decimal = 8
-      const [integerValue] = val.toString().split('.')
-
-      if (integerValue.length > decimal) {
-        setIsPriceInvalid(true)
-        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
-      }
-
       if (Number.isNaN(parseFloat(value))) {
         setIsPriceInvalid(true)
         return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
+      }
+
+      const [, decimalValue] = val.toString().split('.')
+      const decimal = decimalValue?.length ?? 0
+
+      if (isETH) {
+        if (decimal > 2) {
+          setIsPriceInvalid(true)
+          return Promise.reject(new Error(`The value allows up to 2 decimals`))
+        }
+      } else {
+        // eslint-disable-next-line no-lonely-if
+        if (decimal > 4) {
+          setIsPriceInvalid(true)
+          return Promise.reject(new Error(`The value allows up to 4 decimals`))
+        }
       }
 
       if (val.isLessThanOrEqualTo(0)) {
@@ -278,23 +310,43 @@ export default function OrderTable() {
         return Promise.reject(i18n.t(`trade.tooSmallNumber`))
       }
 
-      if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
-        setIsPriceInvalid(true)
-        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
-      }
-
       setIsPriceInvalid(false)
 
       return Promise.resolve()
     },
-    [MIN_VAL],
+    [MIN_VAL, isETH],
   )
 
-  const checkReceive = useCallback(() => {
-    // if (new BigNumber(Order.receive).isLessThan(MINIUM_RECEIVE)) {
-    //   return Promise.reject(i18n.t('trade.miniumReceive'))
-    // }
+  useEffect(() => {
+    const val = new BigNumber(Order.receive)
 
+    if (isCrossInOrOut || isPayInvalid || isPriceInvalid) {
+      return
+    }
+
+    if (orderType === OrderType.Ask) {
+      if (val.isLessThan(1)) {
+        setReceiveErrorMsg('The minimum receive amount we support is 1 CKB')
+        return
+      }
+    } else {
+      if (isETH) {
+        if (val.isLessThan(0.0001)) {
+          setReceiveErrorMsg('The minimum receive amount we support is 0.0001 ETH')
+          return
+        }
+      } else {
+        if (val.isLessThan(0.001)) {
+          setReceiveErrorMsg(`The minimum receive amount we support is 0.0001 ${Order.pair[1]}`)
+          return
+        }
+      }
+    }
+
+    setReceiveErrorMsg('')
+  }, [Order.receive, orderType, isETH, Order.pair, isCrossInOrOut, isPayInvalid, isPriceInvalid])
+
+  const checkReceive = useCallback(() => {
     return Promise.resolve()
   }, [])
 
@@ -332,27 +384,14 @@ export default function OrderTable() {
         case OrderMode.Order: {
           const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
           const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)!
-          const sudtDecimal = sudt?.info?.decimals!
-          if (Order.orderType === OrderType.Bid) {
-            const realReceive = new BigNumber(new BigNumber(Order.receive).toFixed(sudtDecimal, 1))
-              .times(10 ** sudtDecimal)
-              .toString()
-            const realPrice = new BigNumber(Order.price).times(10 ** (8 - sudtDecimal)).toString()
-
-            const receive = findBestReceive(realReceive, realPrice)
-            const p = new BigNumber(new BigNumber(receive).div(10 ** sudtDecimal))
-              .times(Order.price)
-              .div(1 - COMMISSION_FEE)
-              .toFixed(CKB_DECIMAL_INT, 0)
-
-            const actualPay = removeTrailingZero(p)
-            const tx = await placeNormalOrder(actualPay, Order.price, Wallet.ckbWallet.address, true, sudt)
-            Order.setTx(tx)
-            Order.setPay(actualPay)
-          } else {
-            const tx = await placeNormalOrder(Order.pay, Order.price, Wallet.ckbWallet.address, false, sudt)
-            Order.setTx(tx)
-          }
+          const tx = await placeNormalOrder(
+            Order.pay,
+            Order.price,
+            Wallet.ckbWallet.address,
+            Order.orderType === OrderType.Bid,
+            sudt,
+          )
+          Order.setTx(tx)
           break
         }
         case OrderMode.CrossChain: {
@@ -581,6 +620,7 @@ export default function OrderTable() {
             readOnly
           />
         </Form.Item>
+        {receiveErrorMsg ? <span className="receiveErr">{receiveErrorMsg}</span> : null}
         <Form.Item className="submit">
           {shouldApprove ? (
             <ConfirmButton
