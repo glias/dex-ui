@@ -68,6 +68,11 @@ export function displayPrice(str: string, isBid = false) {
   const amount = new BigNumber(str)
   const intVal = amount.integerValue().toString()
   const roundingMode = isBid ? BigNumber.ROUND_DOWN : BigNumber.ROUND_UP
+
+  if (amount.toString() === 'NaN') {
+    return '-'
+  }
+
   if (intVal.length > 2) {
     return amount.toFormat(2, roundingMode)
   }
