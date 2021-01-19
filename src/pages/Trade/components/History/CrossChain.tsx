@@ -185,12 +185,12 @@ const OrderModal = ({
       <div className={styles.records}>
         <div className={styles.record}>
           <span className={styles.chain}>
-            {firstDescription}
             {isFirstTxLoading ? (
               <LoadingOutlined translate="loading" className={styles.check} />
             ) : (
               <CheckCircleOutlined translate="check" className={styles.check} />
             )}
+            {firstDescription}
           </span>
           <span className={styles.hash}>
             <a target="_blank" rel="noopener noreferrer" href={buildURL(firstTx, isLock)}>
@@ -200,12 +200,15 @@ const OrderModal = ({
         </div>
         <div className={styles.record}>
           <span className={styles.chain}>
-            {secondDescription}
             {isSecondTxLoading ? (
               <LoadingOutlined translate="loading" className={styles.check} />
             ) : (
               <CheckCircleOutlined translate="check" className={styles.check} />
             )}
+            {secondDescription}
+            <Tooltip title="This step may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the Ethereum to ensure the security.">
+              <i className="ai-question-circle-o" />
+            </Tooltip>
           </span>
           <span className={styles.hash}>
             {secondTx.length < 10 ? (

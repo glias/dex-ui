@@ -3,12 +3,27 @@ import { Divider } from 'antd'
 import BigNumber from 'bignumber.js'
 import { toFormatWithoutTrailingZero } from 'utils/fee'
 import i18n from 'utils/i18n'
+import styled from 'styled-components'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
 import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from 'constants/number'
+import { Meta } from 'components/SelectToken'
 import { List, Item } from './list'
-import { MetaContainer, OrderResult } from './styled'
+import { OrderResult } from './styled'
 import { CrossMeta } from './CrossMeta'
+
+const MetaContainer = styled.div`
+  .meta {
+    .image {
+      color: #1890ff;
+      svg {
+        width: 22px;
+        height: 22px;
+        margin-right: 0pc;
+      }
+    }
+  }
+`
 
 const CrossChain = () => {
   const Order = useContainer(OrderContainer)
@@ -105,8 +120,10 @@ const CrossChain = () => {
       <List list={receiveDetail} />
       <CrossMeta pureCross={false} />
       <MetaContainer>
-        Placing this order may take 5-15 minutes. Need to wait for the confirmation of 15 blocks on the Ethereum to
-        ensure the security.
+        <Meta
+          info="Placing this order may take 5-15 minutes. Need to wait for the confirmation of 15 blocks on the Ethereum to
+        ensure the security."
+        />
       </MetaContainer>
     </OrderResult>
   )

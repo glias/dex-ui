@@ -41,7 +41,7 @@ const Item = ({
   )
 }
 
-const Meta = ({ info }: { info: React.ReactNode }) => {
+export const Meta = ({ info }: { info: React.ReactNode }) => {
   return (
     <MetaContainer>
       <div className="meta">

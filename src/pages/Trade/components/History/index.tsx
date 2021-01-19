@@ -10,6 +10,7 @@ import { displayPayOrReceive, displayPrice } from 'utils/fee'
 import PWCore from '@lay2/pw-core'
 import styled from 'styled-components'
 import { ErrorCode } from 'exceptions'
+import { Meta } from 'components/SelectToken'
 import WalletContainer from '../../../../containers/wallet'
 import OrderContainer, { ShowStatus } from '../../../../containers/order'
 import type { SubmittedOrder } from '../../../../containers/order'
@@ -42,6 +43,27 @@ const ModalContainer = styled(Modal)`
 
   .ant-modal-title {
     font-weight: bold !important;
+  }
+
+  .ant-modal-body {
+    i {
+      margin-left: 4px;
+    }
+
+    svg {
+      margin-right: 4px;
+    }
+  }
+
+  .meta {
+    .image {
+      color: #1890ff;
+      svg {
+        width: 22px;
+        height: 22px;
+        margin-right: 0pc;
+      }
+    }
   }
 `
 
@@ -185,9 +207,15 @@ const orderFilter = (type: string, order: OrderInList) => {
   }
 }
 
-const getOrderCellType = (index: number, isLast: boolean, isCrossChain: boolean, status: OrderInList['status']) => {
+const getOrderCellType = (
+  index: number,
+  isLast: boolean,
+  isCrossChain: boolean,
+  status: OrderInList['status'],
+  tokenName: string,
+) => {
   if (index === 0) {
-    return isCrossChain ? 'Cross Chain' : 'Place Order'
+    return isCrossChain ? `Lock ${tokenName}` : 'Place Order'
   }
   if (isCrossChain && index === 1) {
     return 'Place Order'
@@ -283,15 +311,21 @@ const OrderModal = ({
               ? `${ETHER_SCAN_URL}tx/${cell.tx_hash}`
               : `${EXPLORER_URL}transaction/${cell.tx_hash}`
           const isLoading = (status === 'pending' || (pending && isLast)) && !cell.isLoaded
+          const type = getOrderCellType(index, isLast, isCrossChain, status, currentOrder.tokenName)
           return (
             <div key={cell.tx_hash} className={styles.record}>
               <span className={styles.type}>
-                {getOrderCellType(index, isLast, isCrossChain, status)}
                 {isLoading ? (
                   <LoadingOutlined translate="loading" className={styles.check} />
                 ) : (
                   <CheckCircleOutlined translate="check" className={styles.check} />
                 )}
+                {type}
+                {isCrossChain && type === 'Place Order' ? (
+                  <Tooltip title="This step may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the Ethereum to ensure the security.">
+                    <i className="ai-question-circle-o" />
+                  </Tooltip>
+                ) : null}
               </span>
               <span className={styles.hash}>
                 {txHash === '...' ? (
@@ -306,6 +340,11 @@ const OrderModal = ({
           )
         })}
       </div>
+      {isCrossChain ? (
+        <Meta
+          info={`Please be notice that if you want to cancel the order after placing it successfully, you will receive the ${currentOrder.tokenName} mirror assets on Nervos.`}
+        />
+      ) : null}
     </ModalContainer>
   )
 }
