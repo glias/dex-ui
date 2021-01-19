@@ -103,7 +103,7 @@ const CrossChain = () => {
       <List list={priceDetail} />
       <Divider style={{ margin: '20px 0' }} />
       <List list={receiveDetail} />
-      <CrossMeta />
+      <CrossMeta pureCross={false} />
       <MetaContainer>
         Placing this order may take 5-15 minutes. Need to wait for the confirmation of 15 blocks on the Ethereum to
         ensure the security.
