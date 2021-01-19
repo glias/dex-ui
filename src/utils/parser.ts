@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { CKB_DECIMAL, COMMISSION_FEE, CKB_DECIMAL_INT, DEFAULT_PAY_DECIMAL, SUDT_MAP } from '../constants'
+import { removeTrailingZero } from './fee'
 
 export interface OrderCell {
   tx_hash: string
@@ -56,11 +57,11 @@ export const parseOrderRecord = ({
   )
   return {
     key,
-    pay: `${payAmount.toFixed(5, 1)}`,
+    pay: `${removeTrailingZero(payAmount.toFixed(isBid ? CKB_DECIMAL_INT : sudtDecimalInt, 1))}`,
     paidAmount: `${paidAmount}`,
     tradedAmount: `${tradedAmount}`,
     isBid,
-    receive: `${orderAmount.toFixed(5, 1)}`,
+    receive: `${removeTrailingZero(orderAmount.toFixed(!isBid ? CKB_DECIMAL_INT : sudtDecimalInt, 1))}`,
     executed: `${new BigNumber(turnover_rate).multipliedBy(100)}%`,
     price: `${priceInNum}`,
     status: status === 'claimable' ? 'completed' : status,

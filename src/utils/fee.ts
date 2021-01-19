@@ -40,6 +40,10 @@ export function calcBidReceive(pay: string, price: string, decimal: number) {
     .toFixed(decimal, 1)
 }
 
+export function displayReceiveTooltip(n: BigNumber, isBid: boolean, sudtDecimal: number) {
+  return removeTrailingZero(n.toFixed(!isBid ? 8 : sudtDecimal, 1))
+}
+
 export function calcBuyAmount(pay: string) {
   return new BigNumber(pay).plus(new BigNumber(ORDER_CELL_CAPACITY)).toString()
 }
