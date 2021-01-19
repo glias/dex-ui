@@ -45,7 +45,7 @@ export default function TradePairConfirm() {
   const { reloadWallet, ethWallet, web3, connectStatus } = Wallet
 
   useEffect(() => {
-    if (connectStatus === 'disconnected') {
+    if (connectStatus === 'disconnected' || connectStatus === 'connecting') {
       setDisabled(false)
       reset()
       setStep(OrderStep.Order)
