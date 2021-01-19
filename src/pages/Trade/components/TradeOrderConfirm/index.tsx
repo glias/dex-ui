@@ -6,7 +6,7 @@ import HeaderWithGoback from 'components/HeaderWithGoback'
 import { Divider, Modal } from 'antd'
 import { SUDT_LIST } from 'constants/sudt'
 import { DEFAULT_PAY_DECIMAL } from 'constants/number'
-import { CrossChainOrder, CrossChainOrderStatus, relayEthToCKB } from 'APIs'
+import { CrossChainOrder, CrossChainOrderStatus } from 'APIs'
 import { TradePairConfirmBox, TradePairConfirmContent, Footer } from './styled'
 import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
@@ -16,10 +16,10 @@ import {
   calcAskReceive,
   calcBidReceive,
   calcCrossOutFee,
-  calcTotalPay,
-  removeTrailingZero,
+  displayPayOrReceive,
+  // removeTrailingZero,
 } from '../../../../utils/fee'
-import { spentCells } from '../../../../utils'
+import { relayEthTxHash, spentCells } from '../../../../utils'
 import { Pairs } from './pairs'
 import CrossChain from './CrossChain'
 import CrossIn from './CrossIn'
@@ -45,7 +45,7 @@ export default function TradePairConfirm() {
   const { reloadWallet, ethWallet, web3, connectStatus } = Wallet
 
   useEffect(() => {
-    if (connectStatus === 'disconnected') {
+    if (connectStatus === 'disconnected' || connectStatus === 'connecting') {
       setDisabled(false)
       reset()
       setStep(OrderStep.Order)
@@ -72,7 +72,7 @@ export default function TradePairConfirm() {
                 key: `${hash}:0x0`,
                 isBid: false,
                 status: 'pending',
-                pay: calcTotalPay(pay),
+                pay,
                 receive: calcAskReceive(pay, price),
                 price,
                 executed: '0%',
@@ -88,7 +88,7 @@ export default function TradePairConfirm() {
             if (OrderMode.CrossIn === Order.orderMode) {
               const crossChainOrder: CrossChainOrder = {
                 tokenName: firstToken,
-                amount: pay,
+                amount: displayPayOrReceive(pay, true),
                 timestamp: `${Date.now()}`,
                 ckbTxHash: '',
                 ethTxHash: hash,
@@ -129,7 +129,7 @@ export default function TradePairConfirm() {
         key: `${txHash}:0x0`,
         isBid,
         status: 'pending',
-        pay: calcTotalPay(pay),
+        pay,
         receive: receiveCalc(pay, price, sudt?.info?.decimals ?? DEFAULT_PAY_DECIMAL),
         price,
         executed: '0%',
@@ -149,7 +149,7 @@ export default function TradePairConfirm() {
       const txHash = await Wallet.pw!.sendTransaction(tx)
       const crossChainOrder: CrossChainOrder = {
         tokenName: firstToken.slice(2),
-        amount: removeTrailingZero(calcCrossOutFee(pay)),
+        amount: displayPayOrReceive(calcCrossOutFee(pay), true),
         timestamp: `${Date.now()}`,
         ckbTxHash: txHash,
         ethTxHash: '',
@@ -171,7 +171,7 @@ export default function TradePairConfirm() {
         case OrderMode.CrossChain:
         case OrderMode.CrossIn: {
           await placeCrossChain(tx, async (txHash: string) => {
-            await relayEthToCKB(txHash)
+            relayEthTxHash.add(txHash)
             setTxHash(txHash)
             setStep(OrderStep.Result)
           })

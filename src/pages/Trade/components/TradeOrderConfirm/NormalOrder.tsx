@@ -24,12 +24,12 @@ export default function NormalOrder() {
   }, [Order.pay])
 
   const totalPay = useMemo(() => {
-    let amount = new BigNumber(Order.pay).plus(new BigNumber(tradeFee))
+    let amount = new BigNumber(Order.pay)
     if (buyer === 'CKB') {
       amount = amount.plus(new BigNumber(transactionFee))
     }
     return toFormatWithoutTrailingZero(amount.toString())
-  }, [Order.pay, buyer, tradeFee, transactionFee])
+  }, [Order.pay, buyer, transactionFee])
 
   const lockedCkbAmount = useMemo(() => {
     if (Order.tx) {
@@ -63,8 +63,9 @@ export default function NormalOrder() {
     const list: Item[] = [
       {
         desc: i18n.t('trade.result.trade'),
-        value: toFormatWithoutTrailingZero(Order.pay),
+        value: toFormatWithoutTrailingZero(Order.actualPay),
         unit: buyer,
+        tooltip: Order.orderType === OrderType.Bid ? 'The maximum amount you would pay in trade.' : undefined,
       },
       {
         desc: i18n.t('trade.result.tradeFee'),
@@ -78,7 +79,7 @@ export default function NormalOrder() {
       },
     ]
     return list
-  }, [tradeFee, buyer, transactionFee, Order.pay])
+  }, [tradeFee, buyer, transactionFee, Order.actualPay, Order.orderType])
 
   const payDetail = useMemo(() => {
     const list: Item[] = [
@@ -112,7 +113,7 @@ export default function NormalOrder() {
     <OrderResult>
       <List list={totalPayDetail} />
       <List list={tradeDetails} isDeatil />
-      <Meta amount={lockedCkbAmount} />
+      <Meta lockedCkbAmount={lockedCkbAmount} transactionFee={transactionFee} />
       <List list={payDetail} />
       <Divider style={{ margin: '20px 0' }} />
       <List list={receiveDetail} />

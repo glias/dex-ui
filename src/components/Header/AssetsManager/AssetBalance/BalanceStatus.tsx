@@ -77,7 +77,7 @@ export const BalanceStatus = () => {
           </div>
         )}
         <div className="balance-desc-item">
-          <Description label={t('Locked in Gliaswap')}>
+          <Description label={t('Locked in GliaDEX')}>
             <Balance value={locked} />
           </Description>
         </div>

@@ -13,18 +13,25 @@ import {
   Transaction,
 } from '@lay2/pw-core'
 import CKB from '@nervosnetwork/ckb-sdk-core'
+import { Modal } from 'antd'
 import axios, { AxiosResponse } from 'axios'
 import BigNumber from 'bignumber.js'
 import { RPC as ToolKitRpc } from 'ckb-js-toolkit'
 import { TransactionDirection, TransactionStatus } from 'components/Header/AssetsManager/api'
 import { findByTxHash } from 'components/Header/AssetsManager/pendingTxs'
-import DEXCollector from 'pw/dexCollector'
-import PlaceOrderBuilder from 'pw/placeOrderBuilder'
 import { calcAskReceive } from 'utils/fee'
 import Web3 from 'web3'
-import { CKB_NODE_URL, CROSS_CHAIN_FEE_RATE, ORDER_BOOK_LOCK_SCRIPT, SUDT_GLIA, SUDT_LIST } from '../constants'
+import {
+  CKB_NODE_URL,
+  CROSS_CHAIN_FEE_RATE,
+  ORDER_BOOK_LOCK_SCRIPT,
+  SUDT_DEP,
+  SUDT_GLIA,
+  SUDT_LIST,
+} from '../constants'
 import { OrderType } from '../containers/order'
-import { buildSellData, replayResistOutpoints, spentCells, toHexString } from '../utils'
+import { buildAskData, RawOrder, replayResistOutpoints, spentCells, toHexString } from '../utils'
+import { INFO_ABI } from './ABI'
 
 export * from './checkSubmittedTxs'
 export * from './bridge'
@@ -127,7 +134,7 @@ export async function getAllHistoryOrders(lockArgs: string) {
   const res = await Promise.all(SUDT_LIST.map(sudt => getHistoryOrders(lockArgs, sudt)))
   return res
     .map((r, index) => {
-      return r.data.map((d: any) => {
+      return r.map((d: any) => {
         return {
           ...d,
           tokenName: SUDT_LIST[index]?.info?.symbol ?? '',
@@ -147,9 +154,49 @@ export function getHistoryOrders(lockArgs: string, sudt: SUDT = SUDT_GLIA) {
     type_args: TypeScript.args,
   }
 
-  return axios.get(`${SERVER_URL}/order-history`, {
-    params,
+  const controller = new AbortController()
+  const { signal } = controller
+
+  const promise = fetch(`${SERVER_URL}/order-history?${new URLSearchParams(params)}`, {
+    signal,
   })
+
+  // @ts-ignore
+  promise.cancel = () => controller.abort()
+
+  return promise.then(res => res.json())
+}
+
+export function getBatchHistoryOrders(
+  lockArgs: string,
+  ckbAddress: string,
+  ethAddress: string,
+): Promise<AxiosResponse<{ normal_orders: RawOrder[]; cross_chain_orders: ForceBridgeHistory }>> {
+  const TypeScript = SUDT_GLIA.toTypeScript()
+  const source = axios.CancelToken.source()
+
+  const params = {
+    order_lock_args: lockArgs,
+    type_code_hash: TypeScript.codeHash,
+    type_hash_type: TypeScript.hashType,
+    ckb_address: ckbAddress,
+    eth_address: ethAddress,
+    types: SUDT_LIST.map(s => {
+      const type = s.toTypeScript()
+      return {
+        type_args: type.args,
+      }
+    }),
+  }
+
+  const promise = axios.post(`${SERVER_URL}/order-history-batch`, params, {
+    cancelToken: source.token,
+  })
+
+  // @ts-ignore
+  promise.cancel = () => controller.abort()
+
+  return promise
 }
 
 export type SudtTransaction = {
@@ -184,6 +231,9 @@ export function getCkbTransactions(lock: Script): Promise<AxiosResponse<SudtTran
 }
 
 export function getTransactionHeader(blockHashes: string[]) {
+  if (blockHashes.length === 0) {
+    return []
+  }
   const requests: Array<['getHeader', any]> = blockHashes.map(hash => ['getHeader', hash])
   return ckb.rpc.createBatchRequest(requests).exec()
 }
@@ -192,6 +242,7 @@ export function getTransactionHeader(blockHashes: string[]) {
 export async function getOrCreateBridgeCell(
   ckbAddress: string,
   ethAddress = '0x0000000000000000000000000000000000000000',
+  forceCreate = false,
   bridgeFee = '0x0',
   retry = 0,
 ): Promise<AxiosResponse<any>> {
@@ -200,6 +251,8 @@ export async function getOrCreateBridgeCell(
       recipient_address: ckbAddress,
       eth_token_address: ethAddress,
       bridge_fee: bridgeFee,
+      force_create: forceCreate,
+      cell_num: 30,
     })
 
     return res
@@ -209,7 +262,7 @@ export async function getOrCreateBridgeCell(
     }
     // eslint-disable-next-line no-param-reassign
     retry += 1
-    return getOrCreateBridgeCell(ckbAddress, ethAddress, bridgeFee, retry)
+    return getOrCreateBridgeCell(ckbAddress, ethAddress, forceCreate, bridgeFee, retry)
   }
 }
 
@@ -221,18 +274,32 @@ export async function shadowAssetCrossOut(
   decimal = ETH_DECIMAL_INT,
 ) {
   const payWithDecimal = new BigNumber(pay).times(new BigNumber(10).pow(decimal))
-  const totalPay = payWithDecimal.times(1 + CROSS_CHAIN_FEE_RATE)
-  const amount = `0x${totalPay.toString(16)}`
+  const amount = `0x${payWithDecimal.toString(16)}`
   const unlockFee = `0x${payWithDecimal.times(CROSS_CHAIN_FEE_RATE).toString(16)}`
 
-  return axios.post(`${FORCE_BRIDGER_SERVER_URL}/burn`, {
-    from_lockscript_addr: ckbAddress,
-    unlock_fee: unlockFee,
-    amount,
-    token_address: tokenAddress,
-    recipient_address: ethAddress,
-    sender: ethAddress,
-  })
+  return axios
+    .post(`${FORCE_BRIDGER_SERVER_URL}/burn`, {
+      from_lockscript_addr: ckbAddress,
+      unlock_fee: unlockFee,
+      amount,
+      token_address: tokenAddress,
+      recipient_address: ethAddress,
+      sender: ethAddress,
+    })
+    .catch(err => {
+      const msg: string = err.response.data
+      const capacity = msg.split('need capacity:')?.[1]?.split(',')?.[0]?.trim()
+      return Promise.reject(
+        new Error(
+          capacity
+            ? `It will take at least ${new Amount(
+                capacity,
+                AmountUnit.shannon,
+              ).toString()} CKB to complete this transaction.`
+            : `You don't have enough CKB to complete this transaction.`,
+        ),
+      )
+    })
 }
 
 export async function shadowAssetCrossIn(
@@ -261,8 +328,8 @@ export async function shadowAssetCrossIn(
     nonce: toHexString(nonce),
     sender: ethAddress,
   })
-  if (outpoints.length <= 1) {
-    getOrCreateBridgeCell(ckbAddress, ethAddress).then(r => {
+  if (outpoints.length <= 4) {
+    getOrCreateBridgeCell(ckbAddress, ethAddress, true).then(r => {
       replayResistOutpoints.add(key, r.data.outpoints)
     })
   }
@@ -285,20 +352,9 @@ export async function placeCrossChainOrder(
 ) {
   const decimal = sudt?.info?.decimals ?? ETH_DECIMAL_INT
 
-  // TODO: remove place order
-  const builder = new PlaceOrderBuilder(
-    new Address(ckbAddress, AddressType.ckb),
-    new Amount(pay, decimal),
-    OrderType.Ask,
-    price,
-    sudt,
-    new DEXCollector() as any,
-  )
-
-  const receive = calcAskReceive(builder.pay.toString(decimal), price)
-  const data = buildSellData(builder.totalPay.toString(decimal), receive, price, decimal).slice(2)
-  const amount = new BigNumber(builder.totalPay.toString(decimal)).times(new BigNumber(10).pow(decimal)).toString()
-  const sudtData = data.slice(32, data.length)
+  const amount = new BigNumber(pay).times(new BigNumber(10).pow(decimal)).toFixed(0, 1)
+  const receive = calcAskReceive(pay, price)
+  const sudtData = buildAskData(receive, price, decimal)
 
   const orderLock = new Script(
     ORDER_BOOK_LOCK_SCRIPT.codeHash,
@@ -325,8 +381,12 @@ export async function placeCrossChainOrder(
     gas_price: toHexString(gasPrice),
     nonce: toHexString(nonce),
   })
-  if (outpoints.length <= 1) {
-    const r = await getOrCreateBridgeCell(recipientAddress, tokenAddress)
+  if (outpoints.length <= 4) {
+    Modal.warn({
+      content: 'Your bridge cells has run out and it will take about a minute to recreate bridge cells.',
+      okText: 'OK',
+    })
+    const r = await getOrCreateBridgeCell(recipientAddress, tokenAddress, true)
     replayResistOutpoints.add(key, r.data.outpoints)
   }
   replayResistOutpoints.remove(key, op)
@@ -524,4 +584,94 @@ export async function rawTransactionToPWTransaction(rawTx: RPC.RawTransaction) {
 
 export function getForceBridgeSettings() {
   return axios.get(`${FORCE_BRIDGER_SERVER_URL}/settings`)
+}
+
+export function fromJSONToPwCell(cell: Cell) {
+  const { data } = cell as any
+  return new Cell(
+    new Amount((cell.capacity as any).amount, AmountUnit.shannon),
+    new Script(cell.lock.codeHash, cell.lock.args, cell.lock.hashType),
+    cell.type ? new Script(cell.type.codeHash, cell.type.args, cell.type.hashType) : undefined,
+    cell.outPoint ? new OutPoint(cell.outPoint.txHash, cell.outPoint.index) : undefined,
+    data ?? '0x',
+  )
+}
+
+export async function placeNormalOrder(
+  pay: string,
+  price: string,
+  address: string,
+  isBid: boolean,
+  sudt: SUDT,
+): Promise<Transaction> {
+  const params = {
+    pay,
+    price,
+    udt_type_args: sudt.toTypeScript().args,
+    ckb_address: address,
+    is_bid: isBid,
+    udt_decimals: sudt.info?.decimals,
+    spent_cells: spentCells.get(),
+  }
+
+  const res = await axios.post(`${SERVER_URL}/place-order`, params).catch(err => {
+    return Promise.reject(err.response.data)
+  })
+
+  const { inputCells, outputs } = res.data.raw
+
+  const tx = new Transaction(new RawTransaction(inputCells.map(fromJSONToPwCell), outputs.map(fromJSONToPwCell)), [
+    Builder.WITNESS_ARGS.Secp256k1,
+  ])
+
+  tx.raw.cellDeps.push(SUDT_DEP)
+
+  return tx.validate()
+}
+
+export async function getCkbTokenCellInfo(typeHash: string) {
+  const params = {
+    type_code_hash: typeHash,
+  }
+
+  try {
+    await axios.get(`${SERVER_URL}/token/cell-info`, {
+      params,
+    })
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+export interface SUDTInfo {
+  name: string
+  symbol: string
+  decimal: number
+  address: string
+  chainName: 'ckb'
+  typeHash: string
+}
+
+export function searchSUDT(query: string): Promise<AxiosResponse<any[]>> {
+  const params = {
+    typeHashOrAddress: query,
+  }
+
+  return axios.get(`${SERVER_URL}/tokens/search`, {
+    params,
+  })
+}
+
+export async function searchERC20(address: string, web3: Web3) {
+  try {
+    const contract = new web3.eth.Contract(INFO_ABI, address)
+    const tokenName = await contract.methods.name().call()
+    return {
+      tokenName,
+      address,
+    }
+  } catch (error) {
+    return undefined
+  }
 }

@@ -1,12 +1,5 @@
 import BigNumber from 'bignumber.js'
-import {
-  PRICE_DECIMAL,
-  CKB_DECIMAL,
-  COMMISSION_FEE,
-  SUDT_LIST,
-  CKB_DECIMAL_INT,
-  DEFAULT_PAY_DECIMAL,
-} from '../constants'
+import { CKB_DECIMAL, COMMISSION_FEE, CKB_DECIMAL_INT, DEFAULT_PAY_DECIMAL, SUDT_MAP } from '../constants'
 
 export interface OrderCell {
   tx_hash: string
@@ -21,6 +14,7 @@ export type RawOrder = Record<'order_amount' | 'traded_amount' | 'turnover_rate'
   block_hash: string
   tokenName?: string
   order_cells?: OrderCell[]
+  type_args: string
 }
 
 function pad(n: number) {
@@ -45,10 +39,10 @@ export const parseOrderRecord = ({
   status,
   last_order_cell_outpoint,
   order_cells,
+  type_args,
   ...rest
 }: RawOrder) => {
-  const { tokenName } = rest
-  const sudt = SUDT_LIST.find(s => s.info?.symbol === tokenName)
+  const sudt = SUDT_MAP.get(type_args)!
   const sudtDecimalInt = sudt?.info?.decimals! ?? DEFAULT_PAY_DECIMAL
   const sudtDecimal = new BigNumber(10).pow(sudtDecimalInt)
   const key = `${last_order_cell_outpoint.tx_hash}:${last_order_cell_outpoint.index}`
@@ -56,13 +50,10 @@ export const parseOrderRecord = ({
   const paidAmount = new BigNumber(paid_amount).dividedBy(isBid ? CKB_DECIMAL : sudtDecimal)
   const orderAmount = new BigNumber(order_amount).dividedBy(isBid ? sudtDecimal : CKB_DECIMAL)
   const tradedAmount = new BigNumber(traded_amount).dividedBy(isBid ? sudtDecimal : CKB_DECIMAL)
-  const priceInNum = new BigNumber(price)
-    .dividedBy(PRICE_DECIMAL)
-    .times(new BigNumber(10).pow(sudtDecimalInt - CKB_DECIMAL_INT))
-  const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)).multipliedBy(
-    1 + +COMMISSION_FEE,
+  const priceInNum = new BigNumber(price).times(new BigNumber(10).pow(sudtDecimalInt - CKB_DECIMAL_INT))
+  const payAmount = (isBid ? orderAmount.multipliedBy(priceInNum) : orderAmount.dividedBy(priceInNum)).div(
+    1 - COMMISSION_FEE,
   )
-
   return {
     key,
     pay: `${payAmount.toFixed(5, 1)}`,

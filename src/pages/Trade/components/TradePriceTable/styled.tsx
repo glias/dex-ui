@@ -58,8 +58,6 @@ export const Progress = styled.div`
   left: ${(props: ProgressProps) => `calc(100% - ${props.width})`};
   background: ${({ isBid, width }: ProgressProps) =>
     `-webkit-linear-gradient(right, ${isBid ? BID_BG_COLOR : ASK_BG_COLOR} ${width}, transparent ${width})`};
-  background: ${({ isBid, width }: ProgressProps) =>
-    `-webkit-linear-gradient(right, ${isBid ? BID_BG_COLOR : ASK_BG_COLOR} ${width}, transparent ${width})`};
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
   transform: rotate(180deg);
@@ -111,6 +109,7 @@ export const TableContainer = styled.div`
       background-color: ${(props: { isBid: boolean }) => (props.isBid ? '#fefefe' : '#f6f6f6')};
     }
   }
+  overflow: hidden;
 `
 
 export const THead = styled(Tr)`

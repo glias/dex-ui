@@ -1,7 +1,8 @@
 import PWCore, { Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
+import { FormInstance } from 'antd/lib/form'
 import { approveERC20ToBridge, CrossChainOrder, getAllowanceForTarget } from 'APIs'
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useMemo, useCallback, createRef } from 'react'
 import { createContainer, useContainer } from 'unstated-next'
 import Web3 from 'web3'
 import {
@@ -24,6 +25,13 @@ export enum OrderStep {
   Confirm,
   Select,
   Result,
+}
+
+// eslint-disable-next-line no-shadow
+export enum ShowStatus {
+  Open,
+  History,
+  CrossChain,
 }
 
 // eslint-disable-next-line no-shadow
@@ -73,6 +81,7 @@ export function useOrder() {
   const { address } = Wallet.ckbWallet
   const [submittedOrders, setSubmittedOrders] = useState<Array<SubmittedOrder>>(submittedOrdersCache.get(address))
   const [crossChainOrders, setCrossChainOrders] = useState<Array<CrossChainOrder>>(crossChainOrdersCache.get(address))
+  const formRef = createRef<FormInstance>()
   const ckbBalance = Wallet.ckbWallet.free.toString()
   const [maxPay, setMaxPay] = useState(ckbBalance)
   const [bestPrice] = useState('0.00')
@@ -81,6 +90,7 @@ export function useOrder() {
   const [secondToken, setSellerToken] = useState(() => Wallet.ckbWallet.tokenName)
   const [selectingToken, setSelectingToken] = useState<'first' | 'second'>('first')
   const [currentPairToken, setCurrentPairToken] = useState(Wallet.ethWallet.tokenName)
+  const [showStatus, setShowStatus] = useState(ShowStatus.Open)
 
   useEffect(() => {
     if (!address) {
@@ -158,7 +168,6 @@ export function useOrder() {
   const ckbMax = useMemo(() => {
     return new BigNumber(Wallet.ckbWallet.free.toString())
       .minus(MAX_TRANSACTION_FEE)
-      .div(1 + COMMISSION_FEE)
       .minus(ORDER_CELL_CAPACITY)
       .toFixed(8, 1)
   }, [Wallet.ckbWallet.free])
@@ -170,23 +179,38 @@ export function useOrder() {
     setPay('')
   }, [firstToken, secondToken])
 
+  const actualPay = useMemo(() => {
+    return new BigNumber(pay).times(1 - COMMISSION_FEE).toFixed(8, 1)
+  }, [pay])
+
   const receive = useMemo(() => {
     const [buyToken, seller] = pair
-    if (!pay || !price) {
-      return '0'
-    }
+
     switch (orderMode) {
       case OrderMode.Order:
+        if (!pay || !price) {
+          return '0'
+        }
         if (buyToken === 'CKB') {
           const sudt = SUDT_LIST.find(s => s.info?.symbol === seller)
           return calcBidReceive(pay, price, sudt?.info?.decimals ?? DEFAULT_PAY_DECIMAL)
         }
         return calcAskReceive(pay, price)
       case OrderMode.CrossChain:
+        if (!pay || !price) {
+          return '0'
+        }
         return calcAskReceive(pay, price)
       case OrderMode.CrossIn:
-      case OrderMode.CrossOut:
+        if (!pay) {
+          return '0'
+        }
         return pay
+      case OrderMode.CrossOut:
+        if (!pay) {
+          return '0'
+        }
+        return new BigNumber(pay).times(1 - CROSS_CHAIN_FEE_RATE).toString()
       default:
         return '0.00'
     }
@@ -261,19 +285,16 @@ export function useOrder() {
         setMaxPay(ckbMax)
         break
       case 'ETH':
-        setMaxPay(removeTrailingZero(ethWallet.balance.minus(0.1).toString()))
+        setMaxPay(removeTrailingZero(ethWallet.balance.minus(MAX_TRANSACTION_FEE).toString()))
         break
       default:
         if (sudtWallet) {
-          setMaxPay(new BigNumber(sudtWallet.balance.toString()).div(1 + COMMISSION_FEE).toString())
+          setMaxPay(new BigNumber(sudtWallet.balance.toString()).toString())
         } else if (shadowWallet) {
           if (seller === 'CKB') {
-            setMaxPay(new BigNumber(shadowWallet.balance.toString()).div(1 + COMMISSION_FEE).toString())
+            setMaxPay(new BigNumber(shadowWallet.balance.toString()).toString())
           } else {
-            const max =
-              orderMode === OrderMode.CrossOut
-                ? shadowWallet.balance.div(1 + CROSS_CHAIN_FEE_RATE)
-                : shadowWallet.balance
+            const max = shadowWallet.balance
             setMaxPay(max.toString())
           }
         } else if (erc20Wallet) {
@@ -301,10 +322,15 @@ export function useOrder() {
     }
   }, [orderType, isCrossChainOnly, isWalletNotConnected])
 
-  function reset() {
+  const reset = useCallback(() => {
     setPay('')
     setPrice('')
-  }
+  }, [])
+
+  useEffect(() => {
+    reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Wallet.reconnectCount])
 
   const currentSudtTokenName = useMemo(() => {
     return pair.find(t => t !== 'CKB')
@@ -389,6 +415,18 @@ export function useOrder() {
     [setERC20ApproveStatus],
   )
 
+  useEffect(() => {
+    switch (orderMode) {
+      case OrderMode.CrossIn:
+      case OrderMode.CrossOut:
+        setShowStatus(ShowStatus.CrossChain)
+        break
+      default:
+        setShowStatus(ShowStatus.Open)
+        break
+    }
+  }, [orderMode])
+
   return {
     currentApproveStatus,
     shouldApprove,
@@ -431,6 +469,10 @@ export function useOrder() {
     setAndCacheCrossChainOrders,
     crossChainOrders,
     isCrossChainOnly,
+    actualPay,
+    formRef,
+    showStatus,
+    setShowStatus,
   }
 }
 

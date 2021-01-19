@@ -1,20 +1,17 @@
-import { useEffect, MutableRefObject, useCallback } from 'react'
+import { useEffect, MutableRefObject, useCallback, useRef } from 'react'
 import { Address, OutPoint, AddressType } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
+import { useQuery } from 'react-query'
 import Web3 from 'web3'
+import { Modal } from 'antd'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
 import { ErrorCode } from 'exceptions'
 import WalletContainer from 'containers/wallet'
 import { submittedOrders } from 'utils/cache'
+import { SUDT_MAP } from 'constants/sudt'
 import { TransactionStatus } from 'components/Header/AssetsManager/api'
-import {
-  checkSubmittedTxs,
-  ckb,
-  getAllHistoryOrders,
-  getForceBridgeHistory,
-  getTransactionHeader,
-} from '../../../../APIs'
+import { ckb, getBatchHistoryOrders, getForceBridgeHistory } from '../../../../APIs'
 import CancelOrderBuilder from '../../../../pw/cancelOrderBuilder'
 import { OrderCell, parseOrderRecord, pendingOrders, spentCells } from '../../../../utils'
 import type { RawOrder } from '../../../../utils'
@@ -44,7 +41,7 @@ export type HistoryAction =
   | { type: ActionType.RemovePendingId; value: string }
   | { type: ActionType.UpdateLoading; value: boolean }
   | { type: ActionType.UpdateCurrentOrderStatus; value: OrderCell[] }
-  | { type: ActionType.updateCurrentOrder; value: OrderInList }
+  | { type: ActionType.updateCurrentOrder; value: OrderInList | null }
   | { type: ActionType.EndCurrentOrderPending }
 
 export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, action) => {
@@ -90,6 +87,8 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
 
 type Order = ReturnType<typeof parseOrderRecord>
 
+const ORDER_LIST_TIMER = 5e3
+
 export const usePollingOrderStatus = ({
   web3,
   status,
@@ -101,6 +100,7 @@ export const usePollingOrderStatus = ({
   ethAddress,
   pending,
   key,
+  modalVisable,
 }: {
   web3: Web3 | null
   status: OrderInList['status']
@@ -112,9 +112,15 @@ export const usePollingOrderStatus = ({
   pending: boolean
   ethAddress: string
   key: string
+  modalVisable: boolean
 }) => {
   useEffect(() => {
-    if ((status === 'pending' || pending) && web3) {
+    if (!modalVisable) {
+      if (fetchListRef.current) {
+        clearInterval(fetchListRef.current)
+      }
+    }
+    if ((status === 'pending' || pending) && web3 && modalVisable) {
       const checkEthStatus = () => {
         const hash = cells?.[0]?.tx_hash
         web3.eth
@@ -142,13 +148,16 @@ export const usePollingOrderStatus = ({
           const forceBridgeItem = orders.find(p => p.eth_tx_hash === cells?.[index]?.tx_hash)
           if (forceBridgeItem && forceBridgeItem.ckb_tx_hash) {
             // eslint-disable-next-line no-param-reassign
-            cells[index].tx_hash = forceBridgeItem.ckb_tx_hash!
+            cells[index].tx_hash = forceBridgeItem.eth_tx_hash!
+            // eslint-disable-next-line no-param-reassign
+            cells[index + 1].tx_hash = forceBridgeItem.ckb_tx_hash!
+            // eslint-disable-next-line no-debugger
             dispatch({
               type: ActionType.UpdateCurrentOrderStatus,
               value: cells,
             })
 
-            checkCkbTransaction(forceBridgeItem.ckb_tx_hash!, index)
+            checkCkbTransaction(forceBridgeItem.ckb_tx_hash!, index + 1)
           }
         })
       }
@@ -183,10 +192,9 @@ export const usePollingOrderStatus = ({
         }
       }
       checkStatus()
-      const TIMER = 3000
 
       /* eslint-disable-next-line no-param-reassign */
-      fetchListRef.current = setInterval(checkStatus, TIMER)
+      fetchListRef.current = setInterval(checkStatus, ORDER_LIST_TIMER)
     }
 
     return () => {
@@ -194,135 +202,159 @@ export const usePollingOrderStatus = ({
         clearInterval(fetchListRef.current)
       }
     }
-  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key, ethAddress])
+  }, [web3, status, cells, isCrossChain, ckbAddress, fetchListRef, dispatch, pending, key, ethAddress, modalVisable])
+}
+
+const parseOrderHistory = async (lockArgs: string, ckbAddress: string, ethAddress: string) => {
+  const { normal_orders, cross_chain_orders } = (await getBatchHistoryOrders(lockArgs, ckbAddress, ethAddress)).data
+
+  const parsed = normal_orders.map((item: RawOrder) => {
+    // @ts-ignore
+    const typeArgs = item.type_args
+    const tokenName = SUDT_MAP.get(typeArgs)?.info?.name!
+    const order = parseOrderRecord({
+      ...item,
+      tokenName,
+    })
+    if (['aborted', 'claimed'].includes(order.status ?? '')) {
+      pendingOrders.remove(order.key)
+    }
+    // @ts-ignore
+    order.createdAt = item.timestamp
+    return order
+  })
+
+  const { eth_to_ckb, ckb_to_eth } = cross_chain_orders
+
+  return {
+    normalOrders: normal_orders,
+    crossChainOrders: eth_to_ckb.concat(ckb_to_eth).filter(o => o.status === 'success'),
+    parsed,
+  }
 }
 
 export const usePollOrderList = ({
   lockArgs,
   dispatch,
-  fetchListRef,
   ckbAddress,
   ethAddress,
 }: {
   lockArgs: string
   dispatch: React.Dispatch<HistoryAction>
-  fetchListRef: MutableRefObject<ReturnType<typeof setInterval> | undefined>
   ckbAddress: string
   ethAddress: string
 }) => {
   const { setAndCacheSubmittedOrders } = useContainer(OrderContainer)
-  const { isWalletNotConnected } = useContainer(WalletContainer)
+  const modalRef = useRef<ReturnType<typeof Modal.warn> | null>(null)
+  const { isWalletNotConnected, orderHistoryQueryKey, queryClient } = useContainer(WalletContainer)
+
+  const { status } = useQuery(
+    [orderHistoryQueryKey, lockArgs, ckbAddress, ethAddress, isWalletNotConnected],
+    () => {
+      if (!lockArgs && !isWalletNotConnected) {
+        return null
+      }
+      return parseOrderHistory(lockArgs, ckbAddress, ethAddress)
+    },
+    {
+      enabled: !!lockArgs,
+      refetchInterval: ORDER_LIST_TIMER,
+      refetchIntervalInBackground: true,
+      retry: (failureCount: number) => {
+        if (failureCount % 3 === 0 && failureCount !== 0) {
+          // eslint-disable-next-line no-unused-expressions
+          modalRef.current?.destroy?.()
+          modalRef.current = Modal.warn({
+            title: 'Network error',
+            content: 'The open orders request takes too long to respond.',
+            okText: 'Retry',
+          })
+        }
+        queryClient.cancelQueries(orderHistoryQueryKey)
+        return true
+      },
+      onSuccess: async res => {
+        if (!res) {
+          return
+        }
+        const { crossChainOrders, normalOrders, parsed } = res
+        try {
+          for (let i = 0; i < crossChainOrders.length; i++) {
+            const order = crossChainOrders[i]
+            const index = normalOrders.findIndex(r => r.order_cells?.[0]?.tx_hash === order.ckb_tx_hash)
+            if (index < 0) {
+              // eslint-disable-next-line no-continue
+              continue
+            }
+            const matchedOrder = parsed[index]
+            if (!matchedOrder) {
+              // eslint-disable-next-line no-continue
+              continue
+            }
+            setAndCacheSubmittedOrders(orders => {
+              return orders.filter(o => o.key.split(':')[0] !== order.eth_tx_hash)
+            })
+            matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
+            // eslint-disable-next-line no-unused-expressions
+            matchedOrder.orderCells?.unshift({
+              tx_hash: order.eth_tx_hash,
+              index: '',
+            })
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error)
+        }
+
+        const hashes: string[] = submittedOrders.get(ckbAddress).map((o: any) => o.key.split(':')[0])
+        if (!hashes.length) {
+          dispatch({
+            type: ActionType.UpdateOrderList,
+            value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+          })
+        } else {
+          setAndCacheSubmittedOrders(orders =>
+            orders.filter(order => {
+              const [hash] = order.key.split(':')
+              // There is a possibility that the order was already matched before it was fetched,
+              // so it is necessary to check whether the matched order is eligible for removal.
+              if (parsed.some(p => p.orderCells?.some(c => c.tx_hash === hash))) {
+                return false
+              }
+              return !parsed.some(p => p.key === order.key)
+            }),
+          )
+
+          dispatch({
+            type: ActionType.UpdateOrderList,
+            value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
+          })
+        }
+      },
+      onError: (err: any) => {
+        if (err) {
+          console.warn(`[History Polling]: ${err.message}`)
+        }
+      },
+    },
+  )
 
   useEffect(() => {
-    if (lockArgs && !isWalletNotConnected) {
-      const fetchData = () =>
-        getAllHistoryOrders(lockArgs)
-          .then(async res => {
-            const parsed = res.map((item: RawOrder) => {
-              const order = parseOrderRecord(item)
-              if (['aborted', 'claimed'].includes(order.status ?? '')) {
-                pendingOrders.remove(order.key)
-              }
-              // @ts-ignore
-              order.tokenName = item.tokenName
-              return order
-            })
-            try {
-              const resList = await getTransactionHeader(res.map((item: RawOrder) => item.block_hash))
-              for (let i = 0; i < resList.length; i++) {
-                const blockHeader = resList[i]
-                parsed[i].createdAt = blockHeader.timestamp
-              }
-              const { eth_to_ckb, ckb_to_eth } = (await getForceBridgeHistory(ckbAddress, ethAddress)).data
-              const orderHistory = eth_to_ckb.concat(ckb_to_eth)
-              for (let i = 0; i < orderHistory.length; i++) {
-                const order = orderHistory[i]
-                const index = res.findIndex(r => r.order_cells?.[0]?.tx_hash === order.ckb_tx_hash)
-                if (index < 0) {
-                  // eslint-disable-next-line no-continue
-                  continue
-                }
-                const matchedOrder = parsed[index]
-                if (!matchedOrder) {
-                  // eslint-disable-next-line no-continue
-                  continue
-                }
-                setAndCacheSubmittedOrders(orders => {
-                  return orders.filter(o => o.key.split(':')[0] !== order.eth_tx_hash)
-                })
-                matchedOrder.tokenName = matchedOrder.tokenName.slice(2)
-                // eslint-disable-next-line no-unused-expressions
-                matchedOrder.orderCells?.unshift({
-                  tx_hash: order.eth_tx_hash,
-                  index: '',
-                })
-              }
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.log(error)
-            }
-
-            const hashes: string[] = submittedOrders.get(ckbAddress).map((o: any) => o.key.split(':')[0])
-            if (!hashes.length) {
-              dispatch({
-                type: ActionType.UpdateOrderList,
-                value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-              })
-            } else {
-              checkSubmittedTxs(hashes)
-                .then(resList => {
-                  const unconfirmedHashes = hashes.filter((_, i) => !resList[i])
-                  setAndCacheSubmittedOrders(orders =>
-                    orders.filter(order => {
-                      const [hash] = order.key.split(':')
-                      const matched = unconfirmedHashes.includes(hash)
-                      // There is a possibility that the order was already matched before it was fetched,
-                      // so it is necessary to check whether the matched order is eligible for removal.
-                      if (parsed.some(p => p.orderCells?.some(c => c.tx_hash === hash))) {
-                        return false
-                      }
-                      if (!matched) {
-                        return !parsed.some(p => p.key === order.key)
-                      }
-                      return true
-                    }),
-                  )
-
-                  dispatch({
-                    type: ActionType.UpdateOrderList,
-                    value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-                  })
-                })
-                .catch(() => {
-                  dispatch({
-                    type: ActionType.UpdateOrderList,
-                    value: parsed.sort((a, b) => (new BigNumber(a.createdAt).isLessThan(b.createdAt) ? 1 : -1)),
-                  })
-                })
-            }
-          })
-          .catch(err => {
-            console.warn(`[History Polling]: ${err.message}`)
-          })
-          .finally(() => {
-            dispatch({ type: ActionType.UpdateLoading, value: false })
-          })
-
+    if (status === 'loading') {
       dispatch({ type: ActionType.UpdateLoading, value: true })
-      const TIMER = 3000
-      fetchData()
-      /* eslint-disable-next-line no-param-reassign */
-      fetchListRef.current = setInterval(fetchData, TIMER)
-    } else {
-      dispatch({ type: ActionType.UpdateOrderList, value: [] })
+    } else if (status === 'success') {
+      dispatch({ type: ActionType.UpdateLoading, value: false })
     }
+  }, [status, dispatch])
 
-    return () => {
-      if (fetchListRef.current) {
-        clearInterval(fetchListRef.current)
-      }
+  useEffect(() => {
+    if (lockArgs === '') {
+      dispatch({
+        type: ActionType.UpdateOrderList,
+        value: [],
+      })
     }
-  }, [lockArgs, dispatch, fetchListRef, ckbAddress, setAndCacheSubmittedOrders, ethAddress, isWalletNotConnected])
+  }, [lockArgs, dispatch])
 }
 
 export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch<HistoryAction>) => {

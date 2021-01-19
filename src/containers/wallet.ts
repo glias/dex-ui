@@ -2,6 +2,7 @@ import PWCore, { Address, AddressType, AmountUnit, Script, SUDT } from '@lay2/pw
 import { Modal } from 'antd'
 import BigNumber from 'bignumber.js'
 import { useCallback, useMemo, useRef, useState } from 'react'
+import { useQueryClient } from 'react-query'
 import { createContainer } from 'unstated-next'
 import { replayResistOutpoints } from 'utils'
 import Web3 from 'web3'
@@ -11,6 +12,7 @@ import {
   CKB_DECIMAL,
   CKB_NODE_URL,
   ERC20,
+  ERC20_ETH,
   ERC20_LIST,
   IS_DEVNET,
   IssuerLockHash,
@@ -47,6 +49,14 @@ export interface SudtWallet extends Wallet {
 
 export function isSudtWallet(wallet: Wallet): wallet is SudtWallet {
   return SUDT_LIST.some(sudt => sudt.info?.name === wallet.tokenName)
+}
+
+export function isNervosWallet(wallet: Wallet): boolean {
+  return isCkbWallet(wallet) || isSudtWallet(wallet)
+}
+
+export function isEthereumWallet(wallet: Wallet): boolean {
+  return [...ERC20_LIST, ERC20_ETH].some(ethAsset => wallet.tokenName === ethAsset.tokenName)
 }
 
 const defaultCkbWallet: CkbWallet = {
@@ -94,14 +104,19 @@ const defaultEthWallet: Wallet = {
   tokenName: 'ETH',
 }
 
+let reconnectCountNum = 0
+
 export function useWallet() {
   const [pw, setPw] = useState<null | PWCore>(null)
   const [web3, setWeb3] = useState<null | Web3>(null)
+  const [reconnectCount, setReconnectCount] = useState(0)
   const web3ModalRef = useRef<Web3Modal | null>(null)
   const [ckbWallet, setCkbWallet] = useState<CkbWallet>(defaultCkbWallet)
   const [connectStatus, setConnectStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected')
   const [ethWallet, setEthWallet] = useState<Wallet>(defaultEthWallet)
   const web3Ref = useRef<Web3 | null>(null)
+  const [orderHistoryQueryKey] = useState('order-history')
+  const queryClient = useQueryClient()
 
   const [sudtWallets, setSudtWallets] = useState<SudtWallet[]>(defaultSUDTWallets)
   const [erc20Wallets, setERC20Wallets] = useState<Wallet[]>(defaultERC20Wallets)
@@ -248,6 +263,7 @@ export function useWallet() {
 
   const disconnectWallet = useCallback(
     async (cb?: Function) => {
+      queryClient.cancelQueries(orderHistoryQueryKey)
       await PWCore.provider.close()
       await web3ModalRef.current?.clearCachedProvider()
       setCkbAddress('')
@@ -260,7 +276,7 @@ export function useWallet() {
       // eslint-disable-next-line no-unused-expressions
       cb?.()
     },
-    [setCkbAddress, setEthAddress, setConnectStatus],
+    [setCkbAddress, setEthAddress, setConnectStatus, queryClient, orderHistoryQueryKey],
   )
 
   const connectWallet = useCallback(async () => {
@@ -269,6 +285,8 @@ export function useWallet() {
       const provider = await web3ModalRef.current?.connect()
 
       provider.on('accountsChanged', function reconnectWallet(accounts: string[]) {
+        reconnectCountNum++
+        setReconnectCount(reconnectCountNum)
         provider.off('accountsChanged', reconnectWallet)
         if (accounts?.length > 0) connectWallet()
         else disconnectWallet()
@@ -416,6 +434,9 @@ export function useWallet() {
     lockHash,
     erc20Wallets,
     isWalletNotConnected,
+    orderHistoryQueryKey,
+    queryClient,
+    reconnectCount,
   }
 }
 

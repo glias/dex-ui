@@ -22,13 +22,13 @@ const CrossChain = () => {
     return toFormatWithoutTrailingZero(new BigNumber(Order.pay).times(CROSS_CHAIN_FEE_RATE).toString())
   }, [Order.pay])
 
-  const totalPay = useMemo(() => {
-    return toFormatWithoutTrailingZero(new BigNumber(Order.pay).times(1 + CROSS_CHAIN_FEE_RATE).toString())
+  const actualPay = useMemo(() => {
+    return toFormatWithoutTrailingZero(new BigNumber(Order.pay).times(1 - CROSS_CHAIN_FEE_RATE).toString())
   }, [Order.pay])
 
   const receive = useMemo(() => {
-    return toFormatWithoutTrailingZero(Order.pay)
-  }, [Order.pay])
+    return toFormatWithoutTrailingZero(actualPay)
+  }, [actualPay])
 
   const transactionFee = useMemo(() => {
     return Order.tx ? Builder.calcFee(Order.tx).toString() : '0'
@@ -38,7 +38,7 @@ const CrossChain = () => {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.totalPay`),
-        value: totalPay,
+        value: pay,
         unit: buyer,
       },
       {
@@ -49,13 +49,13 @@ const CrossChain = () => {
     ]
 
     return list
-  }, [totalPay, buyer, transactionFee])
+  }, [pay, buyer, transactionFee])
 
   const tradeDetails = useMemo(() => {
     const list: Item[] = [
       {
         desc: i18n.t('trade.result.crossChain'),
-        value: pay,
+        value: actualPay,
         unit: buyer,
       },
       {
@@ -70,7 +70,7 @@ const CrossChain = () => {
       },
     ]
     return list
-  }, [buyer, pay, transactionFee, crossFee])
+  }, [buyer, actualPay, transactionFee, crossFee])
 
   const receiveDetail = useMemo(() => {
     const list: Item[] = [

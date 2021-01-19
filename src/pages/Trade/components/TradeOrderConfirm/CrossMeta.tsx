@@ -5,7 +5,7 @@ import { MetaContainer } from './styled'
 import i18n from '../../../../utils/i18n'
 import Gift from '../../../../assets/img/gift.png'
 
-export const CrossMeta = () => {
+export const CrossMeta = ({ pureCross }: { pureCross: boolean }) => {
   return (
     <MetaContainer>
       <div className="meta">
@@ -13,7 +13,7 @@ export const CrossMeta = () => {
           <img src={Gift} alt="" />
         </div>
         <div>
-          {i18n.t('trade.result.crossMeta', { amount: ORDER_CELL_CAPACITY.toString() })}
+          {i18n.t('trade.result.crossMeta', { amount: pureCross ? '142' : ORDER_CELL_CAPACITY.toString() })}
           <a
             href={`${README_URL}#why-lock-my-addtional-ckb-when-i-place-an-order`}
             target="_blank"

@@ -4,7 +4,6 @@ import { toFormatWithoutTrailingZero } from 'utils/fee'
 import i18n from 'utils/i18n'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
-import { ORDER_CELL_CAPACITY } from 'constants/number'
 import { List, Item } from './list'
 import { OrderResult } from './styled'
 import { CrossMeta } from './CrossMeta'
@@ -38,7 +37,7 @@ const CrossIn = () => {
     const list: Item[] = [
       {
         desc: i18n.t('trade.result.crossChain'),
-        value: toFormatWithoutTrailingZero(pay),
+        value: pay,
         unit: buyer,
       },
       {
@@ -59,7 +58,7 @@ const CrossIn = () => {
       },
       {
         desc: '',
-        value: `+ ${ORDER_CELL_CAPACITY}`,
+        value: `+ ${142}`,
         unit: 'CKB',
       },
     ]
@@ -73,7 +72,7 @@ const CrossIn = () => {
       <List list={tradeDetails} isDeatil />
       <Divider style={{ margin: '20px 0' }} />
       <List list={receiveDetail} />
-      <CrossMeta />
+      <CrossMeta pureCross />
     </OrderResult>
   )
 }

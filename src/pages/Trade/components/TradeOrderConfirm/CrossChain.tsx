@@ -3,12 +3,27 @@ import { Divider } from 'antd'
 import BigNumber from 'bignumber.js'
 import { toFormatWithoutTrailingZero } from 'utils/fee'
 import i18n from 'utils/i18n'
+import styled from 'styled-components'
 import { useContainer } from 'unstated-next'
 import OrderContainer from 'containers/order'
 import { COMMISSION_FEE, ORDER_CELL_CAPACITY } from 'constants/number'
+import { Meta } from 'components/SelectToken'
 import { List, Item } from './list'
 import { OrderResult } from './styled'
 import { CrossMeta } from './CrossMeta'
+
+const MetaContainer = styled.div`
+  .meta {
+    .image {
+      color: #1890ff;
+      svg {
+        width: 22px;
+        height: 22px;
+        margin-right: 0pc;
+      }
+    }
+  }
+`
 
 const CrossChain = () => {
   const Order = useContainer(OrderContainer)
@@ -17,8 +32,8 @@ const CrossChain = () => {
     return toFormatWithoutTrailingZero(new BigNumber(Order.pay).times(COMMISSION_FEE).toString())
   }, [Order.pay])
 
-  const totalPay = useMemo(() => {
-    const pay = new BigNumber(Order.pay).plus(new BigNumber(tradeFee))
+  const actualPay = useMemo(() => {
+    const pay = new BigNumber(Order.pay).minus(new BigNumber(tradeFee))
     return toFormatWithoutTrailingZero(pay.toString())
   }, [Order.pay, tradeFee])
 
@@ -38,19 +53,19 @@ const CrossChain = () => {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.totalPay`),
-        value: totalPay,
+        value: pay,
         unit: buyer,
       },
     ]
 
     return list
-  }, [totalPay, buyer])
+  }, [pay, buyer])
 
   const tradeDetails = useMemo(() => {
     const list: Item[] = [
       {
         desc: i18n.t('trade.result.trade'),
-        value: pay,
+        value: actualPay,
         unit: buyer,
       },
       {
@@ -65,19 +80,19 @@ const CrossChain = () => {
       },
     ]
     return list
-  }, [tradeFee, buyer, pay])
+  }, [tradeFee, buyer, actualPay])
 
   const priceDetail = useMemo(() => {
     const list: Item[] = [
       {
         desc: i18n.t(`trade.price`),
         value: price,
-        unit: `CKB per ETH`,
+        unit: `CKB per ${buyer}`,
       },
     ]
 
     return list
-  }, [price])
+  }, [price, buyer])
 
   const receiveDetail = useMemo(() => {
     const list: Item[] = [
@@ -103,7 +118,13 @@ const CrossChain = () => {
       <List list={priceDetail} />
       <Divider style={{ margin: '20px 0' }} />
       <List list={receiveDetail} />
-      <CrossMeta />
+      <CrossMeta pureCross={false} />
+      <MetaContainer>
+        <Meta
+          info="Placing this order may take 5-15 minutes. Need to wait for the confirmation of 15 blocks on the Ethereum to
+        ensure the security."
+        />
+      </MetaContainer>
     </OrderResult>
   )
 }

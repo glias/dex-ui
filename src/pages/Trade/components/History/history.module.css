@@ -202,7 +202,7 @@
 }
 
 .check {
-  margin-left: 4px;
+  margin-right: 4px;
   color: #5C61DA;
 }
 
@@ -214,7 +214,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 150px;
+  width: 220px;
   border-right: 1px solid #e7e7e7;
 }
 
@@ -225,6 +225,11 @@
   width: 180px;
   border-right: 1px solid #e7e7e7;
 }
+
+.chain i {
+  margin-left: 4px;
+}
+
 
 .hash {
   display: flex;

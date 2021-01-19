@@ -9,7 +9,7 @@ export const CKB_DECIMAL = new BigNumber(10).pow(new BigNumber(8))
 export const ETH_DECIMAL = new BigNumber(10).pow(18)
 
 //  @TODO: comments
-export const ORDER_CELL_CAPACITY = 187
+export const ORDER_CELL_CAPACITY = 181
 export const MIN_SUDT_CAPACITY = 142
 
 export const MIN_ORDER_DAI = 147

@@ -1,14 +1,19 @@
+/* eslint-disable no-lonely-if */
 /* eslint-disable operator-linebreak */
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Form, Tooltip, Modal, Input, Divider } from 'antd'
-import { FormInstance } from 'antd/lib/form'
 import BigNumber from 'bignumber.js'
 import Token from 'components/Token'
-import { Address, Amount, AddressType, AmountUnit } from '@lay2/pw-core'
 import { useContainer } from 'unstated-next'
 import ConfirmButton from 'components/ConfirmButton'
 import { removeTrailingZero, toFormatWithoutTrailingZero } from 'utils/fee'
-import { placeCrossChainOrder, rawTransactionToPWTransaction, shadowAssetCrossIn, shadowAssetCrossOut } from 'APIs'
+import {
+  placeCrossChainOrder,
+  placeNormalOrder,
+  rawTransactionToPWTransaction,
+  shadowAssetCrossIn,
+  shadowAssetCrossOut,
+} from 'APIs'
 import {
   PRICE_DECIMAL,
   SUDT_DECIMAL,
@@ -32,8 +37,6 @@ import {
 } from './styled'
 import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
 import WalletContainer from '../../../../containers/wallet'
-import PlaceOrderBuilder from '../../../../pw/placeOrderBuilder'
-import DEXCollector from '../../../../pw/dexCollector'
 import { ReactComponent as SelectTokenSVG } from '../../../../assets/svg/select-token.svg'
 import { ReactComponent as SwapTokenSVG } from '../../../../assets/svg/swap-token.svg'
 import { ReactComponent as ArrowTradeSvg } from '../../../../assets/svg/arrow-trade.svg'
@@ -108,12 +111,12 @@ export default function OrderTable() {
   const [form] = Form.useForm()
   const Wallet = useContainer(WalletContainer)
   const Order = useContainer(OrderContainer)
-  const { price, pay, setPrice, setPay, receive: originalReceive, setStep } = Order
-  const formRef = React.createRef<FormInstance>()
+  const { price, pay, setPrice, setPay, receive: originalReceive, setStep, formRef, orderType } = Order
   const [buyer, seller] = Order.pair
   const [collectingCells, setCollectingCells] = useState(false)
   const [isPayInvalid, setIsPayInvalid] = useState(true)
   const [isPriceInvalid, setIsPriceInvalid] = useState(true)
+  const [receiveErrorMsg, setReceiveErrorMsg] = useState('')
   const { web3, ethWallet, isWalletNotConnected } = Wallet
 
   const isCrossInOrOut = useMemo(() => {
@@ -124,15 +127,12 @@ export default function OrderTable() {
     if (isCrossInOrOut) {
       return isPayInvalid
     }
-    return isPayInvalid || isPriceInvalid
-  }, [isPayInvalid, isPriceInvalid, isCrossInOrOut])
+    return isPayInvalid || isPriceInvalid || !!receiveErrorMsg
+  }, [isPayInvalid, isPriceInvalid, isCrossInOrOut, receiveErrorMsg])
 
   const formatedReceive = useMemo(() => {
-    if (isCrossInOrOut) {
-      return toFormatWithoutTrailingZero(Order.pay)
-    }
     return originalReceive === '0' ? '' : toFormatWithoutTrailingZero(originalReceive)
-  }, [originalReceive, isCrossInOrOut, Order.pay])
+  }, [originalReceive])
 
   const changePair = useCallback(() => {
     Order.togglePair()
@@ -178,6 +178,15 @@ export default function OrderTable() {
   }, [formatedReceive, insufficientCKB])
 
   useEffect(() => {
+    if (pay === '') {
+      // eslint-disable-next-line no-unused-expressions
+      formRef.current?.setFieldsValue({
+        pay: '',
+      })
+    }
+  }, [pay, formRef])
+
+  useEffect(() => {
     if (insufficientCKB) {
       return
     }
@@ -212,13 +221,37 @@ export default function OrderTable() {
     return sudt?.info?.decimals ?? erc20?.decimals ?? DEFAULT_PAY_DECIMAL
   }, [firstToken])
 
+  const isETH = useMemo(() => {
+    return Order.pair.find(t => t.includes('ETH'))
+  }, [Order.pair])
+
   const checkPay = useCallback(
     (_: any, value: string): Promise<void> => {
       const val = new BigNumber(value)
 
-      if (val.isLessThan(0)) {
+      if (val.isLessThanOrEqualTo(0)) {
         setIsPayInvalid(true)
         return Promise.reject(i18n.t(`trade.greaterThanZero`))
+      }
+
+      if (orderType === OrderType.Bid && val.isLessThan(1)) {
+        setIsPayInvalid(true)
+        return Promise.reject(new Error('The minimum pay amount we support is 1 CKB'))
+      }
+
+      if (orderType === OrderType.Ask) {
+        if (isETH) {
+          if (val.isLessThan(0.0001)) {
+            setIsPayInvalid(true)
+            return Promise.reject(new Error('The minimum pay amount we support is 0.0001 ETH'))
+          }
+        } else {
+          // eslint-disable-next-line no-lonely-if
+          if (val.isLessThan(0.001)) {
+            setIsPayInvalid(true)
+            return Promise.reject(new Error(`The minimum pay amount we support is 0.0001 ${Order.pair[0]}`))
+          }
+        }
       }
 
       if (Number.isNaN(parseFloat(value))) {
@@ -240,26 +273,34 @@ export default function OrderTable() {
 
       return Promise.resolve()
     },
-    [maxPay, payDecimal],
+    [maxPay, payDecimal, Order.pair, isETH, orderType],
   )
 
   const checkPrice = useCallback(
     (_: unknown, value: string) => {
       const val = new BigNumber(value)
-      const decimal = 8
-      const [integerValue] = val.toString().split('.')
-
-      if (integerValue.length > decimal) {
-        setIsPriceInvalid(true)
-        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
-      }
-
       if (Number.isNaN(parseFloat(value))) {
         setIsPriceInvalid(true)
         return Promise.reject(i18n.t(`trade.unEffectiveNumber`))
       }
 
-      if (val.isLessThan(0)) {
+      const [, decimalValue] = val.toString().split('.')
+      const decimal = decimalValue?.length ?? 0
+
+      if (isETH) {
+        if (decimal > 2) {
+          setIsPriceInvalid(true)
+          return Promise.reject(new Error(`The value allows up to 2 decimals`))
+        }
+      } else {
+        // eslint-disable-next-line no-lonely-if
+        if (decimal > 4) {
+          setIsPriceInvalid(true)
+          return Promise.reject(new Error(`The value allows up to 4 decimals`))
+        }
+      }
+
+      if (val.isLessThanOrEqualTo(0)) {
         setIsPriceInvalid(true)
         return Promise.reject(i18n.t(`trade.greaterThanZero`))
       }
@@ -269,23 +310,62 @@ export default function OrderTable() {
         return Promise.reject(i18n.t(`trade.tooSmallNumber`))
       }
 
-      if (!new BigNumber(val).decimalPlaces(decimal).isEqualTo(val)) {
-        setIsPriceInvalid(true)
-        return Promise.reject(i18n.t(`trade.maximumDecimal`, { decimal }))
-      }
-
       setIsPriceInvalid(false)
 
       return Promise.resolve()
     },
-    [MIN_VAL],
+    [MIN_VAL, isETH],
   )
 
-  const checkReceive = useCallback(() => {
-    // if (new BigNumber(Order.receive).isLessThan(MINIUM_RECEIVE)) {
-    //   return Promise.reject(i18n.t('trade.miniumReceive'))
-    // }
+  useEffect(() => {
+    const val = new BigNumber(Order.receive)
 
+    if (isCrossInOrOut || isPayInvalid || isPriceInvalid) {
+      setReceiveErrorMsg('')
+      return
+    }
+
+    const pay = new BigNumber(Order.pay)
+    const price = new BigNumber(Order.price)
+
+    if (val.isEqualTo(0) || val.isNaN() || pay.isNaN() || pay.isEqualTo(0) || price.isNaN() || price.isEqualTo(0)) {
+      setReceiveErrorMsg('')
+      return
+    }
+
+    if (orderType === OrderType.Ask) {
+      if (val.isLessThan(1)) {
+        setReceiveErrorMsg('The minimum receive amount we support is 1 CKB')
+        return
+      }
+    } else {
+      if (isETH) {
+        if (val.isLessThan(0.0001)) {
+          setReceiveErrorMsg('The minimum receive amount we support is 0.0001 ETH')
+          return
+        }
+      } else {
+        if (val.isLessThan(0.001)) {
+          setReceiveErrorMsg(`The minimum receive amount we support is 0.0001 ${Order.pair[1]}`)
+          return
+        }
+      }
+    }
+
+    setReceiveErrorMsg('')
+  }, [
+    Order.receive,
+    orderType,
+    isETH,
+    Order.pair,
+    isCrossInOrOut,
+    isPayInvalid,
+    isPriceInvalid,
+    Order.pay,
+    Order.price,
+  ])
+
+  const checkReceive = useCallback(() => {
     return Promise.resolve()
   }, [])
 
@@ -322,16 +402,14 @@ export default function OrderTable() {
       switch (Order.orderMode) {
         case OrderMode.Order: {
           const sudtTokenName = Order.pair.find(p => p !== 'CKB')!
-          const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)
-          const builder = new PlaceOrderBuilder(
-            new Address(Wallet.ckbWallet.address, AddressType.ckb),
-            new Amount(Order.pay, OrderType.Ask === Order.orderType ? sudt?.info?.decimals : AmountUnit.ckb),
-            Order.orderType,
+          const sudt = SUDT_LIST.find(s => s.info?.symbol === sudtTokenName)!
+          const tx = await placeNormalOrder(
+            Order.pay,
             Order.price,
-            sudt!,
-            new DEXCollector() as any,
+            Wallet.ckbWallet.address,
+            Order.orderType === OrderType.Bid,
+            sudt,
           )
-          const tx = await builder.build()
           Order.setTx(tx)
           break
         }
@@ -474,12 +552,12 @@ export default function OrderTable() {
     <OrderTableContainer id="order-box" isBid={isBid}>
       <Form form={form} ref={formRef} autoComplete="off" name="traceForm" layout="vertical" onFinish={onSubmit}>
         <Header>
-          <h3>{i18n.t('trade.trade')}</h3>
+          <h3>{isCrossInOrOut ? 'Cross Chain' : i18n.t('trade.trade')}</h3>
         </Header>
-        {isRelaying && lockHash && disabled ? (
+        {isRelaying && lockHash ? (
           <span className="alert">{i18n.t('trade.relaying', { t1: firstToken, t2: secondToken })}</span>
         ) : null}
-        {insufficientCKB && Wallet.ckbWallet.address && disabled ? (
+        {insufficientCKB && Wallet.ckbWallet.address ? (
           <span className="alert">{i18n.t('trade.insufficientAmount')}</span>
         ) : null}
         <Pairs onSelect={onPairSelect} pairs={Order.pair} onSwap={changePair} />
@@ -561,6 +639,7 @@ export default function OrderTable() {
             readOnly
           />
         </Form.Item>
+        {receiveErrorMsg ? <span className="receiveErr">{receiveErrorMsg}</span> : null}
         <Form.Item className="submit">
           {shouldApprove ? (
             <ConfirmButton

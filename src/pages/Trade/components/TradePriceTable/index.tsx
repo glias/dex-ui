@@ -1,15 +1,16 @@
 import OrderContainer from 'containers/order'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import i18n from 'utils/i18n'
+import { Tooltip } from 'antd'
 import { getOrders, Orders, getCurrentPrice } from 'APIs'
 import { useContainer } from 'unstated-next'
 import { SUDTWithoutPw, SUDT_LIST } from 'constants/sudt'
 import { ERC20_LIST } from 'constants/erc20'
 import BigNumber from 'bignumber.js'
 import WalletContainer from 'containers/wallet'
-import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT } from 'constants/number'
-import { calcTotalPay, displayPayOrReceive, displayPrice, removeTrailingZero } from 'utils/fee'
-import { SUDT } from '@lay2/pw-core'
+import { PRICE_DECIMAL, CKB_DECIMAL, CKB_DECIMAL_INT, COMMISSION_FEE } from 'constants/number'
+import { displayPayOrReceive, displayPrice, removeTrailingZero } from 'utils/fee'
+import { AmountUnit, SUDT } from '@lay2/pw-core'
 import { Header, Container, AskTable, THead, Td, Tr, BestPrice, BidTable, TableContainer, Progress } from './styled'
 
 interface ListProps {
@@ -71,8 +72,8 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
 
   const onClick = useCallback(() => {
     // eslint-disable-next-line no-unused-expressions
-    setPrice?.(parseFormatedPrice(price))
-  }, [setPrice, price])
+    setPrice?.(parseFormatedPrice(displayPrice(price, isBid)))
+  }, [setPrice, price, isBid])
 
   let priceClassName = isBid ? 'bid' : 'ask'
 
@@ -86,7 +87,9 @@ const List = ({ price, pay, receive, isBid, progress, setPrice }: ListProps) => 
         {!isBid ? payElement : receiveElement}
         {isBid ? payElement : receiveElement}
         <Td position="flex-end" fontWeight="bold">
-          <span className={priceClassName}>{price}</span>
+          <Tooltip title={price}>
+            <span className={priceClassName}>{displayPrice(price, isBid)}</span>
+          </Tooltip>
         </Td>
       </Progress>
     </Tr>
@@ -129,25 +132,22 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
           return <List price={empty} pay={empty} receive={empty} key={key} isBid={isBid} />
         }
         const price = removeTrailingZero(
-          new BigNumber(order.price)
-            .div(PRICE_DECIMAL)
-            .times(new BigNumber(10).pow(decimal - CKB_DECIMAL_INT))
-            .toString(),
+          new BigNumber(order.price).times(new BigNumber(10).pow(decimal - AmountUnit.ckb)).toString(),
         )
 
         if (isBid) {
           const receive = new BigNumber(order.receive).div(base.pow(decimal))
           const ckbPay = receive.times(price)
-          const totalPay = calcTotalPay(ckbPay.toString())
+          const totalPay = ckbPay.div(1 - COMMISSION_FEE)
           const pay = new BigNumber(totalPay).toFixed(4)
           const progress = new BigNumber(totalPay).dividedBy(maxCKB).times(100).toFixed(0)
           return (
             <List
               setPrice={setPrice}
               progress={progress}
-              price={displayPrice(price)}
-              pay={displayPayOrReceive(pay)}
-              receive={displayPayOrReceive(receive.toString())}
+              price={price}
+              pay={displayPayOrReceive(pay, true)}
+              receive={displayPayOrReceive(receive.toString(), false)}
               key={key}
               isBid={isBid}
             />
@@ -155,15 +155,15 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
         }
         const receive = new BigNumber(order.receive).div(CKB_DECIMAL)
         const pay = receive.div(price)
-        const totalPay = calcTotalPay(pay.toString())
+        const totalPay = pay.div(1 - COMMISSION_FEE).toString()
         const progress = receive.dividedBy(maxCKB).times(100).toFixed(0)
         return (
           <List
             setPrice={setPrice}
             progress={progress}
-            price={displayPrice(price)}
-            pay={displayPayOrReceive(totalPay)}
-            receive={displayPayOrReceive(receive.toString())}
+            price={price}
+            pay={displayPayOrReceive(totalPay, true)}
+            receive={displayPayOrReceive(receive.toString(), false)}
             key={key}
             isBid={isBid}
           />
@@ -218,10 +218,9 @@ const TradePriceTable = () => {
         .then(res => {
           const { data } = res
           const price = new BigNumber(data)
-            .div(PRICE_DECIMAL)
             .times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT))
             .toString()
-          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPayOrReceive(price))
+          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPrice(price))
         })
         .catch(() => {
           setCurrentPrice(i18n.t('trade.priceTable.empty'))
@@ -251,8 +250,8 @@ const TradePriceTable = () => {
 
   const maxCKB = useMemo(() => {
     let max = new BigNumber(0)
-    const base = new BigNumber(10)
-    const decimal = sudt?.info?.decimals ?? CKB_DECIMAL_INT
+    // const base = new BigNumber(10)
+    // const decimal = sudt?.info?.decimals ?? CKB_DECIMAL_INT
     for (let i = 0; i < orders.askOrders.length; i++) {
       const order = orders.askOrders[i]
       const ckbAmount = new BigNumber(order.receive)
@@ -263,25 +262,14 @@ const TradePriceTable = () => {
 
     for (let i = 0; i < orders.bidOrders.length; i++) {
       const order = orders.bidOrders[i]
-      const price = removeTrailingZero(
-        new BigNumber(order.price)
-          .div(PRICE_DECIMAL)
-          .times(new BigNumber(10).pow(decimal - CKB_DECIMAL_INT))
-          .toString(),
-      )
-
-      const receive = new BigNumber(order.receive).div(base.pow(decimal))
-      const ckbPay = receive.times(price)
-      const totalPay = calcTotalPay(ckbPay.toString())
-      const pay = new BigNumber(totalPay).times(CKB_DECIMAL)
-
+      const pay = new BigNumber(order.receive).times(new BigNumber(order.price))
       if (pay.isGreaterThan(max)) {
         max = pay
       }
     }
 
     return max.div(CKB_DECIMAL).toString()
-  }, [orders.askOrders, orders.bidOrders, sudt])
+  }, [orders.askOrders, orders.bidOrders])
 
   return (
     <Container>

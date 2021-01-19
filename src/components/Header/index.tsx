@@ -1,8 +1,8 @@
 import { CloseOutlined, MenuOutlined } from '@ant-design/icons'
 import PWCore from '@lay2/pw-core'
-import { Button, Menu, Modal, Popover } from 'antd'
+import { Button, Modal, Popover } from 'antd'
 import React, { useCallback, useEffect, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useContainer } from 'unstated-next'
 import Web3Modal from 'web3modal'
 import { FAUCET_URL } from 'constants/url'
@@ -12,7 +12,7 @@ import { useDidMount } from '../../hooks'
 import i18n from '../../utils/i18n'
 import { AssetManager } from './AssetsManager'
 import { getChainData, getProviderOptions } from './chain'
-import { Banner, HeaderBox, HeaderContainer, HeaderLogo, HeaderMeta, HeaderPanel, MenuLiText, UserMeta } from './styled'
+import { Banner, HeaderBox, HeaderContainer, HeaderLogo, HeaderMeta, HeaderPanel, UserMeta } from './styled'
 import { ReactComponent as GliasLogo } from '../../assets/svg/glias.svg'
 
 const CLOSE_BY_THE_USER_ERROR_MSG = 'Modal closed by user'
@@ -21,7 +21,6 @@ const UNKNOWN_CONNECT_WALLET_FAILED = 'Connect wallet failed, please check walle
 const Header = () => {
   const history = useHistory()
   const Wallet = useContainer(WalletContainer)
-  const { pathname } = useLocation()
 
   const { ckbWallet, connectStatus } = Wallet
   const ckbAddress = ckbWallet.address
@@ -91,7 +90,7 @@ const Header = () => {
         <Banner>
           <div className="content">
             <div>
-              Gliaswap is a DEX Demo developed by Nervos Team, currently deployed on CKB Aggron testnet and Ethereum
+              GliaDEX is a DEX Demo developed by Nervos Team, currently deployed on CKB Aggron testnet and Ethereum
               Ropsten testnet.
             </div>
             <div>
@@ -112,26 +111,10 @@ const Header = () => {
             <HeaderLogo onClick={gotoHome}>
               <GliasLogo />
               <span className="title">
-                GLIASWAP
+                GLIADEX
                 <span className="detail">(Universal Passport Example)</span>
               </span>
             </HeaderLogo>
-            <Menu
-              defaultSelectedKeys={[pathname.substring(1) || 'trade']}
-              mode="horizontal"
-              className="menu"
-              onClick={e => history.push(`/${e.key}`)}
-            >
-              <Menu.Item key="trade" className="first">
-                <MenuLiText>{i18n.t(`header.Trade`)}</MenuLiText>
-              </Menu.Item>
-              <Menu.Item key="pool">
-                <MenuLiText>{i18n.t(`header.Pool`)}</MenuLiText>
-              </Menu.Item>
-              <Menu.Item key="match" className="last">
-                <MenuLiText>{i18n.t(`header.Match`)}</MenuLiText>
-              </Menu.Item>
-            </Menu>
             <HeaderMeta id="header-meta">
               {connectStatus !== 'connected' ? (
                 <Button className="btn-connect" onClick={handleWalletConnect} disabled={Wallet.connecting}>

@@ -125,6 +125,12 @@ export const OrderTableContainer = styled(InputNumberContainer)`
     color: #ff4d4f;
     margin-top: 10px;
   }
+  .receiveErr {
+    color: #ff4d4f;
+    font-size: 14px;
+    position: relative;
+    top: -20px;
+  }
 `
 
 export const OrderSelectPopover = styled.div`
