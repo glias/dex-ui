@@ -321,6 +321,15 @@ export default function OrderTable() {
     const val = new BigNumber(Order.receive)
 
     if (isCrossInOrOut || isPayInvalid || isPriceInvalid) {
+      setReceiveErrorMsg('')
+      return
+    }
+
+    const pay = new BigNumber(Order.pay)
+    const price = new BigNumber(Order.price)
+
+    if (val.isEqualTo(0) || val.isNaN() || pay.isNaN() || pay.isEqualTo(0) || price.isNaN() || price.isEqualTo(0)) {
+      setReceiveErrorMsg('')
       return
     }
 
@@ -344,7 +353,17 @@ export default function OrderTable() {
     }
 
     setReceiveErrorMsg('')
-  }, [Order.receive, orderType, isETH, Order.pair, isCrossInOrOut, isPayInvalid, isPriceInvalid])
+  }, [
+    Order.receive,
+    orderType,
+    isETH,
+    Order.pair,
+    isCrossInOrOut,
+    isPayInvalid,
+    isPriceInvalid,
+    Order.pay,
+    Order.price,
+  ])
 
   const checkReceive = useCallback(() => {
     return Promise.resolve()
