@@ -87,7 +87,7 @@ const columns = [
       const unit = `CKB per ${order.tokenName}`
       return (
         <Tooltip title={price}>
-          {displayPrice(price)}
+          {displayPrice(price, order.isBid)}
           <div className={styles.unit}>{unit}</div>
         </Tooltip>
       )
