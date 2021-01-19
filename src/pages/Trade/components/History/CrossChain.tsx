@@ -120,8 +120,8 @@ const OrderModal = ({
   const { isLock } = order
   const firstTx = isLock ? ethTx : ckbTx
   const secondTx = isLock ? ckbTx : ethTx
-  const firstDescription = `Confirm in ${isLock ? 'ETH' : 'CKB'} chain`
-  const secondDescription = `Confirm in ${!isLock ? 'ETH' : 'CKB'} chain`
+  const firstDescription = `Confirm on ${isLock ? 'Ethereum' : 'CKB'}`
+  const secondDescription = `Confirm on ${!isLock ? 'Ethereum' : 'CKB'}`
   const { status } = order
   const isFirstTxLoading = useMemo(() => {
     if (status === CrossChainOrderStatus.Completed) {
@@ -206,7 +206,7 @@ const OrderModal = ({
               <CheckCircleOutlined translate="check" className={styles.check} />
             )}
             {secondDescription}
-            <Tooltip title="This step may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the Ethereum to ensure the security.">
+            <Tooltip title="Cross chain to place order may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the Ethereum to ensure the security.">
               <i className="ai-question-circle-o" />
             </Tooltip>
           </span>

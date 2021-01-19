@@ -218,7 +218,7 @@ const getOrderCellType = (
     return isCrossChain ? `Lock ${tokenName}` : 'Place Order'
   }
   if (isCrossChain && index === 1) {
-    return 'Place Order'
+    return 'Cross chain to place order'
   }
   if (isLast) {
     switch (status) {
@@ -274,20 +274,6 @@ const OrderModal = ({
     modalVisable,
   })
 
-  const realStatus = useMemo(() => {
-    if (status === 'pending') {
-      const isAllLoaded = orderCells?.every(cell => cell.isLoaded)
-      if (isAllLoaded) {
-        return 'opening'
-      }
-      return 'pending'
-    }
-    if (status === 'claimed') {
-      return 'completed'
-    }
-    return status
-  }, [status, orderCells])
-
   return (
     <ModalContainer
       className={styles.modal}
@@ -299,13 +285,13 @@ const OrderModal = ({
     >
       <div className={styles.modalBody}>
         <Progress percent={parseInt(executed, 10)} type="circle" trailColor="#C4C4C4" />
-        <h3>{realStatus}</h3>
+        <h3>Filled</h3>
       </div>
       <div className={styles.records}>
         {cells?.map((cell, index) => {
           const isLast = index === cells.length - 1
           const txHashLength = cell.tx_hash.length
-          const txHash = `${cell.tx_hash.slice(0, 30)}...${cell.tx_hash.slice(txHashLength - 4, txHashLength)}`
+          const txHash = `${cell.tx_hash.slice(0, 20)}...${cell.tx_hash.slice(txHashLength - 4, txHashLength)}`
           const url =
             isCrossChain && index === 0
               ? `${ETHER_SCAN_URL}tx/${cell.tx_hash}`
@@ -321,8 +307,8 @@ const OrderModal = ({
                   <CheckCircleOutlined translate="check" className={styles.check} />
                 )}
                 {type}
-                {isCrossChain && type === 'Place Order' ? (
-                  <Tooltip title="This step may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the Ethereum to ensure the security.">
+                {isCrossChain && type === 'Cross chain to place order' ? (
+                  <Tooltip title="Cross chain to place order may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the Ethereum to ensure the security.">
                     <i className="ai-question-circle-o" />
                   </Tooltip>
                 ) : null}
@@ -342,7 +328,7 @@ const OrderModal = ({
       </div>
       {isCrossChain ? (
         <Meta
-          info={`Please be notice that if you want to cancel the order after placing it successfully, you will receive the ${currentOrder.tokenName} mirror assets on Nervos.`}
+          info={`Please be notice if you want to cancel the order after placing it successfully, you will receive the ${currentOrder.tokenName} cross-chain asset on Nervos - ck${currentOrder.tokenName}.`}
         />
       ) : null}
     </ModalContainer>
