@@ -1,6 +1,7 @@
-import { ckb, ForceBridgeItem, getForceBridgeHistory } from 'APIs'
+import { ckb, ForceBridgeItem, getForceBridgeHistory, relayEthToCKB } from 'APIs'
 import BigNumber from 'bignumber.js'
 import { ERC20, ERC20_ETH, ERC20_LIST, FORCE_BRIDGE_SETTINGS } from 'constants/erc20'
+import { relayEthTxHash } from 'utils'
 import Web3 from 'web3'
 import { APPROVE_ABI } from './ABI'
 
@@ -129,4 +130,32 @@ export async function getCKBCrossChainInfo(
     ethTxHash: order.eth_tx_hash,
     isLock,
   }
+}
+
+let isRelaying = false
+
+export function relayEthToCKBForerver() {
+  setInterval(() => {
+    if (isRelaying) {
+      return
+    }
+    const hashes = relayEthTxHash.get()
+    if (hashes.length === 0) {
+      return
+    }
+    isRelaying = true
+    Promise.all(
+      hashes.map(h =>
+        relayEthToCKB(h).then(() => {
+          relayEthTxHash.remove(h)
+        }),
+      ),
+    )
+      .then(() => {
+        isRelaying = false
+      })
+      .finally(() => {
+        isRelaying = false
+      })
+  }, 5000)
 }

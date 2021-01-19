@@ -7,6 +7,7 @@ const SUBMITTED_ORDERS_LABEL = 'ckb_dex_submitted_orders'
 const SPENDT_CELLS_LABEL = 'ckb_dex_spent_cells'
 const force_bridge_settings = 'ckb_force_bridge_settings'
 const CROSS_CHAIN_ORDERS = 'ckb_cross_chain_orders'
+const RELAY_ETH_HASHES = 'ckb_relay_tx_hashes'
 export const REPLAY_RESIST_OUTPOINT = 'ckb_replay_resist_outpoint'
 
 export interface SpentCell {
@@ -57,6 +58,26 @@ export const pendingOrders = {
     const orders = pendingOrders.get()
     delete orders[key]
     localStorage.setItem(PENDING_ORDERS_LABEL, JSON.stringify(orders))
+  },
+}
+
+export const relayEthTxHash = {
+  get: (): string[] => {
+    try {
+      return JSON.parse(localStorage.getItem(RELAY_ETH_HASHES)!) || []
+    } catch (err) {
+      return []
+    }
+  },
+  add: (txHash: string) => {
+    const orders = relayEthTxHash.get()
+    orders.push(txHash)
+    localStorage.setItem(RELAY_ETH_HASHES, JSON.stringify(orders))
+  },
+  remove: (txHash: string) => {
+    const orders = relayEthTxHash.get()
+    const remain = orders.filter(o => o !== txHash)
+    localStorage.setItem(RELAY_ETH_HASHES, JSON.stringify(remain))
   },
 }
 

@@ -6,7 +6,7 @@ import HeaderWithGoback from 'components/HeaderWithGoback'
 import { Divider, Modal } from 'antd'
 import { SUDT_LIST } from 'constants/sudt'
 import { DEFAULT_PAY_DECIMAL } from 'constants/number'
-import { CrossChainOrder, CrossChainOrderStatus, relayEthToCKB } from 'APIs'
+import { CrossChainOrder, CrossChainOrderStatus } from 'APIs'
 import { TradePairConfirmBox, TradePairConfirmContent, Footer } from './styled'
 import i18n from '../../../../utils/i18n'
 import OrderContainer, { OrderMode, OrderStep, OrderType } from '../../../../containers/order'
@@ -19,7 +19,7 @@ import {
   displayPayOrReceive,
   // removeTrailingZero,
 } from '../../../../utils/fee'
-import { spentCells } from '../../../../utils'
+import { relayEthTxHash, spentCells } from '../../../../utils'
 import { Pairs } from './pairs'
 import CrossChain from './CrossChain'
 import CrossIn from './CrossIn'
@@ -171,7 +171,7 @@ export default function TradePairConfirm() {
         case OrderMode.CrossChain:
         case OrderMode.CrossIn: {
           await placeCrossChain(tx, async (txHash: string) => {
-            await relayEthToCKB(txHash)
+            relayEthTxHash.add(txHash)
             setTxHash(txHash)
             setStep(OrderStep.Result)
           })
