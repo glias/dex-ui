@@ -206,7 +206,11 @@ const OrderModal = ({
               <CheckCircleOutlined translate="check" className={styles.check} />
             )}
             {secondDescription}
-            <Tooltip title="This step may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the Ethereum to ensure the security.">
+            <Tooltip
+              title={`This step may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the ${
+                !isLock ? 'Ethereum' : 'Nervos'
+              } to ensure the security.`}
+            >
               <i className="ai-question-circle-o" />
             </Tooltip>
           </span>
