@@ -675,3 +675,15 @@ export async function searchERC20(address: string, web3: Web3) {
     return undefined
   }
 }
+
+export async function writeLockHash(script: Script) {
+  const params = {
+    lock_hash: script.toHash(),
+    script: {
+      code_hash: script.codeHash,
+      hash_type: script.hashType,
+      args: script.args,
+    },
+  }
+  return axios.post(`${SERVER_URL}/scripts/cache`, params)
+}
