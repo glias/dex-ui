@@ -15,7 +15,6 @@ import WalletContainer from '../../../../containers/wallet'
 import {
   calcAskReceive,
   calcBidReceive,
-  calcCrossOutFee,
   displayPayOrReceive,
   // removeTrailingZero,
 } from '../../../../utils/fee'
@@ -150,7 +149,7 @@ export default function TradePairConfirm() {
       spentCells.add(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
       const crossChainOrder: CrossChainOrder = {
         tokenName: firstToken.slice(2),
-        amount: displayPayOrReceive(calcCrossOutFee(pay), true),
+        amount: displayPayOrReceive(pay, true),
         timestamp: `${Date.now()}`,
         ckbTxHash: txHash,
         ethTxHash: '',
