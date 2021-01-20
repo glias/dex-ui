@@ -147,6 +147,7 @@ export default function TradePairConfirm() {
   const burn = useCallback(
     async (tx: Transaction) => {
       const txHash = await Wallet.pw!.sendTransaction(tx)
+      spentCells.add(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
       const crossChainOrder: CrossChainOrder = {
         tokenName: firstToken.slice(2),
         amount: displayPayOrReceive(calcCrossOutFee(pay), true),
