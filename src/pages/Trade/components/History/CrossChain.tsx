@@ -297,7 +297,7 @@ const CrossChainTable = ({ searchValue }: { searchValue: string }) => {
   }, [ckbWallet.address, web3, setAndCacheCrossChainOrders, ethWallet.address, currentOrder])
 
   const orderList = useMemo(() => {
-    return [
+    const arr = [
       ...crossChainOrders,
       ...orders.filter(o =>
         crossChainOrders.every(cache => cache.ckbTxHash !== o.ckbTxHash && cache.ethTxHash !== o.ethTxHash),
@@ -305,6 +305,9 @@ const CrossChainTable = ({ searchValue }: { searchValue: string }) => {
     ]
       .sort((a, b) => (new BigNumber(a.timestamp).isLessThan(b.timestamp) ? 1 : -1))
       .filter(searchFilter)
+      .sort(a => (a.status === CrossChainOrderStatus.Completed ? 1 : -1))
+
+    return arr
   }, [crossChainOrders, orders, searchFilter])
 
   const actionColumn = {
