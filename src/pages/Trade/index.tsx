@@ -174,6 +174,7 @@ const Trade = () => {
             onSelect={onTokenSelect}
             currentToken={Order.currentPairToken}
             filter={selectTokenFilter}
+            groupedByChain
           />
         )
       default:
@@ -222,8 +223,8 @@ const Trade = () => {
           <h3>Please enter the Internal Test Code:</h3>
           <Input value={entryPassword} type="password" onChange={e => setEntryPassword(e.target.value)} />
           <div style={{ marginTop: '8px' }}>
-            The product is currently under internal testing, so please be aware of the risks when trading your assets.
-            If you have any questions or suggestions when testing, please submit a issue at&nbsp;
+            The demo is currently under internal testing, so please be aware of the risks when trading your assets. If
+            you have any questions or suggestions when testing, please submit a issue at&nbsp;
             <a style={{ color: 'blue' }} target="_blank" rel="noopener noreferrer" href={README_URL}>
               GitHub
             </a>

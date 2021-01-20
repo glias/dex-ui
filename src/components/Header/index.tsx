@@ -112,7 +112,7 @@ const Header = () => {
               <GliasLogo />
               <span className="title">
                 GLIADEX
-                <span className="detail">(Universal Passport Example)</span>
+                <span className="detail">(UniDapp example)</span>
               </span>
             </HeaderLogo>
             <HeaderMeta id="header-meta">
