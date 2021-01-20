@@ -29,8 +29,11 @@ export async function approveERC20ToBridge(
     contract.methods
       .approve(targetAddress, uint256Max)
       .send({ from: ethAddress })
-      .once('transactionHash', () => {
+      .once('transactionHash', (t: any) => {
         confirmCallback()
+        setTimeout(() => {
+          resolve(t)
+        }, 1.5 * 60 * 1000)
       })
       .once('receipt', (r: any) => {
         resolve(r)

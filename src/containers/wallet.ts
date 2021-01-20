@@ -7,7 +7,7 @@ import { createContainer } from 'unstated-next'
 import { replayResistOutpoints } from 'utils'
 import Web3 from 'web3'
 import Web3Modal from 'web3modal'
-import { getCkbBalance, getOrCreateBridgeCell, getSudtBalance } from '../APIs'
+import { getCkbBalance, getOrCreateBridgeCell, getSudtBalance, writeLockHash } from '../APIs'
 import {
   CKB_DECIMAL,
   CKB_NODE_URL,
@@ -287,7 +287,7 @@ export function useWallet() {
       provider.on('accountsChanged', function reconnectWallet(accounts: string[]) {
         reconnectCountNum++
         setReconnectCount(reconnectCountNum)
-        provider.off('accountsChanged', reconnectWallet)
+        // provider.off('accountsChanged', reconnectWallet)
         if (accounts?.length > 0) connectWallet()
         else disconnectWallet()
       })
@@ -328,6 +328,9 @@ export function useWallet() {
       setCkbAddress(ckbAddr)
       reloadWallet(ckbAddr, ethAddr, newWeb3)
       setConnectStatus('connected')
+
+      const address = new Address(ckbAddr, AddressType.ckb)
+      writeLockHash(address.toLockScript())
     } catch (e) {
       setConnectStatus('disconnected')
     }

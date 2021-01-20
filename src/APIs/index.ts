@@ -317,6 +317,7 @@ export async function shadowAssetCrossIn(
   const op = outpoints.shift()
   const gasPrice = await web3.eth.getGasPrice()
   const nonce = await web3.eth.getTransactionCount(ethAddress)
+  replayResistOutpoints.remove(key, op)
   const res = await axios.post(`${FORCE_BRIDGER_SERVER_URL}/lock`, {
     token_address: tokenAddress,
     amount,
@@ -333,7 +334,6 @@ export async function shadowAssetCrossIn(
       replayResistOutpoints.add(key, r.data.outpoints)
     })
   }
-  replayResistOutpoints.remove(key, op)
   return res
 }
 
@@ -370,6 +370,7 @@ export async function placeCrossChainOrder(
   const gasPrice = await web3.eth.getGasPrice()
   const nonce = await web3.eth.getTransactionCount(ethAddress)
 
+  replayResistOutpoints.remove(key, op)
   const res = await axios.post(`${FORCE_BRIDGER_SERVER_URL}/lock`, {
     sender: ethAddress,
     token_address: tokenAddress,
@@ -389,7 +390,6 @@ export async function placeCrossChainOrder(
     const r = await getOrCreateBridgeCell(recipientAddress, tokenAddress, true)
     replayResistOutpoints.add(key, r.data.outpoints)
   }
-  replayResistOutpoints.remove(key, op)
   return res
 }
 
@@ -674,4 +674,16 @@ export async function searchERC20(address: string, web3: Web3) {
   } catch (error) {
     return undefined
   }
+}
+
+export async function writeLockHash(script: Script) {
+  const params = {
+    lock_hash: script.toHash(),
+    script: {
+      code_hash: script.codeHash,
+      hash_type: script.hashType,
+      args: script.args,
+    },
+  }
+  return axios.post(`${SERVER_URL}/scripts/cache`, params)
 }

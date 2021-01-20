@@ -206,7 +206,11 @@ const OrderModal = ({
               <CheckCircleOutlined translate="check" className={styles.check} />
             )}
             {secondDescription}
-            <Tooltip title="This step may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the Ethereum to ensure the security.">
+            <Tooltip
+              title={`This step may take 5-15 minutes. We need to wait for the confirmation of 15 blocks on the ${
+                isLock ? 'Ethereum' : 'Nervos'
+              } to ensure the security.`}
+            >
               <i className="ai-question-circle-o" />
             </Tooltip>
           </span>
@@ -293,7 +297,7 @@ const CrossChainTable = ({ searchValue }: { searchValue: string }) => {
   }, [ckbWallet.address, web3, setAndCacheCrossChainOrders, ethWallet.address, currentOrder])
 
   const orderList = useMemo(() => {
-    return [
+    const arr = [
       ...crossChainOrders,
       ...orders.filter(o =>
         crossChainOrders.every(cache => cache.ckbTxHash !== o.ckbTxHash && cache.ethTxHash !== o.ethTxHash),
@@ -301,6 +305,9 @@ const CrossChainTable = ({ searchValue }: { searchValue: string }) => {
     ]
       .sort((a, b) => (new BigNumber(a.timestamp).isLessThan(b.timestamp) ? 1 : -1))
       .filter(searchFilter)
+      .sort(a => (a.status === CrossChainOrderStatus.Completed ? 1 : -1))
+
+    return arr
   }, [crossChainOrders, orders, searchFilter])
 
   const actionColumn = {
