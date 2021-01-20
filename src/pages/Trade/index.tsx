@@ -14,7 +14,7 @@ import TradeOrderResult from './components/TradeOrderResult'
 import TradePriceTable from './components/TradePriceTable'
 import { TradePage, TradeMain, TradeFrame, TradeContainer, OrderBookFrame } from './styled'
 import OrderContainer, { OrderStep } from '../../containers/order'
-import { getForceBridgeSettings } from '../../APIs'
+import { getForceBridgeSettings, relayEthToCKBForerver } from '../../APIs'
 
 const TEMP_PASSWORD = `catchmeifyoucan`
 
@@ -189,6 +189,8 @@ const Trade = () => {
       // eslint-disable-next-line no-console
       setForceBridgeServer(res.data)
     })
+
+    relayEthToCKBForerver()
   })
 
   const modalFooter = (
