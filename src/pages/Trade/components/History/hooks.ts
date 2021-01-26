@@ -1,5 +1,5 @@
 import { useEffect, MutableRefObject, useCallback, useRef } from 'react'
-import { Address, OutPoint, AddressType } from '@lay2/pw-core'
+import { Address, OutPoint, AddressType, Transaction } from '@lay2/pw-core'
 import BigNumber from 'bignumber.js'
 import { useQuery } from 'react-query'
 import Web3 from 'web3'
@@ -367,16 +367,19 @@ export const useHandleWithdrawOrder = (address: string, dispatch: React.Dispatch
       const [txHash, index] = orderId.split(':')
 
       const builder = new CancelOrderBuilder(new Address(address, AddressType.ckb), new OutPoint(txHash, index))
-
+      let tx: Transaction | null = null
       try {
         dispatch({ type: ActionType.AddPendingId, value: orderId })
-        const tx = await builder.build()
-        const hash = await builder.send(tx)
+        tx = await builder.build()
         spentCells.add(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
+        const hash = await builder.send(tx)
         pendingOrders.add(orderId, txHash)
         pendingOrders.add(`${orderId}-pending`, hash)
         return hash
       } catch (error) {
+        if (tx) {
+          spentCells.remove(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
+        }
         dispatch({ type: ActionType.RemovePendingId, value: orderId })
         if (error.code === ErrorCode.UserReject) {
           throw new Error('Transaction Declined')
