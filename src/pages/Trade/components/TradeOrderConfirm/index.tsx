@@ -118,8 +118,8 @@ export default function TradePairConfirm() {
 
   const placeNormalOrder = useCallback(
     async (tx: Transaction) => {
-      const txHash = await Wallet.pw?.sendTransaction(tx)
       spentCells.add(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
+      const txHash = await Wallet.pw?.sendTransaction(tx)
 
       const isBid = orderType === OrderType.Bid
       const receiveCalc = isBid ? calcBidReceive : calcAskReceive
@@ -182,7 +182,12 @@ export default function TradePairConfirm() {
           break
         }
         case OrderMode.Order: {
-          await placeNormalOrder(tx)
+          try {
+            await placeNormalOrder(tx)
+          } catch (error) {
+            Modal.error({ title: 'Submission Error', content: error.message })
+            spentCells.remove(tx.raw.inputs.map(input => input.previousOutput.serializeJson()) as any)
+          }
           break
         }
         default:

@@ -128,13 +128,15 @@ export const spentCells = {
   get: (): SpentCell[] => {
     try {
       const cells: SpentCell[] = JSON.parse(localStorage.getItem(SPENDT_CELLS_LABEL)!) || []
-      return cells.filter(cell => {
+      const res = cells.filter(cell => {
         if (cell.timestamp) {
           const cellTime = new BigNumber(cell.timestamp)
-          return cellTime.plus(30 * 60 * 1000).isLessThan(Date.now())
+          return cellTime.plus(30 * 60 * 1000).isGreaterThan(Date.now())
         }
         return false
       })
+
+      return res
     } catch (err) {
       return []
     }
