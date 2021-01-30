@@ -87,7 +87,7 @@ export const reducer: React.Reducer<HistoryState, HistoryAction> = (state, actio
 
 type Order = ReturnType<typeof parseOrderRecord>
 
-const ORDER_LIST_TIMER = 5e3
+const ORDER_LIST_TIMER = 30e3
 
 export const usePollingOrderStatus = ({
   web3,
