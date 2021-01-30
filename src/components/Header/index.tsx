@@ -65,7 +65,7 @@ const Header = () => {
   })
 
   useEffect(() => {
-    const INTERVAL_TIME = 10000
+    const INTERVAL_TIME = 30000
     const interval = setInterval(() => {
       const address = PWCore.provider?.address?.toCKBAddress?.() ?? ''
       if (connectStatus === 'connected' && address) {

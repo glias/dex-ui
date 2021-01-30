@@ -4,6 +4,7 @@ import SelectToken from 'components/SelectToken'
 import { SUDT_LIST } from 'constants/sudt'
 import { Wallet } from 'containers/wallet'
 import { useDidMount } from 'hooks'
+import { Modal } from 'antd'
 import { setForceBridgeServer, ERC20_LIST } from 'constants/erc20'
 import TradeOrderTable from './components/TradeOrderTable'
 import History from './components/History'
@@ -14,8 +15,26 @@ import { TradePage, TradeMain, TradeFrame, TradeContainer, OrderBookFrame } from
 import OrderContainer, { OrderStep } from '../../containers/order'
 import { getForceBridgeSettings, relayEthToCKBForerver } from '../../APIs'
 
+function detectMobile() {
+  const toMatch = [/Android/i, /webOS/i, /iPhone/i, /iPad/i, /iPod/i, /BlackBerry/i, /Windows Phone/i]
+
+  return toMatch.some(toMatchItem => {
+    return navigator.userAgent.match(toMatchItem)
+  })
+}
+
 const Trade = () => {
   const Order = useContainer(OrderContainer)
+
+  useDidMount(() => {
+    const isMobile = detectMobile()
+    if (isMobile) {
+      Modal.warn({
+        content: 'This current page does not support mobile access, please use a PC to access this website.',
+        okText: 'OK',
+      })
+    }
+  })
 
   const { selectingToken, setBuyerToken, setSellerToken, setStep, togglePair } = Order
   const [buyerToken, sellerToken] = Order.pair
