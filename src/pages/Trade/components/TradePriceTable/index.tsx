@@ -173,6 +173,12 @@ const TableBody = ({ orders, sudt, isBid, maxCKB }: { orders: Orders; sudt: SUDT
   )
 }
 
+interface OrderBook {
+  bidOrders: Orders
+  askOrders: Orders
+  currentPrice: string
+}
+
 const TradePriceTable = () => {
   const Order = useContainer(OrderContainer)
   const Wallet = useContainer(WalletContainer)
@@ -180,10 +186,6 @@ const TradePriceTable = () => {
   const { setPrice } = useContainer(OrderContainer)
   // const { address } = Wallet.ckbWallet
   const { pair } = Order
-  const [orders, setOrders] = useState<{ bidOrders: Orders; askOrders: Orders }>({
-    bidOrders: [],
-    askOrders: [],
-  })
 
   const token = useMemo(() => {
     return pair.find(t => t !== 'CKB')!
@@ -201,30 +203,45 @@ const TradePriceTable = () => {
     return new SUDTWithoutPw(inst.issuerLockHash, inst.info)
   }, [sudtToken])
 
-  const [currentPrice, setCurrentPrice] = useState('--')
+  const [orderBook, setOrderBook] = useState<Record<string, OrderBook>>(Object.create(null))
+
+  const currentOrderBook = useMemo(() => {
+    return (
+      orderBook?.[sudt?.issuerLockHash] ?? {
+        bidOrders: [],
+        askOrders: [],
+        currentPrice: '--',
+      }
+    )
+  }, [orderBook, sudt])
+
+  const currentPrice = useMemo(() => {
+    return currentOrderBook.currentPrice
+  }, [currentOrderBook])
 
   useEffect(() => {
-    const INTERVAL_TIME = 5000
+    const INTERVAL_TIME = 20000
 
-    function getPriceTable() {
-      getOrders(sudt).then(res => {
-        const { data } = res
-        setOrders({
-          askOrders: data.ask_orders,
-          bidOrders: data.bid_orders,
-        })
+    async function getPriceTable() {
+      const { data: orders } = await getOrders(sudt)
+      let price = i18n.t('trade.priceTable.empty')
+      try {
+        const { data } = await getCurrentPrice(sudt)
+        const p = new BigNumber(data).times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT)).toString()
+        price = p === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPrice(p)
+      } catch (error) {
+        //
+      }
+      setOrderBook(old => {
+        return {
+          ...old,
+          [sudt?.issuerLockHash]: {
+            askOrders: orders.ask_orders,
+            bidOrders: orders.bid_orders,
+            currentPrice: price,
+          },
+        }
       })
-      getCurrentPrice(sudt)
-        .then(res => {
-          const { data } = res
-          const price = new BigNumber(data)
-            .times(new BigNumber(10).pow(sudt?.info?.decimals! - CKB_DECIMAL_INT))
-            .toString()
-          setCurrentPrice(price === 'NaN' ? i18n.t('trade.priceTable.empty') : displayPrice(price))
-        })
-        .catch(() => {
-          setCurrentPrice(i18n.t('trade.priceTable.empty'))
-        })
     }
 
     const interval = setInterval(() => {
@@ -252,16 +269,16 @@ const TradePriceTable = () => {
     let max = new BigNumber(0)
     // const base = new BigNumber(10)
     // const decimal = sudt?.info?.decimals ?? CKB_DECIMAL_INT
-    for (let i = 0; i < orders.askOrders.length; i++) {
-      const order = orders.askOrders[i]
+    for (let i = 0; i < currentOrderBook.askOrders.length; i++) {
+      const order = currentOrderBook.askOrders[i]
       const ckbAmount = new BigNumber(order.receive)
       if (ckbAmount.isGreaterThan(max)) {
         max = ckbAmount
       }
     }
 
-    for (let i = 0; i < orders.bidOrders.length; i++) {
-      const order = orders.bidOrders[i]
+    for (let i = 0; i < currentOrderBook.bidOrders.length; i++) {
+      const order = currentOrderBook.bidOrders[i]
       const pay = new BigNumber(order.receive).times(new BigNumber(order.price))
       if (pay.isGreaterThan(max)) {
         max = pay
@@ -269,7 +286,7 @@ const TradePriceTable = () => {
     }
 
     return max.div(CKB_DECIMAL).toString()
-  }, [orders.askOrders, orders.bidOrders])
+  }, [currentOrderBook.askOrders, currentOrderBook.bidOrders])
 
   return (
     <Container>
@@ -281,13 +298,13 @@ const TradePriceTable = () => {
           receive={i18n.t('trade.priceTable.receive', { token: 'CKB' })}
           isBid={false}
         />
-        <TableBody isBid={false} orders={orders.askOrders} sudt={sudt} maxCKB={maxCKB} />
+        <TableBody isBid={false} orders={currentOrderBook.askOrders} sudt={sudt} maxCKB={maxCKB} />
       </AskTable>
       <BestPrice onClick={bestPriceOnClick} cursor={hasCurrentPrice ? 'pointer' : 'auto'}>
         <div className="price">{currentPrice}</div>
       </BestPrice>
       <BidTable>
-        <TableBody isBid orders={orders.bidOrders} sudt={sudt} maxCKB={maxCKB} />
+        <TableBody isBid orders={currentOrderBook.bidOrders} sudt={sudt} maxCKB={maxCKB} />
         <TableHead
           price={i18n.t('trade.priceTable.price', { token })}
           pay={i18n.t('trade.priceTable.pay', { token: 'CKB' })}
